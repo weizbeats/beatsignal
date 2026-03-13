@@ -7,6 +7,7 @@ export type Beat = {
   date:string
   beat:string
   status:string
+lastScan?: string
 }
 
 export function getBeats():Beat[]{
