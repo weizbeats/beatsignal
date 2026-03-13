@@ -11,7 +11,7 @@ export default function BeatsPage(){
   async function loadBeats(){
 
     const res = await fetch(
-      "http://127.0.0.1:8000/beats"
+      `${process.env.NEXT_PUBLIC_API_URL}/beats`
     )
 
     const data = await res.json()
@@ -29,7 +29,7 @@ export default function BeatsPage(){
   async function addBeat(){
 
     await fetch(
-      "http://127.0.0.1:8000/add-beat",
+      `${process.env.NEXT_PUBLIC_API_URL}/add-beat`,
       {
         method:"POST",
         headers:{

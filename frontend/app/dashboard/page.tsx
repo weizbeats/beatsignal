@@ -16,15 +16,18 @@ export default function Dashboard(){
 
     try{
 
-      const res = await fetch("http://127.0.0.1:8000/scan",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          url:url
-        })
-      })
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/scan`,
+        {
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify({
+            url:url
+          })
+        }
+      )
 
       const data = await res.json()
 
@@ -43,8 +46,6 @@ export default function Dashboard(){
     <div style={{padding:"40px"}}>
 
       <h2>BeatSignal Dashboard</h2>
-
-      {/* INPUT */}
 
       <div style={{
         display:"flex",
@@ -78,8 +79,6 @@ export default function Dashboard(){
         </button>
 
       </div>
-
-      {/* RESULTS */}
 
       <div style={{marginTop:"40px"}}>
 
