@@ -10,15 +10,15 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/register",
-        destination: "http://localhost:8000/register",
+        destination: "https://beatsignal-production.up.railway.app/register",
       },
       {
         source: "/login",
-        destination: "http://localhost:8000/login",
+        destination: "https://beatsignal-production.up.railway.app/login",
       },
       {
         source: "/scan",
-        destination: "http://localhost:8000/scan",
+        destination: "https://beatsignal-production.up.railway.app/scan",
       },
     ]
   },
