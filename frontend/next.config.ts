@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next"
+
+const nextConfig: NextConfig = {
 
   typescript: {
     ignoreBuildErrors: true,
@@ -9,18 +10,18 @@ const nextConfig = {
     return [
       {
         source: "/register",
-        destination: "http://localhost:8000/register"
+        destination: "http://localhost:8000/register",
       },
       {
         source: "/login",
-        destination: "http://localhost:8000/login"
+        destination: "http://localhost:8000/login",
       },
       {
         source: "/scan",
-        destination: "http://localhost:8000/scan"
-      }
+        destination: "http://localhost:8000/scan",
+      },
     ]
-  }
+  },
 }
 
-module.exports = nextConfig
+export default nextConfig
