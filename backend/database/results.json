@@ -1,0 +1,21 @@
+[
+  {
+    "song": "Black out",
+    "artist": "weizbeats",
+    "isrc": null,
+    "platforms": [
+      {
+        "platform": "Deezer",
+        "link": "https://cdn-images.dzcdn.net/images/cover/98070a303fa24a3bf86140c60b5420fb/250x250-000000-80-0-0.jpg"
+      },
+      {
+        "platform": "Apple Music",
+        "link": "https://music.apple.com/us/search?term=Black%20out%20weizbeats"
+      },
+      {
+        "platform": "YouTube Music",
+        "link": "https://music.youtube.com/search?q=Black%20out%20weizbeats"
+      }
+    ]
+  }
+]

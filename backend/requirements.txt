@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+python-dotenv
+yt-dlp
+pydub
+requests
+librosa
+numpy
+python-multipart
+
+# auth + database
+sqlalchemy
+psycopg2-binary
+passlib[bcrypt]
+python-jose
