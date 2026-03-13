@@ -22,7 +22,7 @@ export default function RegisterPage(){
     try{
 
       const res = await fetch(
-        "http://127.0.0.1:8000/register",
+        `${process.env.NEXT_PUBLIC_API_URL}/register`,
         {
           method:"POST",
           headers:{
@@ -37,20 +37,14 @@ export default function RegisterPage(){
 
       const data = await res.json()
 
-      if(data.detail){
-        setError(data.detail)
-        setLoading(false)
-        return
-      }
-
-      if(!data.token){
+      if(!data.success){
         setError("Registration failed")
         setLoading(false)
         return
       }
 
-      // guardar token
-      localStorage.setItem("token",data.token)
+      localStorage.setItem("session","true")
+      localStorage.setItem("user",email)
 
       router.push("/dashboard")
 
