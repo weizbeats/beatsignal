@@ -32,8 +32,11 @@ if not os.path.exists(USERS_FILE):
 
 
 def load_users():
-    with open(USERS_FILE, "r") as f:
-        return json.load(f)
+    try:
+        with open(USERS_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return []
 
 
 def save_users(users):
