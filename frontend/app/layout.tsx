@@ -3,6 +3,7 @@
 import "./globals.css"
 import Sidebar from "../components/Sidebar"
 import { usePathname } from "next/navigation"
+import { useEffect } from "react"
 
 export default function RootLayout({
   children,
@@ -15,6 +16,30 @@ export default function RootLayout({
   const hideSidebar =
     pathname === "/" ||
     pathname === "/register"
+
+  useEffect(()=>{
+
+    const user = localStorage.getItem("user")
+
+    if(!user) return
+
+    const interval = setInterval(()=>{
+
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/heartbeat`,{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          user
+        })
+      })
+
+    },10000)
+
+    return ()=>clearInterval(interval)
+
+  },[])
 
   return (
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
 
 export default function LoginPage(){
 
@@ -55,13 +56,22 @@ export default function LoginPage(){
 
   return(
 
-    <div className="h-screen bg-[#0b0b0b] flex items-center justify-center">
+    <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
 
-      <div className="bg-[#111] w-[420px] p-10 rounded-xl border border-[#222]">
+      <motion.div
+        initial={{opacity:0,y:40}}
+        animate={{opacity:1,y:0}}
+        transition={{duration:0.4}}
+        className="bg-[#111] w-[420px] p-10 rounded-2xl border border-[#1f1f1f] shadow-xl"
+      >
 
-        <h1 className="text-white text-2xl mb-8 text-center">
-          Login to BeatSignal
+        <h1 className="text-white text-3xl font-semibold mb-2 text-center">
+          Welcome back
         </h1>
+
+        <p className="text-gray-400 text-center mb-8 text-sm">
+          Login to BeatSignal
+        </p>
 
         <form onSubmit={handleLogin}>
 
@@ -70,7 +80,7 @@ export default function LoginPage(){
             placeholder="Email"
             value={email}
             onChange={(e)=>setEmail(e.target.value)}
-            className="w-full p-4 mb-4 rounded bg-black border border-[#333] text-white"
+            className="w-full p-4 mb-4 rounded-lg bg-[#0b0b0b] border border-[#222] text-white focus:outline-none focus:border-[#3b82f6] transition"
           />
 
           <input
@@ -78,18 +88,18 @@ export default function LoginPage(){
             placeholder="Password"
             value={password}
             onChange={(e)=>setPassword(e.target.value)}
-            className="w-full p-4 mb-6 rounded bg-black border border-[#333] text-white"
+            className="w-full p-4 mb-6 rounded-lg bg-[#0b0b0b] border border-[#222] text-white focus:outline-none focus:border-[#3b82f6] transition"
           />
 
           {error && (
-            <p className="text-red-400 mb-4">
+            <p className="text-red-400 mb-4 text-sm">
               {error}
             </p>
           )}
 
           <button
             type="submit"
-            className="w-full bg-pink-500 p-4 rounded text-white"
+            className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] transition p-4 rounded-lg text-white font-medium"
           >
             Login
           </button>
@@ -101,14 +111,14 @@ export default function LoginPage(){
 
           <span
             onClick={()=>router.push("/register")}
-            className="text-pink-500 cursor-pointer ml-2"
+            className="text-blue-400 cursor-pointer ml-2 hover:text-blue-300"
           >
             Register
           </span>
 
         </p>
 
-      </div>
+      </motion.div>
 
     </div>
 
