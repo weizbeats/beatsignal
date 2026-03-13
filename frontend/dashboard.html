@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>BeatSignal</title>
+
+<style>
+
+body{
+background:#0b0b0b;
+color:white;
+font-family:Arial;
+}
+
+input{
+width:500px;
+padding:12px;
+background:#111;
+border:1px solid #333;
+color:white;
+}
+
+button{
+padding:12px 20px;
+background:#1db954;
+border:none;
+color:black;
+font-weight:bold;
+cursor:pointer;
+}
+
+table{
+width:100%;
+margin-top:30px;
+border-collapse:collapse;
+}
+
+th,td{
+padding:12px;
+border-bottom:1px solid #222;
+text-align:left;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>BeatSignal Dashboard</h1>
+
+<input id="urlInput" placeholder="Paste YouTube URL">
+<button onclick="scan()">Scan</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Song</th>
+<th>Artist</th>
+<th>Score</th>
+<th>Link</th>
+</tr>
+</thead>
+
+<tbody id="resultsTable"></tbody>
+
+</table>
+
+
+<script>
+
+async function scan(){
+
+const url = document.getElementById("urlInput").value
+
+const res = await fetch("http://localhost:8000/scan",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({url})
+})
+
+const data = await res.json()
+
+const table = document.getElementById("resultsTable")
+
+table.innerHTML=""
+
+if(!data.results || data.results.length===0){
+
+table.innerHTML=`<tr><td colspan="4">No matches</td></tr>`
+return
+
+}
+
+data.results.sort((a,b)=>b.score-a.score)
+
+data.results.forEach(r=>{
+
+const row=`
+
+<tr>
+<td>${r.song}</td>
+<td>${r.artist}</td>
+<td>${r.score}%</td>
+<td><a href="${r.url || '#'}" target="_blank">open</a></td>
+</tr>
+
+`
+
+table.innerHTML+=row
+
+})
+
+}
+
+</script>
+
+</body>
+</html>
