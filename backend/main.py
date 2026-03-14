@@ -311,3 +311,42 @@ def create_paypal_order(data:dict):
         "credits": credits
 
     }
+# =========================
+# ADMIN PANEL
+# =========================
+
+@app.get("/admin")
+def admin_panel(email:str):
+
+    if email != "weizbeat@gmail.com":
+        return {"error":"not_admin"}
+
+    users = load_users()
+    beats = load_beats()
+
+    total_users = len(users)
+
+    total_beats = len(beats)
+
+    total_credits = 0
+
+    for u in users:
+        total_credits += u.get("credits",0)
+
+    return {
+
+        "users": users,
+
+        "beats_monitored": beats,
+
+        "stats":{
+
+            "total_users": total_users,
+
+            "total_beats": total_beats,
+
+            "total_credits": total_credits
+
+        }
+
+    }
