@@ -62,9 +62,7 @@ setCredits(data.credits || 0)
 setIsAdmin(data.admin || false)
 
 }catch(e){
-
 console.log(e)
-
 }
 
 }
@@ -80,7 +78,7 @@ router.push("/")
 
 async function handleScan(){
 
-if(!url) return
+if(!url || loading) return   // 🔒 BLOQUEA SPAM
 
 setLoading(true)
 setProgress(0)
@@ -141,9 +139,7 @@ setCredits((prev)=>Math.max(prev-1,0))
 }
 
 }catch(e){
-
 console.log(e)
-
 }
 
 clearInterval(interval)
@@ -151,9 +147,7 @@ clearInterval(interval)
 setProgress(100)
 
 setTimeout(()=>{
-
 setLoading(false)
-
 },1200)
 
 }
@@ -299,9 +293,16 @@ className="flex-1 bg-black/40 border border-white/10 text-white p-4 rounded-lg o
 
 <button
 onClick={handleScan}
-className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black font-semibold px-6 rounded-lg"
+disabled={loading}
+className={`px-6 rounded-lg font-semibold transition
+${loading
+? "bg-gray-600 cursor-not-allowed"
+: "bg-[#14E6C3] hover:bg-[#0FD4B5] text-black"
+}`}
 >
-Scan
+
+{loading ? "Scanning..." : "Scan"}
+
 </button>
 
 </div>
