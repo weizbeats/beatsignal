@@ -1,11 +1,9 @@
-"use client"
-
 import "./globals.css"
 import BackgroundParticles from "@/components/BackgroundParticles"
 
-export default function RootLayout({children}:{children:React.ReactNode}){
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 
-return(
+return (
 
 ```
 <html lang="en">
@@ -14,7 +12,7 @@ return(
 
     <div className="bg-glow"></div>
 
-    <BackgroundParticles/>
+    <BackgroundParticles />
 
     {children}
 
