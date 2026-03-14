@@ -12,6 +12,7 @@ export default function Dashboard(){
   const [loading,setLoading] = useState(false)
   const [progress,setProgress] = useState(0)
   const [user,setUser] = useState("")
+  const [result,setResult] = useState<any>(null)
 
   useEffect(()=>{
 
@@ -23,6 +24,7 @@ export default function Dashboard(){
 
   },[])
 
+
   function logout(){
 
     localStorage.removeItem("session")
@@ -32,12 +34,14 @@ export default function Dashboard(){
 
   }
 
+
   async function handleScan(){
 
     if(!url) return
 
     setLoading(true)
     setProgress(0)
+    setResult(null)
 
     let fakeProgress = 0
 
@@ -55,13 +59,17 @@ export default function Dashboard(){
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
-      await fetch(apiUrl + "/scan",{
+      const res = await fetch(apiUrl + "/scan",{
         method:"POST",
         headers:{
           "Content-Type":"application/json"
         },
         body:JSON.stringify({url})
       })
+
+      const data = await res.json()
+
+      setResult(data)
 
     }catch(e){
 
@@ -75,14 +83,17 @@ export default function Dashboard(){
 
     setTimeout(()=>{
       setLoading(false)
-      setProgress(0)
     },1200)
 
   }
 
+
   return(
 
     <div className="w-full min-h-screen">
+
+
+      {/* TOP BAR */}
 
       <div className="flex justify-between items-center px-10 pt-8">
 
@@ -98,7 +109,14 @@ export default function Dashboard(){
 
           <button
             onClick={logout}
-            className="text-sm text-gray-400 border border-white/10 px-4 py-1 rounded-md"
+            className="
+            text-sm
+            text-gray-400
+            hover:text-white
+            border border-white/10
+            px-4 py-1 rounded-md
+            transition
+            "
           >
             Logout
           </button>
@@ -107,13 +125,25 @@ export default function Dashboard(){
 
       </div>
 
+
+
       <div className="w-full flex justify-center">
 
         <div className="w-full max-w-5xl px-8 py-16">
 
+
+          {/* TITLE */}
+
           <div className="text-center mb-14">
 
-            <h1 className="text-5xl font-semibold mb-3 text-white">
+            <h1 className="
+            text-5xl font-semibold mb-3
+            bg-gradient-to-r
+            from-white
+            to-[#14E6C3]
+            bg-clip-text
+            text-transparent
+            ">
               BeatSignal
             </h1>
 
@@ -123,7 +153,21 @@ export default function Dashboard(){
 
           </div>
 
-          <div className="bg-[#0b0b0b] border border-white/5 rounded-xl p-6 mb-8">
+
+
+          {/* SCAN BAR */}
+
+          <div className="
+          relative
+          card-glow
+          bg-[#0b0b0b]/70
+          backdrop-blur-md
+          border border-[#14E6C3]/20
+          rounded-xl
+          p-6
+          mb-8
+          shadow-[0_0_40px_rgba(20,230,195,0.08)]
+          ">
 
             <div className="flex gap-4">
 
@@ -131,12 +175,37 @@ export default function Dashboard(){
                 placeholder="Paste YouTube link..."
                 value={url}
                 onChange={(e)=>setUrl(e.target.value)}
-                className="flex-1 bg-black border border-white/10 text-white p-4 rounded-lg"
+                className="
+                flex-1
+                bg-black/40
+                border border-white/10
+                text-white
+                p-4
+                rounded-lg
+                outline-none
+
+                focus:border-[#14E6C3]
+                focus:shadow-[0_0_20px_rgba(20,230,195,0.35)]
+
+                transition
+                "
               />
 
               <button
                 onClick={handleScan}
-                className="bg-[#14E6C3] text-black font-semibold px-6 rounded-lg"
+                className="
+                bg-[#14E6C3]
+                hover:bg-[#0FD4B5]
+                text-black
+                font-semibold
+                px-6
+                rounded-lg
+
+                hover:scale-105
+                hover:shadow-[0_0_25px_rgba(20,230,195,0.6)]
+
+                transition
+                "
               >
                 Scan
               </button>
@@ -145,9 +214,48 @@ export default function Dashboard(){
 
           </div>
 
+
+
+          {/* PROGRESS */}
+
           {loading && (
-            <ScanProgress progress={progress}/>
+
+            <div className="mb-12">
+
+              <ScanProgress progress={progress}/>
+
+            </div>
+
           )}
+
+
+
+          {/* RESULT */}
+
+          {result && (
+
+            <div className="
+            card-glow
+            bg-[#0b0b0b]/80
+            backdrop-blur-md
+            border border-white/5
+            rounded-xl
+            p-6
+            ">
+
+              <h2 className="text-white mb-4 text-lg">
+                Scan result
+              </h2>
+
+              <pre className="text-gray-300 text-sm bg-black/40 p-4 rounded-lg overflow-x-auto">
+                {JSON.stringify(result,null,2)}
+              </pre>
+
+            </div>
+
+          )}
+
+
 
         </div>
 
