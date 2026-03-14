@@ -22,11 +22,13 @@ router.push("/dashboard")
 
 },[])
 
+
 async function handleLogin(e:any){
 
 e.preventDefault()
 
 setLoading(true)
+setError("")
 
 try{
 
@@ -58,8 +60,9 @@ localStorage.setItem("user",email)
 
 router.push("/dashboard")
 
-}catch{
+}catch(err){
 
+console.log(err)
 setError("Login failed")
 setLoading(false)
 
@@ -69,9 +72,12 @@ setLoading(false)
 
 return(
 
-<form onSubmit={handleLogin}>
+<div className="min-h-screen flex items-center justify-center">
+
+<form onSubmit={handleLogin} className="flex flex-col gap-4">
 
 <input
+type="email"
 value={email}
 onChange={(e)=>setEmail(e.target.value)}
 placeholder="Email"
@@ -85,12 +91,16 @@ placeholder="Password"
 />
 
 <button type="submit">
+
 {loading ? "Logging in..." : "Login"}
+
 </button>
 
 {error && <p>{error}</p>}
 
 </form>
+
+</div>
 
 )
 
