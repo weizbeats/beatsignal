@@ -21,7 +21,7 @@ const [result,setResult] = useState<any[]>([])
 const [menuOpen,setMenuOpen] = useState(false)
 
 const [showPlans,setShowPlans] = useState(false)
-
+const [showNoCredits,setShowNoCredits] = useState(false)
 
 useEffect(()=>{
 
@@ -35,7 +35,6 @@ return
 }
 
 setUser(savedUser)
-
 loadUser(savedUser)
 
 },[])
@@ -126,12 +125,11 @@ const data = await res.json()
 
 if(data.error === "no_credits"){
 
-alert("No credits left. Please upgrade your plan.")
+setShowNoCredits(true)
 
 setLoading(false)
 
 return
-
 }
 
 if(Array.isArray(data)){
@@ -155,7 +153,9 @@ clearInterval(interval)
 setProgress(100)
 
 setTimeout(()=>{
+
 setLoading(false)
+
 },1200)
 
 }
@@ -165,7 +165,67 @@ return(
 
 <div className="w-full min-h-screen">
 
-{/* MODAL */}
+{/* NO CREDITS MODAL */}
+
+<AnimatePresence>
+
+{showNoCredits && (
+
+<motion.div
+initial={{opacity:0}}
+animate={{opacity:1}}
+exit={{opacity:0}}
+className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50"
+>
+
+<motion.div
+initial={{scale:0.9,opacity:0}}
+animate={{scale:1,opacity:1}}
+exit={{scale:0.9,opacity:0}}
+className="bg-[#111] p-10 rounded-xl w-[420px] text-center border border-[#1f1f1f]"
+>
+
+<h2 className="text-white text-2xl font-semibold mb-3">
+No credits left
+</h2>
+
+<p className="text-gray-400 mb-6">
+You have used all your scans.  
+Upgrade your plan to continue scanning.
+</p>
+
+<div className="flex gap-4 justify-center">
+
+<button
+onClick={()=>{
+setShowNoCredits(false)
+setShowPlans(true)
+}}
+className="bg-[#14E6C3] text-black px-6 py-3 rounded-lg font-semibold hover:scale-105 transition"
+>
+Upgrade Plan
+</button>
+
+<button
+onClick={()=>setShowNoCredits(false)}
+className="border border-white/10 text-white px-6 py-3 rounded-lg hover:bg-white/5"
+>
+Close
+</button>
+
+</div>
+
+</motion.div>
+
+</motion.div>
+
+)}
+
+</AnimatePresence>
+
+
+
+{/* PLANS MODAL */}
 
 <AnimatePresence>
 
@@ -324,10 +384,6 @@ className="flex items-center gap-2 text-sm text-gray-300 hover:text-white border
 Settings
 </button>
 
-<button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]">
-Billing
-</button>
-
 <button
 onClick={logout}
 className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#1b1b1b]"
@@ -388,66 +444,6 @@ Scan
 
 <div className="mb-12">
 <ScanProgress progress={progress}/>
-</div>
-
-)}
-
-{result.length > 0 && (
-
-<div className="grid md:grid-cols-2 gap-6 mt-10">
-
-{result.map((track:any,index:number)=>(
-
-<div
-key={index}
-className="flex gap-4 bg-black/40 border border-white/10 rounded-xl p-4 hover:border-[#14E6C3]"
->
-
-<img
-src={track.cover}
-className="w-20 h-20 rounded-lg object-cover"
-/>
-
-<div className="flex flex-col justify-between flex-1">
-
-<div>
-
-<h3 className="text-white font-semibold">
-{track.song}
-</h3>
-
-<p className="text-gray-400 text-sm">
-{track.artist}
-</p>
-
-</div>
-
-<div className="text-xs text-gray-500 mt-2">
-
-<p>
-Release: {track.release_date}
-</p>
-
-<p>
-ISRC: {track.isrc}
-</p>
-
-</div>
-
-</div>
-
-<a
-href={track.spotify_url}
-target="_blank"
-className="flex items-center justify-center bg-[#1DB954] hover:bg-[#1ed760] px-3 rounded-lg text-black text-sm font-semibold"
->
-Spotify
-</a>
-
-</div>
-
-))}
-
 </div>
 
 )}
