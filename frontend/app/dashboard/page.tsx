@@ -38,7 +38,11 @@ return(
 
 <TopBar/>
 
-<div className="flex-1 flex flex-col items-center justify-center px-6 -mt-24">
+{/* CONTENIDO PRINCIPAL */}
+
+<div className="w-full flex flex-col items-center px-6 pt-32">
+
+{/* TITLE */}
 
 <h1 className="
 text-6xl
@@ -58,6 +62,8 @@ BeatSignal
 <p className="text-sm text-white/60 mb-14">
 Detect stolen beats on YouTube
 </p>
+
+{/* SCAN BAR */}
 
 <div className="relative w-full max-w-5xl">
 
