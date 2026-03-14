@@ -1,59 +1,57 @@
 "use client"
 
+import { useCallback } from "react"
 import Particles from "react-tsparticles"
 import { loadFull } from "tsparticles"
 
 export default function BackgroundParticles(){
 
-  async function particlesInit(engine:any){
+  const particlesInit = useCallback(async (engine:any)=>{
     await loadFull(engine)
-  }
+  },[])
 
   return(
 
     <Particles
       id="tsparticles"
       init={particlesInit}
-      className="fixed inset-0 -z-10"
       options={{
-
-        background:{
-          color:"#050505"
-        },
+        background:{color:"transparent"},
 
         fpsLimit:60,
 
         particles:{
-
           number:{
-            value:40
+            value:70,
+            density:{enable:true,area:800}
           },
 
-          color:{
-            value:"#22c55e"
-          },
+          color:{value:"#14E6C3"},
 
-          opacity:{
-            value:0.15
-          },
-
-          size:{
-            value:2
+          links:{
+            enable:true,
+            color:"#14E6C3",
+            distance:160,
+            opacity:0.15,
+            width:1
           },
 
           move:{
             enable:true,
-            speed:0.4,
-            direction:"none",
-            random:true,
-            outModes:{
-              default:"out"
-            }
+            speed:0.6
+          },
+
+          opacity:{
+            value:0.3
+          },
+
+          size:{
+            value:{min:1,max:3}
           }
-
         }
-
       }}
+
+      className="fixed top-0 left-0 w-full h-full -z-10"
     />
 
   )

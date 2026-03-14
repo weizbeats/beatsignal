@@ -1,22 +1,19 @@
 import "./globals.css"
 import BackgroundParticles from "@/components/BackgroundParticles"
 
-export const metadata = {
-  title: "BeatSignal",
-  description: "Detect stolen beats on YouTube"
-}
+export default function RootLayout({
+  children,
+}:{
+  children: React.ReactNode
+}){
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-
-  return (
+  return(
 
     <html lang="en">
 
-      <body>
+      <body className="bg-black text-white">
 
-        <BackgroundParticles />
-
-        <div className="bg-glow"></div>
+        <BackgroundParticles/>
 
         {children}
 
