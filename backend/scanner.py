@@ -6,6 +6,7 @@ import uuid
 from engines.acrcloud_engine import recognize_audio
 
 TEMP_FOLDER = "temp"
+COOKIES_FILE = "cookies.txt"
 
 
 def scan_url(url):
@@ -25,7 +26,14 @@ def scan_url(url):
         "format": "bestaudio/best",
         "outtmpl": audio_file,
         "quiet": True,
-        "noplaylist": True
+        "noplaylist": True,
+
+        # evita bloqueos de YouTube
+        "cookiefile": COOKIES_FILE,
+
+        "http_headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
     }
 
     try:
@@ -36,7 +44,13 @@ def scan_url(url):
 
             downloaded_file = ydl.prepare_filename(info)
 
-        print("✅ Audio downloaded")
+        print("✅ Audio downloaded:", downloaded_file)
+
+        if not os.path.exists(downloaded_file):
+
+            print("🚨 Download failed")
+
+            return []
 
         print("2️⃣ Creating 20 second sample...")
 
@@ -60,7 +74,7 @@ def scan_url(url):
 
             return []
 
-        print("✅ Sample ready")
+        print("✅ Sample ready:", sample_file)
 
         print("3️⃣ Sending audio to ACRCloud...")
 
@@ -68,9 +82,34 @@ def scan_url(url):
 
         print("✅ Recognition finished")
 
+        # =========================
+        # REMOVE DUPLICATES
+        # =========================
+
+        unique_matches = []
+        seen = set()
+
+        for track in matches:
+
+            try:
+
+                key = (track["song"], track["artist"])
+
+                if key not in seen:
+
+                    seen.add(key)
+
+                    unique_matches.append(track)
+
+            except:
+
+                continue
+
+        matches = unique_matches
+
         if matches:
 
-            print(f"🎵 Matches found: {len(matches)}")
+            print(f"🎵 Unique matches found: {len(matches)}")
 
         else:
 
@@ -96,6 +135,6 @@ def scan_url(url):
 
     except Exception as e:
 
-        print("🚨 SCAN ERROR:", e)
+        print("🚨 SCAN ERROR:", str(e))
 
         return []

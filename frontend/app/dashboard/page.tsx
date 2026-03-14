@@ -6,350 +6,254 @@ import ScanProgress from "../../components/ScanProgress"
 
 export default function Dashboard(){
 
-  const router = useRouter()
+const router = useRouter()
 
-  const [url,setUrl] = useState("")
-  const [loading,setLoading] = useState(false)
-  const [progress,setProgress] = useState(0)
-  const [user,setUser] = useState("")
-  const [result,setResult] = useState<any>(null)
+const [url,setUrl] = useState("")
+const [loading,setLoading] = useState(false)
+const [progress,setProgress] = useState(0)
+const [user,setUser] = useState("")
+const [result,setResult] = useState<any[]>([])
 
-  useEffect(()=>{
+useEffect(()=>{
 
-    const savedUser = localStorage.getItem("user")
+const savedUser = localStorage.getItem("user")
 
-    if(savedUser){
-      setUser(savedUser)
-    }
+if(savedUser){
+setUser(savedUser)
+}
 
-  },[])
+},[])
 
+function logout(){
 
-  function logout(){
+localStorage.removeItem("session")
+localStorage.removeItem("user")
 
-    localStorage.removeItem("session")
-    localStorage.removeItem("user")
+router.push("/login")
 
-    router.push("/login")
+}
 
-  }
+async function handleScan(){
 
+if(!url) return
 
-  async function handleScan(){
+setLoading(true)
+setProgress(0)
+setResult([])
 
-    if(!url) return
+let fakeProgress = 0
 
-    setLoading(true)
-    setProgress(0)
-    setResult(null)
+const interval = setInterval(()=>{
 
-    let fakeProgress = 0
+fakeProgress += 8
 
-    const interval = setInterval(()=>{
+if(fakeProgress > 95) return
 
-      fakeProgress += 8
+setProgress(fakeProgress)
 
-      if(fakeProgress > 95) return
+},400)
 
-      setProgress(fakeProgress)
+try{
 
-    },400)
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
-    try{
+const res = await fetch(apiUrl + "/scan",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({url})
+})
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL
+const data = await res.json()
 
-      const res = await fetch(apiUrl + "/scan",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({url})
-      })
+console.log("SCAN RESULT:",data)
 
-      const data = await res.json()
+if(Array.isArray(data)){
+setResult(data)
+}else if(data.results){
+setResult(data.results)
+}else{
+setResult([])
+}
 
-      setResult(data)
+}catch(e){
 
-    }catch(e){
+console.log(e)
 
-      console.log(e)
+}
 
-    }
+clearInterval(interval)
 
-    clearInterval(interval)
+setProgress(100)
 
-    setProgress(100)
+setTimeout(()=>{
+setLoading(false)
+},1200)
 
-    setTimeout(()=>{
-      setLoading(false)
-    },1200)
+}
 
-  }
+return(
 
+<div className="w-full min-h-screen">
 
-  return(
+{/* TOP BAR */}
 
-    <div className="w-full min-h-screen">
+<div className="flex justify-between items-center px-10 pt-8">
 
+<div className="text-sm text-[#14E6C3] font-medium">
+Plan: Free
+</div>
 
-      {/* TOP BAR */}
+<div className="flex items-center gap-4">
 
-      <div className="flex justify-between items-center px-10 pt-8">
+<p className="text-gray-300 text-sm">
+{user}
+</p>
 
-        <div className="text-sm text-[#14E6C3] font-medium">
-          Plan: Free
-        </div>
+<button
+onClick={logout}
+className="text-sm text-gray-400 hover:text-white border border-white/10 px-4 py-1 rounded-md transition"
+>
+Logout
+</button>
 
-        <div className="flex items-center gap-4">
+</div>
 
-          <p className="text-gray-300 text-sm">
-            {user}
-          </p>
+</div>
 
-          <button
-            onClick={logout}
-            className="
-            text-sm
-            text-gray-400
-            hover:text-white
-            border border-white/10
-            px-4 py-1 rounded-md
-            transition
-            "
-          >
-            Logout
-          </button>
+<div className="w-full flex justify-center">
 
-        </div>
+<div className="w-full max-w-5xl px-8 py-16">
 
-      </div>
+{/* TITLE */}
 
+<div className="text-center mb-14">
 
+<h1 className="text-5xl font-semibold mb-3 bg-gradient-to-r from-white to-[#14E6C3] bg-clip-text text-transparent">
+BeatSignal
+</h1>
 
-      <div className="w-full flex justify-center">
+<p className="text-gray-400">
+Detect stolen beats on YouTube
+</p>
 
-        <div className="w-full max-w-5xl px-8 py-16">
+</div>
 
+{/* SEARCH BAR */}
 
-          {/* TITLE */}
+<div className="relative bg-[#0b0b0b]/70 backdrop-blur-md border border-[#14E6C3]/20 rounded-xl p-6 mb-8 shadow-[0_0_40px_rgba(20,230,195,0.08)]">
 
-          <div className="text-center mb-14">
+<div className="flex gap-4">
 
-            <h1 className="
-            text-5xl font-semibold mb-3
-            bg-gradient-to-r
-            from-white
-            to-[#14E6C3]
-            bg-clip-text
-            text-transparent
-            ">
-              BeatSignal
-            </h1>
+<input
+placeholder="Paste YouTube link..."
+value={url}
+onChange={(e)=>setUrl(e.target.value)}
+className="flex-1 bg-black/40 border border-white/10 text-white p-4 rounded-lg outline-none focus:border-[#14E6C3] focus:shadow-[0_0_20px_rgba(20,230,195,0.35)] transition"
+/>
 
-            <p className="text-gray-400">
-              Detect stolen beats on YouTube
-            </p>
+<button
+onClick={handleScan}
+className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black font-semibold px-6 rounded-lg hover:scale-105 hover:shadow-[0_0_25px_rgba(20,230,195,0.6)] transition"
+>
+Scan
+</button>
 
-          </div>
+</div>
 
+</div>
 
+{/* PROGRESS */}
 
-          {/* SCAN BAR */}
+{loading && (
 
-          <div className="
-          relative
-          bg-[#0b0b0b]/70
-          backdrop-blur-md
-          border border-[#14E6C3]/20
-          rounded-xl
-          p-6
-          mb-8
-          shadow-[0_0_40px_rgba(20,230,195,0.08)]
-          ">
+<div className="mb-12">
+<ScanProgress progress={progress}/>
+</div>
 
-            <div className="flex gap-4">
+)}
 
-              <input
-                placeholder="Paste YouTube link..."
-                value={url}
-                onChange={(e)=>setUrl(e.target.value)}
-                className="
-                flex-1
-                bg-black/40
-                border border-white/10
-                text-white
-                p-4
-                rounded-lg
-                outline-none
+{/* RESULTS */}
 
-                focus:border-[#14E6C3]
-                focus:shadow-[0_0_20px_rgba(20,230,195,0.35)]
+<div className="bg-[#0b0b0b]/80 backdrop-blur-md border border-white/5 rounded-xl p-6">
 
-                transition
-                "
-              />
+<h2 className="text-white mb-6 text-xl">
+Detected Tracks
+</h2>
 
-              <button
-                onClick={handleScan}
-                className="
-                bg-[#14E6C3]
-                hover:bg-[#0FD4B5]
-                text-black
-                font-semibold
-                px-6
-                rounded-lg
+{result.length === 0 && !loading && (
 
-                hover:scale-105
-                hover:shadow-[0_0_25px_rgba(20,230,195,0.6)]
+<p className="text-gray-500">
+No matches found for this track
+</p>
 
-                transition
-                "
-              >
-                Scan
-              </button>
+)}
 
-            </div>
+<div className="grid md:grid-cols-2 gap-6">
 
-          </div>
+{result.map((track:any,index:number)=>(
 
+<div
+key={index}
+className="flex gap-4 bg-black/40 border border-white/10 rounded-xl p-4 hover:border-[#14E6C3] hover:shadow-[0_0_20px_rgba(20,230,195,0.2)] transition"
+>
 
+<img
+src={track.cover}
+className="w-20 h-20 rounded-lg object-cover"
+/>
 
-          {/* PROGRESS */}
+<div className="flex flex-col justify-between flex-1">
 
-          {loading && (
+<div>
 
-            <div className="mb-12">
+<h3 className="text-white font-semibold">
+{track.song}
+</h3>
 
-              <ScanProgress progress={progress}/>
+<p className="text-gray-400 text-sm">
+{track.artist}
+</p>
 
-            </div>
+</div>
 
-          )}
+<div className="text-xs text-gray-500 mt-2">
 
+<p>
+Release: {track.release_date}
+</p>
 
+<p>
+ISRC: {track.isrc}
+</p>
 
-          {/* RESULT */}
+</div>
 
-          {result && (
+</div>
 
-            <div
-            className="
-            bg-[#0b0b0b]/80
-            backdrop-blur-md
-            border border-white/5
-            rounded-xl
-            p-6
-            ">
+<a
+href={track.spotify_url}
+target="_blank"
+className="flex items-center justify-center bg-[#1DB954] hover:bg-[#1ed760] px-3 rounded-lg text-black text-sm font-semibold transition"
+>
+Spotify
+</a>
 
-              <h2 className="text-white mb-6 text-xl">
-                Detected Tracks
-              </h2>
+</div>
 
+))}
 
-              <div className="grid md:grid-cols-2 gap-6">
+</div>
 
-                {result.map((track:any,index:number)=>(
+</div>
 
-                  <div
-                  key={index}
-                  className="
-                  flex
-                  gap-4
-                  bg-black/40
-                  border border-white/10
-                  rounded-xl
-                  p-4
-                  hover:border-[#14E6C3]
-                  hover:shadow-[0_0_20px_rgba(20,230,195,0.2)]
-                  transition
-                  ">
+</div>
 
-                    {/* COVER */}
+</div>
 
-                    <img
-                    src={track.cover}
-                    className="
-                    w-20
-                    h-20
-                    rounded-lg
-                    object-cover
-                    "
-                    />
+</div>
 
-
-                    {/* INFO */}
-
-                    <div className="flex flex-col justify-between flex-1">
-
-                      <div>
-
-                        <h3 className="text-white font-semibold">
-                          {track.song}
-                        </h3>
-
-                        <p className="text-gray-400 text-sm">
-                          {track.artist}
-                        </p>
-
-                      </div>
-
-
-                      <div className="text-xs text-gray-500 mt-2">
-
-                        <p>
-                          Release: {track.release_date}
-                        </p>
-
-                        <p>
-                          ISRC: {track.isrc}
-                        </p>
-
-                      </div>
-
-                    </div>
-
-
-                    {/* SPOTIFY */}
-
-                    <a
-                    href={track.spotify_url}
-                    target="_blank"
-                    className="
-                    flex
-                    items-center
-                    justify-center
-                    bg-[#1DB954]
-                    hover:bg-[#1ed760]
-                    px-3
-                    rounded-lg
-                    text-black
-                    text-sm
-                    font-semibold
-                    transition
-                    "
-                    >
-                      Spotify
-                    </a>
-
-                  </div>
-
-                ))}
-
-              </div>
-
-            </div>
-
-          )}
-
-
-
-        </div>
-
-      </div>
-
-    </div>
-
-  )
+)
 
 }

@@ -13,14 +13,11 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
 BACKEND_LOCAL = "http://127.0.0.1:8000"
-BACKEND_ONLINE = "https://beatsignal-api.onrender.com"
+BACKEND_ONLINE = "https://beatsignal-production.up.railway.app"
 
 FRONTEND_LOCAL = "http://localhost:3000"
 FRONTEND_ONLINE = "https://beatsignal-2uec.vercel.app"
 
-NETLIFY = "https://app.netlify.com"
-VERCEL = "https://vercel.com/dashboard"
-GITHUB = "https://github.com"
 ACRCLOUD = "https://console.acrcloud.com"
 
 backend_process = None
@@ -45,7 +42,7 @@ def check_port(port):
 def check_url(url):
 
     try:
-        r = requests.get(url, timeout=2)
+        r = requests.get(url, timeout=3)
         return r.status_code == 200
     except:
         return False
@@ -62,36 +59,26 @@ def check_ytdlp():
 def check_acrcloud():
 
     try:
-        r = requests.get(ACRCLOUD, timeout=2)
+        r = requests.get(ACRCLOUD, timeout=3)
         return r.status_code == 200
     except:
         return False
 
 
 # =========================
-# USERS
+# LOG
 # =========================
 
-def get_registered_users():
+def log(text):
 
-    try:
-        r = requests.get(f"{BACKEND_LOCAL}/stats/users", timeout=2)
-        return r.json()["registered_users"]
-    except:
-        return 0
+    timestamp = time.strftime("%H:%M:%S")
 
-
-def get_online_users():
-
-    try:
-        r = requests.get(f"{BACKEND_LOCAL}/stats/online", timeout=2)
-        return r.json()["online_users"]
-    except:
-        return 0
+    log_box.insert("end", f"[{timestamp}] {text}\n")
+    log_box.see("end")
 
 
 # =========================
-# STATUS UI
+# STATUS
 # =========================
 
 def set_status(label, ok, ok_text, fail_text):
@@ -101,10 +88,6 @@ def set_status(label, ok, ok_text, fail_text):
     else:
         label.configure(text=f"● {fail_text}", text_color="#ef4444")
 
-
-# =========================
-# STATUS THREAD
-# =========================
 
 def update_status_thread():
 
@@ -120,9 +103,6 @@ def update_status_thread():
             ytdlp = check_ytdlp()
             acrcloud = check_acrcloud()
 
-            users = get_registered_users()
-            online = get_online_users()
-
             app.after(0, lambda: set_status(frontend_status, frontend, "ONLINE", "OFFLINE"))
             app.after(0, lambda: set_status(backend_online_status, backend_online, "ONLINE", "OFFLINE"))
             app.after(0, lambda: set_status(backend_local_status, backend_local, "ONLINE", "OFFLINE"))
@@ -131,9 +111,6 @@ def update_status_thread():
             app.after(0, lambda: set_status(ytdlp_status, ytdlp, "OK", "MISSING"))
             app.after(0, lambda: set_status(acrcloud_status, acrcloud, "OK", "FAIL"))
 
-            app.after(0, lambda: registered_users.configure(text=str(users)))
-            app.after(0, lambda: online_users.configure(text=str(online)))
-
         except:
             pass
 
@@ -141,15 +118,64 @@ def update_status_thread():
 
 
 # =========================
-# LOG
+# TEST PIPELINE
 # =========================
 
-def log(text):
+def test_scan_pipeline():
 
-    timestamp = time.strftime("%H:%M:%S")
+    def run():
 
-    log_box.insert("end", f"[{timestamp}] {text}\n")
-    log_box.see("end")
+        log("===== SCAN PIPELINE TEST =====")
+
+        try:
+
+            r = requests.get(BACKEND_ONLINE + "/docs", timeout=5)
+
+            if r.status_code == 200:
+                log("✔ Backend reachable")
+            else:
+                log("❌ Backend not responding")
+                return
+
+        except Exception as e:
+
+            log("❌ Backend connection failed")
+            log(str(e))
+            return
+
+        log("Testing YouTube download...")
+
+        try:
+
+            test_video = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+            r = requests.post(
+                BACKEND_ONLINE + "/scan",
+                json={"url": test_video},
+                timeout=30
+            )
+
+            if r.status_code == 200:
+
+                data = r.json()
+
+                if data == []:
+                    log("⚠ Scan returned empty result")
+                else:
+                    log("✔ Scan returned matches")
+
+            else:
+
+                log("❌ Scan request failed")
+
+        except Exception as e:
+
+            log("❌ Scan test crashed")
+            log(str(e))
+
+        log("===== TEST COMPLETE =====")
+
+    threading.Thread(target=run).start()
 
 
 # =========================
@@ -192,27 +218,27 @@ def start_backend():
 
 
 # =========================
-# DEPLOY
+# REDEPLOY FUNCTIONS
 # =========================
 
-def deploy_backend():
+def redeploy_backend():
 
     def run():
 
         try:
 
-            log("Deploying backend...")
+            log("Redeploying backend...")
 
-            subprocess.run(["git", "add", "."])
-            subprocess.run(["git", "commit", "-m", "backend deploy"])
-            subprocess.run(["git", "push"])
+            subprocess.run(["git", "add", "."], check=True)
+            subprocess.run(["git", "commit", "-m", "backend redeploy"], check=True)
+            subprocess.run(["git", "push"], check=True)
 
             log("Backend pushed to GitHub")
-            log("Render will redeploy")
+            log("Railway redeploy started")
 
         except Exception as e:
 
-            log("Deploy failed")
+            log("Backend redeploy failed")
             log(str(e))
 
     threading.Thread(target=run).start()
@@ -226,16 +252,16 @@ def redeploy_frontend():
 
             log("Redeploying frontend...")
 
-            subprocess.run(["git", "add", "."])
-            subprocess.run(["git", "commit", "-m", "frontend redeploy"])
-            subprocess.run(["git", "push"])
+            subprocess.run(["git", "add", "."], check=True)
+            subprocess.run(["git", "commit", "-m", "frontend redeploy"], check=True)
+            subprocess.run(["git", "push"], check=True)
 
-            log("Frontend pushed")
+            log("Frontend pushed to GitHub")
             log("Vercel redeploy started")
 
         except Exception as e:
 
-            log("Redeploy failed")
+            log("Frontend redeploy failed")
             log(str(e))
 
     threading.Thread(target=run).start()
@@ -257,7 +283,7 @@ app = ctk.CTk()
 
 app.title("BeatSignal Control Center")
 
-app.geometry("800x700")
+app.geometry("900x720")
 
 
 title = ctk.CTkLabel(
@@ -266,7 +292,7 @@ title = ctk.CTkLabel(
     font=ctk.CTkFont(size=28, weight="bold")
 )
 
-title.pack(pady=25)
+title.pack(pady=20)
 
 
 # =========================
@@ -276,9 +302,8 @@ title.pack(pady=25)
 links_frame = ctk.CTkFrame(app)
 links_frame.pack(pady=10)
 
-
 button_style = {
-    "width": 140,
+    "width": 150,
     "height": 36,
     "fg_color": "#1f2937",
     "hover_color": "#374151"
@@ -287,58 +312,26 @@ button_style = {
 
 ctk.CTkButton(
     links_frame,
-    text="OPEN FRONTEND LOCAL",
-    command=lambda: open_url(FRONTEND_LOCAL),
+    text="OPEN FRONTEND",
+    command=lambda: open_url(FRONTEND_ONLINE),
     **button_style
 ).grid(row=0, column=0, padx=8, pady=8)
 
 
 ctk.CTkButton(
     links_frame,
-    text="OPEN FRONTEND ONLINE",
-    command=lambda: open_url(FRONTEND_ONLINE),
+    text="OPEN API",
+    command=lambda: open_url(BACKEND_ONLINE),
     **button_style
 ).grid(row=0, column=1, padx=8)
 
 
 ctk.CTkButton(
     links_frame,
-    text="LOCAL API",
-    command=lambda: open_url(BACKEND_LOCAL),
+    text="ACRCLOUD",
+    command=lambda: open_url(ACRCLOUD),
     **button_style
 ).grid(row=0, column=2, padx=8)
-
-
-ctk.CTkButton(
-    links_frame,
-    text="ONLINE API",
-    command=lambda: open_url(BACKEND_ONLINE),
-    **button_style
-).grid(row=1, column=0, padx=8, pady=8)
-
-
-ctk.CTkButton(
-    links_frame,
-    text="NETLIFY",
-    command=lambda: open_url(NETLIFY),
-    **button_style
-).grid(row=1, column=1, padx=8)
-
-
-ctk.CTkButton(
-    links_frame,
-    text="VERCEL",
-    command=lambda: open_url(VERCEL),
-    **button_style
-).grid(row=1, column=2, padx=8)
-
-
-ctk.CTkButton(
-    links_frame,
-    text="GITHUB",
-    command=lambda: open_url(GITHUB),
-    **button_style
-).grid(row=2, column=1, padx=8, pady=8)
 
 
 # =========================
@@ -346,7 +339,7 @@ ctk.CTkButton(
 # =========================
 
 status_frame = ctk.CTkFrame(app)
-status_frame.pack(pady=25)
+status_frame.pack(pady=20)
 
 
 def status_row(parent, name, row):
@@ -369,65 +362,43 @@ acrcloud_status = status_row(status_frame, "ACRCloud", 5)
 
 
 # =========================
-# USERS
-# =========================
-
-users_frame = ctk.CTkFrame(app)
-users_frame.pack(pady=15)
-
-
-ctk.CTkLabel(users_frame, text="Registered Users").grid(row=0, column=0, padx=30)
-
-registered_users = ctk.CTkLabel(
-    users_frame,
-    text="0",
-    font=ctk.CTkFont(size=18, weight="bold")
-)
-
-registered_users.grid(row=1, column=0)
-
-
-ctk.CTkLabel(users_frame, text="Online Users").grid(row=0, column=1, padx=30)
-
-online_users = ctk.CTkLabel(
-    users_frame,
-    text="0",
-    font=ctk.CTkFont(size=18, weight="bold")
-)
-
-online_users.grid(row=1, column=1)
-
-
-# =========================
 # CONTROLS
 # =========================
 
 controls = ctk.CTkFrame(app)
-controls.pack(pady=20)
+controls.pack(pady=15)
 
 
 ctk.CTkButton(
     controls,
     text="START BACKEND",
-    **button_style,
-    command=start_backend
-).grid(row=0, column=0, padx=10, pady=10)
+    command=start_backend,
+    **button_style
+).grid(row=0, column=0, padx=10)
 
 
 ctk.CTkButton(
     controls,
-    text="DEPLOY BACKEND",
-    **button_style,
-    command=deploy_backend
+    text="TEST SCAN PIPELINE",
+    command=test_scan_pipeline,
+    **button_style
 ).grid(row=0, column=1, padx=10)
 
 
 ctk.CTkButton(
     controls,
+    text="REDEPLOY BACKEND",
+    command=redeploy_backend,
+    **button_style
+).grid(row=1, column=0, padx=10, pady=10)
+
+
+ctk.CTkButton(
+    controls,
     text="REDEPLOY FRONTEND",
-    **button_style,
-    command=redeploy_frontend
-).grid(row=0, column=2, padx=10)
+    command=redeploy_frontend,
+    **button_style
+).grid(row=1, column=1, padx=10, pady=10)
 
 
 # =========================
