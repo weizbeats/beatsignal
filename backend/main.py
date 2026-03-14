@@ -9,6 +9,7 @@ import os
 import time
 
 from scanner import scan_url
+from paypal_service import create_order
 
 app = FastAPI()
 
@@ -43,7 +44,7 @@ def get_online_users():
 
 
 # =========================
-# Crear archivo usuarios
+# CREATE USERS FILE
 # =========================
 
 if not os.path.exists(USERS_FILE):
@@ -92,7 +93,9 @@ def register(data: dict):
 
     users.append({
         "email": email,
-        "password": password
+        "password": password,
+        "plan": "free",
+        "credits": 10
     })
 
     save_users(users)
@@ -118,7 +121,9 @@ def login(data: dict):
 
             return {
                 "success": True,
-                "email": email
+                "email": email,
+                "plan": user.get("plan","free"),
+                "credits": user.get("credits",0)
             }
 
     return {"success": False}
@@ -177,3 +182,31 @@ def scan(data: dict):
         return {"results": []}
 
     return scan_url(url)
+
+
+# =========================
+# PAYPAL CREATE ORDER
+# =========================
+
+@app.post("/create-paypal-order")
+def create_paypal_order(data: dict):
+
+    plan = data.get("plan")
+
+    if plan == "50":
+        price = "2.49"
+
+    elif plan == "100":
+        price = "4.99"
+
+    elif plan == "unlimited":
+        price = "9.99"
+
+    else:
+        return {"error": "invalid plan"}
+
+    order_id = create_order(price)
+
+    return {
+        "orderID": order_id
+    }
