@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 import os
@@ -164,7 +164,7 @@ If you didn't create this account you can ignore this email.
 
 @limiter.limit("5/minute")
 @app.post("/register")
-def register(data: dict):
+def register(request: Request, data: dict):
 
     email = data.get("email")
     password = data.get("password")
@@ -222,7 +222,7 @@ def register(data: dict):
 
 @limiter.limit("3/minute")
 @app.post("/resend-verification")
-def resend_verification(data: dict):
+def resend_verification(request: Request, data: dict):
 
     email = data.get("email")
 
@@ -276,7 +276,7 @@ def verify_email(token: str):
 
 @limiter.limit("10/minute")
 @app.post("/login")
-def login(data: dict):
+def login(request: Request, data: dict):
 
     email = data.get("email")
     password = data.get("password")

@@ -1,63 +1,21 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense } from "react"
+import VerifyContent from "./verifyContent"
 
-export default function Verify(){
+export default function VerifyPage(){
 
-const router = useRouter()
-const searchParams = useSearchParams()
+return(
 
-const token = searchParams.get("token")
+<Suspense fallback={<Loading/>}>
+<VerifyContent/>
+</Suspense>
 
-const [status,setStatus] = useState("Verifying your account...")
-
-useEffect(()=>{
-
-if(!token){
-
-setStatus("Invalid verification link")
-return
-
-}
-
-async function verify(){
-
-try{
-
-const res = await fetch(
-`${process.env.NEXT_PUBLIC_API_URL}/verify-email?token=${token}`
 )
 
-const data = await res.json()
-
-if(data.success){
-
-setStatus("Account verified! Redirecting to login...")
-
-setTimeout(()=>{
-
-router.push("/")
-
-},2000)
-
-}else{
-
-setStatus("Verification failed")
-
 }
 
-}catch{
-
-setStatus("Server error")
-
-}
-
-}
-
-verify()
-
-},[])
+function Loading(){
 
 return(
 
@@ -83,7 +41,7 @@ Beat<span className="text-[#14E6C3]">Signal</span>
 <div className="w-6 h-6 border-2 border-[#14E6C3] border-t-transparent rounded-full animate-spin"></div>
 
 <p className="text-sm text-white/70 text-center">
-{status}
+Verifying your account...
 </p>
 
 </div>
