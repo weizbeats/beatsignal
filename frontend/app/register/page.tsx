@@ -11,6 +11,25 @@ const [email,setEmail] = useState("")
 const [password,setPassword] = useState("")
 const [error,setError] = useState("")
 const [loading,setLoading] = useState(false)
+const [status,setStatus] = useState("")
+
+
+function validate(){
+
+if(!email.includes("@")){
+setError("Invalid email")
+return false
+}
+
+if(password.length < 6){
+setError("Password must be at least 6 characters")
+return false
+}
+
+return true
+
+}
+
 
 async function handleRegister(e:any){
 
@@ -19,7 +38,12 @@ e.preventDefault()
 if(loading) return
 
 setError("")
+setStatus("")
+
+if(!validate()) return
+
 setLoading(true)
+setStatus("Creating account...")
 
 try{
 
@@ -36,11 +60,16 @@ const data = await res.json()
 
 if(!data.success){
 
-if(data.error==="email_exists") setError("Email already registered")
-else setError("Registration failed")
+if(data.error==="email_exists"){
+setError("Email already registered")
+}else{
+setError("Registration failed")
+}
 
 setLoading(false)
+setStatus("")
 return
+
 }
 
 localStorage.setItem("token",data.token)
@@ -52,10 +81,13 @@ router.push("/dashboard")
 
 setError("Server error")
 setLoading(false)
+setStatus("")
 
 }
 
 }
+
+
 
 return(
 
@@ -86,6 +118,7 @@ Start using BeatSignal
 <p className="text-xs text-center text-[#14E6C3] mb-3">
 Free trial includes 5 scans
 </p>
+
 
 <input
 placeholder="Email"
@@ -122,11 +155,23 @@ transition
 "
 />
 
+
 {error && (
-<p className="text-red-400 text-sm text-center">
+
+<p className="text-red-400 text-sm text-center animate-pulse">
 {error}
 </p>
+
 )}
+
+{status && (
+
+<p className="text-[#14E6C3] text-xs text-center">
+{status}
+</p>
+
+)}
+
 
 <button
 disabled={loading}
@@ -140,13 +185,13 @@ ${loading
 >
 
 {loading ? (
-<>
+
 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-Creating...
-</>
+
 ) : "Create account"}
 
 </button>
+
 
 <p
 className="text-sm text-white/50 text-center cursor-pointer hover:text-white transition"

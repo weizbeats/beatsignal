@@ -1,22 +1,37 @@
 "use client"
 
 import { useState,useEffect } from "react"
+import { useRouter } from "next/navigation"
 import TopBar from "@/components/TopBar"
 
 export default function Dashboard(){
 
-const [url,setUrl]=useState("")
-const [results,setResults]=useState<any[]>([])
-const [loading,setLoading]=useState(false)
-const [progress,setProgress]=useState(0)
+const router = useRouter()
+
+const [url,setUrl] = useState("")
+const [results,setResults] = useState<any[]>([])
+const [loading,setLoading] = useState(false)
+const [progress,setProgress] = useState(0)
+const [authChecked,setAuthChecked] = useState(false)
+
+
+
+/* AUTH CHECK */
 
 useEffect(()=>{
 
-const token=localStorage.getItem("token")
+const token =
+localStorage.getItem("token") ||
+sessionStorage.getItem("token")
 
 if(!token){
-window.location.href="/"
+
+router.push("/")
+return
+
 }
+
+setAuthChecked(true)
 
 },[])
 
@@ -53,12 +68,18 @@ return ()=>clearInterval(interval)
 
 async function handleScan(){
 
-const token=localStorage.getItem("token")
+if(loading) return
+
+const token =
+localStorage.getItem("token") ||
+sessionStorage.getItem("token")
 
 setLoading(true)
 setResults([])
 
-const res=await fetch(
+try{
+
+const res = await fetch(
 `${process.env.NEXT_PUBLIC_API_URL}/scan`,
 {
 method:"POST",
@@ -67,14 +88,21 @@ body:JSON.stringify({url,token})
 }
 )
 
-const data=await res.json()
+const data = await res.json()
 
 setProgress(100)
-setLoading(false)
 
 if(data.results){
 setResults(data.results)
 }
+
+}catch(e){
+
+console.error(e)
+
+}
+
+setLoading(false)
 
 }
 
@@ -89,7 +117,12 @@ if(progress < 80) return `Matching tracks worldwide... ${progress}%`
 if(progress < 100) return `Finalizing results... ${progress}%`
 
 return `Match found`
+
 }
+
+
+
+if(!authChecked) return null
 
 
 
@@ -125,14 +158,22 @@ Detect stolen beats on YouTube
 value={url}
 onChange={(e)=>setUrl(e.target.value)}
 placeholder="Paste YouTube link"
-className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white outline-none focus:border-[#14E6C3]"
+disabled={loading}
+className={`flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white outline-none transition
+${loading ? "opacity-50 cursor-not-allowed" : "focus:border-[#14E6C3]"}
+`}
 />
 
 <button
 onClick={handleScan}
-className="ml-3 bg-[#14E6C3] text-black px-8 py-2.5 rounded-lg font-medium hover:scale-105 hover:shadow-[0_0_20px_rgba(20,230,195,0.7)] transition"
+disabled={loading}
+className={`ml-3 px-8 py-2.5 rounded-lg font-medium transition
+${loading
+? "bg-[#14E6C3]/60 text-black cursor-not-allowed"
+: "bg-[#14E6C3] text-black hover:scale-105 hover:shadow-[0_0_20px_rgba(20,230,195,0.7)]"}
+`}
 >
-Scan
+{loading ? "Scanning..." : "Scan"}
 </button>
 
 </div>
@@ -185,9 +226,6 @@ key={i}
 className="relative group flex gap-4 bg-black/40 border border-white/10 rounded-lg p-4 backdrop-blur-xl transition hover:border-[#14E6C3] hover:shadow-[0_0_30px_rgba(20,230,195,0.25)] overflow-hidden"
 >
 
-
-{/* BLUR BACKGROUND */}
-
 {r.cover &&(
 
 <img
@@ -196,9 +234,6 @@ className="absolute inset-0 w-full h-full object-cover opacity-10 blur-3xl"
 />
 
 )}
-
-
-{/* COVER */}
 
 <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 z-10">
 
@@ -209,7 +244,7 @@ src={r.cover}
 className="w-full h-full object-cover"
 />
 
-):(
+):( 
 
 <div className="w-full h-full bg-black flex items-center justify-center text-white/40 text-xs">
 No Cover
@@ -220,9 +255,6 @@ No Cover
 </div>
 
 
-
-{/* INFO */}
-
 <div className="flex flex-col flex-1 z-10">
 
 <h2 className="text-lg text-white font-semibold leading-tight">
@@ -232,10 +264,6 @@ No Cover
 <p className="text-white/60 text-sm">
 {r.artist}
 </p>
-
-
-
-{/* CONFIDENCE BAR */}
 
 <div className="mt-2">
 
@@ -257,10 +285,6 @@ className="h-full bg-[#14E6C3] transition-all duration-700"
 
 </div>
 
-
-
-{/* META */}
-
 <div className="flex flex-wrap gap-3 mt-2 text-xs text-white/50">
 
 {r.release_date &&(
@@ -280,9 +304,6 @@ ISRC: {r.isrc}
 </div>
 
 
-
-{/* SPOTIFY */}
-
 {r.spotify_url &&(
 
 <a
@@ -290,7 +311,7 @@ href={r.spotify_url}
 target="_blank"
 className="self-center bg-[#14E6C3] text-black px-3 py-1.5 rounded-md text-xs font-medium hover:scale-105 hover:shadow-[0_0_15px_rgba(20,230,195,0.7)] transition z-10"
 >
-Spotify
+Open Spotify
 </a>
 
 )}
@@ -310,4 +331,5 @@ Spotify
 </div>
 
 )
+
 }

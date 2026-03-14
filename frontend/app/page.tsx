@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 export default function Login(){
@@ -9,8 +9,41 @@ const router = useRouter()
 
 const [email,setEmail] = useState("")
 const [password,setPassword] = useState("")
+const [remember,setRemember] = useState(false)
+
 const [error,setError] = useState("")
 const [loading,setLoading] = useState(false)
+const [status,setStatus] = useState("")
+
+/* AUTO LOGIN */
+
+useEffect(()=>{
+
+const token = localStorage.getItem("token")
+
+if(token){
+router.push("/dashboard")
+}
+
+},[])
+
+
+function validate(){
+
+if(!email.includes("@")){
+setError("Invalid email")
+return false
+}
+
+if(password.length < 6){
+setError("Password must be at least 6 characters")
+return false
+}
+
+return true
+
+}
+
 
 async function handleLogin(e:any){
 
@@ -19,7 +52,12 @@ e.preventDefault()
 if(loading) return
 
 setError("")
+setStatus("")
+
+if(!validate()) return
+
 setLoading(true)
+setStatus("Signing in...")
 
 try{
 
@@ -41,10 +79,21 @@ else if(data.error==="wrong_password") setError("Wrong password")
 else setError("Login failed")
 
 setLoading(false)
+setStatus("")
 return
+
 }
 
+if(remember){
+
 localStorage.setItem("token",data.token)
+
+}else{
+
+sessionStorage.setItem("token",data.token)
+
+}
+
 localStorage.setItem("user",email)
 
 router.push("/dashboard")
@@ -53,10 +102,13 @@ router.push("/dashboard")
 
 setError("Server error")
 setLoading(false)
+setStatus("")
 
 }
 
 }
+
+
 
 return(
 
@@ -87,6 +139,7 @@ Detect stolen beats on YouTube
 <p className="text-xs text-center text-[#14E6C3] mb-3">
 Login to continue
 </p>
+
 
 <input
 placeholder="Email"
@@ -123,11 +176,39 @@ transition
 "
 />
 
+
+{/* REMEMBER ME */}
+
+<label className="flex items-center gap-2 text-sm text-white/60">
+
+<input
+type="checkbox"
+checked={remember}
+onChange={()=>setRemember(!remember)}
+className="accent-[#14E6C3]"
+/>
+
+Remember me
+
+</label>
+
+
 {error && (
-<p className="text-red-400 text-sm text-center">
+
+<p className="text-red-400 text-sm text-center animate-pulse">
 {error}
 </p>
+
 )}
+
+{status && (
+
+<p className="text-[#14E6C3] text-xs text-center">
+{status}
+</p>
+
+)}
+
 
 <button
 type="submit"
@@ -142,13 +223,13 @@ ${loading
 >
 
 {loading ? (
-<>
+
 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-Loading...
-</>
+
 ) : "Login"}
 
 </button>
+
 
 <p
 className="text-sm text-white/50 text-center cursor-pointer hover:text-white transition"
