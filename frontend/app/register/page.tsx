@@ -6,128 +6,145 @@ import { motion } from "framer-motion"
 
 export default function RegisterPage(){
 
-  const router = useRouter()
+const router = useRouter()
 
-  const [email,setEmail] = useState("")
-  const [password,setPassword] = useState("")
-  const [error,setError] = useState("")
-  const [loading,setLoading] = useState(false)
+const [email,setEmail] = useState("")
+const [password,setPassword] = useState("")
+const [error,setError] = useState("")
+const [loading,setLoading] = useState(false)
 
-  async function handleRegister(e:any){
+async function handleRegister(e:any){
 
-    e.preventDefault()
+e.preventDefault()
 
-    setError("")
-    setLoading(true)
+if(!email || !password){
+setError("Please fill all fields")
+return
+}
 
-    try{
+if(password.length < 4){
+setError("Password must be at least 4 characters")
+return
+}
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/register`,
-        {
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
-          body:JSON.stringify({
-            email,
-            password
-          })
-        }
-      )
+setError("")
+setLoading(true)
 
-      const data = await res.json()
+try{
 
-      if(!data.success){
-        setError("Registration failed")
-        setLoading(false)
-        return
-      }
+const res = await fetch(
+`${process.env.NEXT_PUBLIC_API_URL}/register`,
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+password
+})
+}
+)
 
-      localStorage.setItem("session","true")
-      localStorage.setItem("user",email)
+const data = await res.json()
 
-      router.push("/dashboard")
+if(!data.success){
 
-    }catch(err){
+setError("Registration failed")
+setLoading(false)
+return
 
-      setError("Registration failed")
+}
 
-    }
+localStorage.setItem("session","true")
+localStorage.setItem("user",email)
 
-    setLoading(false)
+router.push("/dashboard")
 
-  }
+}catch(err){
 
-  return(
+setError("Registration failed")
 
-    <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
+}
 
-      <motion.div
-        initial={{opacity:0,y:40}}
-        animate={{opacity:1,y:0}}
-        transition={{duration:0.4}}
-        className="bg-[#111] w-[420px] p-10 rounded-2xl border border-[#1f1f1f] shadow-xl"
-      >
+setLoading(false)
 
-        <h1 className="text-white text-3xl font-semibold mb-2 text-center">
-          Create Account
-        </h1>
+}
 
-        <p className="text-gray-400 text-center mb-8 text-sm">
-          Start using BeatSignal
-        </p>
+return(
 
-        <form onSubmit={handleRegister}>
+<div className="min-h-screen flex items-center justify-center px-6">
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e)=>setEmail(e.target.value)}
-            className="w-full p-4 mb-4 rounded-lg bg-[#0b0b0b] border border-[#222] text-white focus:outline-none focus:border-[#3b82f6] transition"
-          />
+<motion.div
+initial={{opacity:0,y:40}}
+animate={{opacity:1,y:0}}
+transition={{duration:0.4}}
+className="w-full max-w-md bg-[#0b0b0b]/70 backdrop-blur-xl border border-white/10 rounded-2xl p-10 shadow-[0_0_60px_rgba(20,230,195,0.08)]"
+>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)}
-            className="w-full p-4 mb-6 rounded-lg bg-[#0b0b0b] border border-[#222] text-white focus:outline-none focus:border-[#3b82f6] transition"
-          />
+<h1 className="text-white text-3xl font-semibold mb-2 text-center">
+Create Account
+</h1>
 
-          {error && (
-            <p className="text-red-400 mb-4 text-sm">
-              {error}
-            </p>
-          )}
+<p className="text-gray-400 text-center mb-2 text-sm">
+Start using BeatSignal
+</p>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] transition p-4 rounded-lg text-white font-medium"
-          >
-            {loading ? "Creating account..." : "Create account"}
-          </button>
+<p className="text-xs text-gray-500 text-center mb-8">
+Free trial includes 5 scans
+</p>
 
-        </form>
+<form onSubmit={handleRegister}>
 
-        <p className="text-gray-400 text-sm mt-6 text-center">
-          Already have an account?
+<input
+type="email"
+placeholder="Email"
+value={email}
+onChange={(e)=>setEmail(e.target.value)}
+className="w-full p-4 mb-4 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#14E6C3]"
+/>
 
-          <span
-            onClick={()=>router.push("/")}
-            className="text-blue-400 cursor-pointer ml-2 hover:text-blue-300"
-          >
-            Login
-          </span>
+<input
+type="password"
+placeholder="Password"
+value={password}
+onChange={(e)=>setPassword(e.target.value)}
+className="w-full p-4 mb-6 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#14E6C3]"
+/>
 
-        </p>
+{error && (
+<p className="text-red-400 mb-4 text-sm">
+{error}
+</p>
+)}
 
-      </motion.div>
+<button
+type="submit"
+disabled={loading}
+className="w-full bg-[#14E6C3] hover:bg-[#0FD4B5] text-black font-semibold p-4 rounded-lg"
+>
+{loading ? "Creating account..." : "Create account"}
+</button>
 
-    </div>
+</form>
 
-  )
+<p className="text-gray-400 text-sm mt-6 text-center">
+
+Already have an account?
+
+<span
+onClick={()=>router.push("/")}
+className="text-[#14E6C3] cursor-pointer ml-2 hover:underline"
+>
+Login
+</span>
+
+</p>
+
+</motion.div>
+
+</div>
+
+)
 
 }

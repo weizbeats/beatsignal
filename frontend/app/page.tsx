@@ -28,6 +28,11 @@ async function handleLogin(e:any){
 
 e.preventDefault()
 
+if(!email || !password){
+setError("Please enter email and password")
+return
+}
+
 setError("")
 setLoading(true)
 
@@ -74,12 +79,6 @@ setLoading(false)
 
 }
 
-function loginGoogle(){
-
-alert("Google login coming soon")
-
-}
-
 return(
 
 <div className="min-h-screen flex items-center justify-center px-6">
@@ -91,8 +90,6 @@ transition={{duration:0.4}}
 className="w-full max-w-md bg-[#0b0b0b]/70 backdrop-blur-xl border border-white/10 rounded-2xl p-10 shadow-[0_0_60px_rgba(20,230,195,0.08)]"
 >
 
-{/* LOGO */}
-
 <div className="text-center mb-8">
 
 <h1 className="text-4xl font-semibold mb-2 bg-gradient-to-r from-white to-[#14E6C3] bg-clip-text text-transparent">
@@ -103,30 +100,11 @@ BeatSignal
 Detect stolen beats on YouTube
 </p>
 
-</div>
-
-{/* GOOGLE LOGIN */}
-
-<button
-onClick={loginGoogle}
-className="w-full mb-6 border border-white/10 text-white py-3 rounded-lg hover:bg-white/5 transition"
->
-Continue with Google
-</button>
-
-<div className="flex items-center gap-4 mb-6">
-
-<div className="h-[1px] bg-white/10 flex-1"></div>
-
-<p className="text-xs text-gray-500">
-OR
+<p className="text-xs text-gray-500 mt-2">
+Free trial includes 5 scans
 </p>
 
-<div className="h-[1px] bg-white/10 flex-1"></div>
-
 </div>
-
-{/* FORM */}
 
 <form onSubmit={handleLogin}>
 
@@ -135,7 +113,7 @@ type="email"
 placeholder="Email"
 value={email}
 onChange={(e)=>setEmail(e.target.value)}
-className="w-full p-4 mb-4 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#14E6C3] focus:shadow-[0_0_20px_rgba(20,230,195,0.35)] transition"
+className="w-full p-4 mb-4 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#14E6C3] focus:shadow-[0_0_20px_rgba(20,230,195,0.35)]"
 />
 
 <input
@@ -143,10 +121,8 @@ type="password"
 placeholder="Password"
 value={password}
 onChange={(e)=>setPassword(e.target.value)}
-className="w-full p-4 mb-4 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#14E6C3] focus:shadow-[0_0_20px_rgba(20,230,195,0.35)] transition"
+className="w-full p-4 mb-4 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#14E6C3] focus:shadow-[0_0_20px_rgba(20,230,195,0.35)]"
 />
-
-{/* REMEMBER */}
 
 <label className="flex items-center gap-2 text-gray-400 text-sm mb-4">
 
@@ -177,8 +153,6 @@ className="w-full bg-[#14E6C3] hover:bg-[#0FD4B5] text-black font-semibold p-4 r
 </button>
 
 </form>
-
-{/* REGISTER */}
 
 <p className="text-gray-400 text-sm mt-6 text-center">
 
