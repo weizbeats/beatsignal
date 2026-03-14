@@ -1,31 +1,21 @@
 import "./globals.css"
-import dynamic from "next/dynamic"
-
-const BackgroundParticles = dynamic(
-() => import("@/components/BackgroundParticles"),
-{ ssr: false }
-)
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 
-return (
+  return (
 
-```
-<html lang="en">
+    <html lang="en">
 
-  <body>
+      <body>
 
-    <div className="bg-glow"></div>
+        <div className="bg-glow"></div>
 
-    <BackgroundParticles />
+        {children}
 
-    {children}
+      </body>
 
-  </body>
+    </html>
 
-</html>
-```
-
-)
+  )
 
 }
