@@ -135,15 +135,11 @@ def login(data:dict):
         if user["email"] == email and user["password"] == password:
 
             return {
-
-                "success":True,
-
-                "email":email,
-
-                "plan":user.get("plan","trial"),
-
-                "credits":user.get("credits",0)
-            }
+ "success": True,
+ "plan": user.get("plan","trial"),
+ "credits": user.get("credits",0),
+ "admin": user.get("admin", False)
+}
 
     return {"success":False}
 
