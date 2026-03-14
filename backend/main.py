@@ -367,3 +367,50 @@ def scan(data: dict):
         "success": True,
         "results": results
     }
+# -------------------------
+# CHANGE PLAN (TEMPORARY)
+# -------------------------
+
+@app.post("/change-plan")
+def change_plan(data: dict):
+
+    token = data.get("token")
+    plan = data.get("plan")
+
+    payload = verify_token(token)
+
+    if not payload:
+        return {"error": "invalid_token"}
+
+    email = payload["email"]
+
+    db = SessionLocal()
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        return {"error": "user_not_found"}
+
+    # Starter
+    if plan == "starter":
+        user.plan = "starter"
+        user.credits = 50
+
+    # Pro
+    elif plan == "pro":
+        user.plan = "pro"
+        user.credits = 100
+
+    # Unlimited monthly
+    elif plan == "unlimited":
+        user.plan = "unlimited"
+        user.credits = -1
+
+    # Unlimited annual
+    elif plan == "unlimited_annual":
+        user.plan = "unlimited_annual"
+        user.credits = -1
+
+    db.commit()
+
+    return {"success": True}
+
