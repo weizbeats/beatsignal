@@ -158,6 +158,7 @@ ${isAdmin
 </div>
 
 <button
+onClick={()=>router.push("/plans")}
 className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black text-xs font-semibold px-4 py-1 rounded-md w-fit"
 >
 Upgrade Plan
@@ -196,7 +197,10 @@ className="absolute right-0 mt-2 w-44 bg-[#111] border border-white/10 rounded-l
 Account
 </button>
 
-<button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]">
+<button
+onClick={()=>router.push("/plans")}
+className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]"
+>
 Billing
 </button>
 
@@ -224,13 +228,12 @@ Logout
 
 <div className="w-full max-w-5xl px-8 py-16">
 
-{/* LOGO SECTION */}
+{/* LOGO */}
 
 <div className="text-center mb-16 flex flex-col items-center">
 
 <h1 className="text-5xl font-semibold mb-3 bg-gradient-to-r from-white via-[#14E6C3] to-emerald-400 bg-clip-text text-transparent
-drop-shadow-[0_0_6px_rgba(20,230,195,0.25)]
-animate-pulse">
+drop-shadow-[0_0_6px_rgba(20,230,195,0.25)]">
 
 BeatSignal
 
