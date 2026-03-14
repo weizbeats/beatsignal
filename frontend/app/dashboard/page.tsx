@@ -159,7 +159,6 @@ export default function Dashboard(){
 
           <div className="
           relative
-          card-glow
           bg-[#0b0b0b]/70
           backdrop-blur-md
           border border-[#14E6C3]/20
@@ -234,8 +233,8 @@ export default function Dashboard(){
 
           {result && (
 
-            <div className="
-            card-glow
+            <div
+            className="
             bg-[#0b0b0b]/80
             backdrop-blur-md
             border border-white/5
@@ -243,13 +242,101 @@ export default function Dashboard(){
             p-6
             ">
 
-              <h2 className="text-white mb-4 text-lg">
-                Scan result
+              <h2 className="text-white mb-6 text-xl">
+                Detected Tracks
               </h2>
 
-              <pre className="text-gray-300 text-sm bg-black/40 p-4 rounded-lg overflow-x-auto">
-                {JSON.stringify(result,null,2)}
-              </pre>
+
+              <div className="grid md:grid-cols-2 gap-6">
+
+                {result.map((track:any,index:number)=>(
+
+                  <div
+                  key={index}
+                  className="
+                  flex
+                  gap-4
+                  bg-black/40
+                  border border-white/10
+                  rounded-xl
+                  p-4
+                  hover:border-[#14E6C3]
+                  hover:shadow-[0_0_20px_rgba(20,230,195,0.2)]
+                  transition
+                  ">
+
+                    {/* COVER */}
+
+                    <img
+                    src={track.cover}
+                    className="
+                    w-20
+                    h-20
+                    rounded-lg
+                    object-cover
+                    "
+                    />
+
+
+                    {/* INFO */}
+
+                    <div className="flex flex-col justify-between flex-1">
+
+                      <div>
+
+                        <h3 className="text-white font-semibold">
+                          {track.song}
+                        </h3>
+
+                        <p className="text-gray-400 text-sm">
+                          {track.artist}
+                        </p>
+
+                      </div>
+
+
+                      <div className="text-xs text-gray-500 mt-2">
+
+                        <p>
+                          Release: {track.release_date}
+                        </p>
+
+                        <p>
+                          ISRC: {track.isrc}
+                        </p>
+
+                      </div>
+
+                    </div>
+
+
+                    {/* SPOTIFY */}
+
+                    <a
+                    href={track.spotify_url}
+                    target="_blank"
+                    className="
+                    flex
+                    items-center
+                    justify-center
+                    bg-[#1DB954]
+                    hover:bg-[#1ed760]
+                    px-3
+                    rounded-lg
+                    text-black
+                    text-sm
+                    font-semibold
+                    transition
+                    "
+                    >
+                      Spotify
+                    </a>
+
+                  </div>
+
+                ))}
+
+              </div>
 
             </div>
 
