@@ -224,29 +224,19 @@ Logout
 
 <div className="w-full max-w-5xl px-8 py-16">
 
-{/* LOGO */}
+{/* LOGO SECTION */}
 
-<div className="relative text-center mb-16 flex flex-col items-center">
+<div className="text-center mb-16 flex flex-col items-center">
 
-<div className="absolute w-[420px] h-[420px] bg-[#14E6C3]/5 rounded-full blur-3xl"></div>
+<h1 className="text-5xl font-semibold mb-3 bg-gradient-to-r from-white via-[#14E6C3] to-emerald-400 bg-clip-text text-transparent
+drop-shadow-[0_0_6px_rgba(20,230,195,0.25)]
+animate-pulse">
 
-<motion.div
-className="absolute w-[420px] h-[420px] rounded-full border border-[#14E6C3]/30"
-animate={{scale:[1,1.35],opacity:[0.6,0]}}
-transition={{duration:5,repeat:Infinity,ease:"easeOut"}}
-/>
-
-<motion.div
-className="absolute w-[420px] h-[420px] rounded-full border border-[#14E6C3]/25"
-animate={{scale:[1,1.55],opacity:[0.5,0]}}
-transition={{duration:6,repeat:Infinity,ease:"easeOut"}}
-/>
-
-<h1 className="relative text-5xl font-semibold mb-3 bg-gradient-to-r from-white via-[#14E6C3] to-emerald-400 bg-clip-text text-transparent">
 BeatSignal
+
 </h1>
 
-<p className="relative text-gray-400">
+<p className="text-gray-400">
 Detect stolen beats on YouTube
 </p>
 
