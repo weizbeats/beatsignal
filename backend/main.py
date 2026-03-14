@@ -4,7 +4,6 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-import json
 import os
 from datetime import datetime, timedelta
 
@@ -13,8 +12,14 @@ from services.scanner import scan_url
 from jose import jwt
 from passlib.hash import bcrypt
 
+from database.db import SessionLocal, engine
+from database.models import Base, User
+
 
 app = FastAPI()
+
+Base.metadata.create_all(bind=engine)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,7 +30,6 @@ app.add_middleware(
 )
 
 
-USERS_FILE = "database/users.json"
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
@@ -50,31 +54,14 @@ def verify_token(token: str):
         return None
 
     try:
+
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
         return payload
+
     except:
+
         return None
-
-
-# -------------------------
-# STORAGE
-# -------------------------
-
-def load_users():
-
-    if not os.path.exists(USERS_FILE):
-
-        with open(USERS_FILE, "w") as f:
-            json.dump([], f)
-
-    with open(USERS_FILE, "r") as f:
-        return json.load(f)
-
-
-def save_users(users):
-
-    with open(USERS_FILE, "w") as f:
-        json.dump(users, f)
 
 
 # -------------------------
@@ -88,6 +75,7 @@ def register(data: dict):
     password = data.get("password")
 
     if not email or not password:
+
         return {
             "success": False,
             "error": "missing_fields"
@@ -96,38 +84,37 @@ def register(data: dict):
     email = email.lower().strip()
     password = password.strip()[:72]
 
-    users = load_users()
+    db = SessionLocal()
 
-    for u in users:
+    existing_user = db.query(User).filter(User.email == email).first()
 
-        if u["email"] == email:
+    if existing_user:
 
-            return {
-                "success": False,
-                "error": "email_exists"
-            }
+        return {
+            "success": False,
+            "error": "email_exists"
+        }
 
-    hashed = bcrypt.hash(password)
+    hashed_password = bcrypt.hash(password)
 
-    new_user = {
-        "email": email,
-        "password": hashed,
-        "plan": "trial",
-        "credits": 5,
-        "admin": email == "weizbeat@gmail.com"
-    }
+    new_user = User(
+        email=email,
+        password=hashed_password,
+        plan="trial",
+        credits=5,
+        admin=email == "weizbeat@gmail.com"
+    )
 
-    users.append(new_user)
-
-    save_users(users)
+    db.add(new_user)
+    db.commit()
 
     token = create_token(email)
 
     return {
         "success": True,
         "token": token,
-        "plan": new_user["plan"],
-        "credits": new_user["credits"]
+        "plan": new_user.plan,
+        "credits": new_user.credits
     }
 
 
@@ -151,42 +138,40 @@ def login(data: dict):
     email = email.lower().strip()
     password = password.strip()[:72]
 
-    users = load_users()
+    db = SessionLocal()
 
-    for u in users:
+    user = db.query(User).filter(User.email == email).first()
 
-        if u["email"] == email:
+    if not user:
 
-            if bcrypt.verify(password, u["password"]):
+        return {
+            "success": False,
+            "error": "user_not_found"
+        }
 
-                token = create_token(email)
+    if not bcrypt.verify(password, user.password):
 
-                if u.get("admin"):
+        return {
+            "success": False,
+            "error": "wrong_password"
+        }
 
-                    return {
-                        "success": True,
-                        "token": token,
-                        "plan": "admin",
-                        "credits": -1
-                    }
+    token = create_token(email)
 
-                return {
-                    "success": True,
-                    "token": token,
-                    "plan": u["plan"],
-                    "credits": u["credits"]
-                }
+    if user.admin:
 
-            else:
-
-                return {
-                    "success": False,
-                    "error": "wrong_password"
-                }
+        return {
+            "success": True,
+            "token": token,
+            "plan": "admin",
+            "credits": -1
+        }
 
     return {
-        "success": False,
-        "error": "user_not_found"
+        "success": True,
+        "token": token,
+        "plan": user.plan,
+        "credits": user.credits
     }
 
 
@@ -203,25 +188,33 @@ def scan(data: dict):
     payload = verify_token(token)
 
     if not payload:
-        return {"error": "invalid_token"}
+
+        return {
+            "error": "invalid_token"
+        }
 
     email = payload["email"]
 
-    users = load_users()
+    db = SessionLocal()
 
-    for u in users:
+    user = db.query(User).filter(User.email == email).first()
 
-        if u["email"] == email:
+    if not user:
 
-            if not u.get("admin") and u["plan"] != "unlimited":
+        return {
+            "error": "user_not_found"
+        }
 
-                if u["credits"] <= 0:
-                    return {"error": "no_credits"}
+    if not user.admin and user.plan != "unlimited":
 
-                u["credits"] -= 1
-                save_users(users)
+        if user.credits <= 0:
 
-            break
+            return {
+                "error": "no_credits"
+            }
+
+        user.credits -= 1
+        db.commit()
 
     results = scan_url(url)
 
