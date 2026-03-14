@@ -4,7 +4,8 @@
   "password":"Holahola1",
   "plan":"trial",
   "credits":5,
-  "trial_used":true
+  "trial_used": true,
+    "admin": true
  },
  {
   "email":"weizbeats1@gmail.com",
