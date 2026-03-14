@@ -79,7 +79,15 @@ def recognize_audio(audio_file):
         if result["status"]["msg"] != "Success":
             return []
 
-        music_list = result["metadata"]["music"]
+        metadata = result.get("metadata")
+
+if not metadata:
+    return []
+
+music_list = metadata.get("music")
+
+if not music_list:
+    return []
 
         matches = []
 

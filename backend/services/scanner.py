@@ -27,15 +27,21 @@ def scan_url(url):
     print("1️⃣ Downloading audio from YouTube...")
 
     ydl_opts = {
-        "format": "bestaudio/best",
-        "outtmpl": audio_file,
-        "quiet": True,
-        "noplaylist": True,
-        "cookiefile": COOKIES_FILE,
-        "http_headers": {
-            "User-Agent": "Mozilla/5.0"
+    "format": "bestaudio/best",
+    "outtmpl": audio_file,
+    "quiet": True,
+    "noplaylist": True,
+
+    "extractor_args": {
+        "youtube": {
+            "player_client": ["android","web"]
         }
+    },
+
+    "http_headers": {
+        "User-Agent": "com.google.android.youtube/17.31.35 (Linux; U; Android 11)"
     }
+}
 
     try:
 
