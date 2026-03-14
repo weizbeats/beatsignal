@@ -2,242 +2,236 @@
 
 import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
-import dynamic from "next/dynamic"
-
 import ScanProgress from "@/components/ScanProgress"
-
-const BackgroundParticles = dynamic(
-() => import("@/components/BackgroundParticles"),
-{ ssr:false }
-)
 
 export default function Dashboard(){
 
-const router = useRouter()
+  const router = useRouter()
 
-const [url,setUrl] = useState("")
-const [loading,setLoading] = useState(false)
-const [progress,setProgress] = useState(0)
-const [user,setUser] = useState("")
+  const [url,setUrl] = useState("")
+  const [loading,setLoading] = useState(false)
+  const [progress,setProgress] = useState(0)
+  const [user,setUser] = useState("")
 
-useEffect(()=>{
+  useEffect(()=>{
 
-```
-if(typeof window !== "undefined"){
+    if(typeof window !== "undefined"){
 
-  const savedUser = window.localStorage.getItem("user")
+      const savedUser = localStorage.getItem("user")
 
-  if(savedUser){
-    setUser(savedUser)
+      if(savedUser){
+        setUser(savedUser)
+      }
+
+    }
+
+  },[])
+
+
+  function logout(){
+
+    if(typeof window !== "undefined"){
+
+      localStorage.removeItem("session")
+      localStorage.removeItem("user")
+
+    }
+
+    router.push("/login")
+
   }
 
-}
-```
 
-},[])
+  async function handleScan(){
 
-function logout(){
+    if(!url) return
 
-```
-if(typeof window !== "undefined"){
+    setLoading(true)
+    setProgress(0)
 
-  window.localStorage.removeItem("session")
-  window.localStorage.removeItem("user")
+    let fakeProgress = 0
 
-}
+    const interval = setInterval(()=>{
 
-router.push("/login")
-```
+      fakeProgress += 8
 
-}
+      if(fakeProgress > 95) return
 
-async function handleScan(){
+      setProgress(fakeProgress)
 
-```
-if(!url) return
+    },400)
 
-setLoading(true)
-setProgress(0)
+    try{
 
-let fakeProgress = 0
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
-const interval = setInterval(()=>{
+      await fetch(apiUrl + "/scan",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({url})
+      })
 
-  fakeProgress += 8
+    }catch(e){
 
-  if(fakeProgress > 95) return
+      console.log(e)
 
-  setProgress(fakeProgress)
+    }
 
-},400)
+    clearInterval(interval)
 
-try{
+    setProgress(100)
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    setTimeout(()=>{
+      setLoading(false)
+      setProgress(0)
+    },1200)
 
-  await fetch(apiUrl + "/scan",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({url})
-  })
-
-}catch(e){
-
-  console.log(e)
-
-}
-
-clearInterval(interval)
-
-setProgress(100)
-
-setTimeout(()=>{
-  setLoading(false)
-  setProgress(0)
-},1200)
-```
-
-}
-
-return(
-
-```
-<>
-
-  <BackgroundParticles/>
-
-  <div className="w-full min-h-screen">
-
-    {/* TOP BAR */}
-
-    <div className="flex justify-between items-center px-10 pt-8">
-
-      <div className="text-sm text-[#14E6C3] font-medium">
-        Plan: Free
-      </div>
-
-      <div className="flex items-center gap-4">
-
-        <p className="text-gray-300 text-sm">
-          {user}
-        </p>
-
-        <button
-          onClick={logout}
-          className="
-          text-sm
-          text-gray-400
-          hover:text-white
-          border border-white/10
-          px-4 py-1 rounded-md
-          transition
-          "
-        >
-          Logout
-        </button>
-
-      </div>
-
-    </div>
+  }
 
 
-    <div className="w-full flex justify-center">
+  return(
 
-      <div className="w-full max-w-5xl px-8 py-16">
+    <div className="w-full min-h-screen">
 
 
-        {/* TITLE */}
+      {/* TOP BAR */}
 
-        <div className="text-center mb-14">
+      <div className="flex justify-between items-center px-10 pt-8">
 
-          <h1 className="
-          text-5xl font-semibold mb-3
-          bg-gradient-to-r
-          from-white
-          to-[#14E6C3]
-          bg-clip-text
-          text-transparent
-          ">
-            BeatSignal
-          </h1>
+        <div className="text-sm text-[#14E6C3] font-medium">
+          Plan: Free
+        </div>
 
-          <p className="text-gray-400">
-            Detect stolen beats on YouTube
+        <div className="flex items-center gap-4">
+
+          <p className="text-gray-300 text-sm">
+            {user}
           </p>
+
+          <button
+            onClick={logout}
+            className="
+            text-sm
+            text-gray-400
+            hover:text-white
+            border border-white/10
+            px-4 py-1 rounded-md
+            transition
+            "
+          >
+            Logout
+          </button>
 
         </div>
 
+      </div>
 
-        {/* SCAN BAR */}
 
-        <div className="card-glow bg-[#0b0b0b]/80 backdrop-blur-md border border-white/5 rounded-xl p-6 mb-8">
 
-          <div className="flex gap-4">
+      <div className="w-full flex justify-center">
 
-            <input
-              placeholder="Paste YouTube link..."
-              value={url}
-              onChange={(e)=>setUrl(e.target.value)}
-              className="
-              flex-1
-              bg-black/40
-              border border-white/10
-              text-white
-              p-4
-              rounded-lg
-              outline-none
-              focus:border-[#14E6C3]
-              focus:shadow-[0_0_20px_rgba(20,230,195,0.25)]
-              transition
-              "
-            />
+        <div className="w-full max-w-5xl px-8 py-16">
 
-            <button
-              onClick={handleScan}
-              className="
-              bg-[#14E6C3]
-              hover:bg-[#0FD4B5]
-              text-black
-              font-semibold
-              px-6
-              rounded-lg
-              hover:scale-105
-              hover:shadow-[0_0_25px_rgba(20,230,195,0.5)]
-              transition
-              "
-            >
-              Scan
-            </button>
+
+          {/* TITLE */}
+
+          <div className="text-center mb-14">
+
+            <h1 className="
+            text-5xl font-semibold mb-3
+            bg-gradient-to-r
+            from-white
+            to-[#14E6C3]
+            bg-clip-text
+            text-transparent
+            ">
+              BeatSignal
+            </h1>
+
+            <p className="text-gray-400">
+              Detect stolen beats on YouTube
+            </p>
 
           </div>
 
-        </div>
 
 
-        {loading && (
+          {/* SCAN BAR */}
 
-          <div className="mb-12">
+          <div className="card-glow bg-[#0b0b0b]/80 backdrop-blur-md border border-white/5 rounded-xl p-6 mb-8">
 
-            <ScanProgress progress={progress}/>
+            <div className="flex gap-4">
+
+              <input
+                placeholder="Paste YouTube link..."
+                value={url}
+                onChange={(e)=>setUrl(e.target.value)}
+                className="
+                flex-1
+                bg-black/40
+                border border-white/10
+                text-white
+                p-4
+                rounded-lg
+                outline-none
+                focus:border-[#14E6C3]
+                focus:shadow-[0_0_20px_rgba(20,230,195,0.25)]
+                transition
+                "
+              />
+
+              <button
+                onClick={handleScan}
+                className="
+                bg-[#14E6C3]
+                hover:bg-[#0FD4B5]
+                text-black
+                font-semibold
+                px-6
+                rounded-lg
+                hover:scale-105
+                hover:shadow-[0_0_25px_rgba(20,230,195,0.5)]
+                transition
+                "
+              >
+                Scan
+              </button>
+
+            </div>
 
           </div>
 
-        )}
 
 
-        {/* RECENT SCANS */}
+          {/* PROGRESS */}
 
-        <div className="card-glow bg-[#0b0b0b]/80 backdrop-blur-md border border-white/5 rounded-xl p-6">
+          {loading && (
 
-          <h2 className="text-white mb-4 text-lg">
-            Recent scans
-          </h2>
+            <div className="mb-12">
 
-          <p className="text-gray-500">
-            No scans yet
-          </p>
+              <ScanProgress progress={progress}/>
+
+            </div>
+
+          )}
+
+
+
+          {/* RECENT SCANS */}
+
+          <div className="card-glow bg-[#0b0b0b]/80 backdrop-blur-md border border-white/5 rounded-xl p-6">
+
+            <h2 className="text-white mb-4 text-lg">
+              Recent scans
+            </h2>
+
+            <p className="text-gray-500">
+              No scans yet
+            </p>
+
+          </div>
 
         </div>
 
@@ -245,11 +239,6 @@ return(
 
     </div>
 
-  </div>
-
-</>
-```
-
-)
+  )
 
 }
