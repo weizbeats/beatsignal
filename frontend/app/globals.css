@@ -1,71 +1,121 @@
 @import "tailwindcss";
 
 /* =========================
-   ROOT COLORS
+ROOT COLORS
 ========================= */
 
 :root {
-  --background: #050505;
-  --foreground: #e5e5e5;
+--background: #050505;
+--foreground: #e5e5e5;
+--accent: #14E6C3;
 }
 
 /* =========================
-   THEME
+THEME
 ========================= */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+--color-background: var(--background);
+--color-foreground: var(--foreground);
 }
 
 /* =========================
-   BODY
+BODY
 ========================= */
 
 body {
-  background: #050505;
-  color: var(--foreground);
-  font-family: Inter, system-ui, sans-serif;
-  overflow-x: hidden;
+background:
+radial-gradient(circle at 20% 25%, rgba(20,230,195,0.08), transparent 40%),
+radial-gradient(circle at 80% 30%, rgba(20,230,195,0.05), transparent 45%),
+radial-gradient(circle at 60% 80%, rgba(20,230,195,0.04), transparent 50%),
+#050505;
+
+color: var(--foreground);
+font-family: Inter, system-ui, sans-serif;
+overflow-x: hidden;
 }
 
 /* =========================
-   SOFT GLOW BACKGROUND
+AMBIENT GLOW LAYER
 ========================= */
 
 .bg-glow {
 
-  position: fixed;
-  inset: 0;
+position: fixed;
+inset: 0;
 
-  background:
-    radial-gradient(circle at 20% 20%, rgba(34,197,94,0.08), transparent 40%),
-    radial-gradient(circle at 80% 30%, rgba(34,197,94,0.05), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(34,197,94,0.06), transparent 40%);
+background:
+radial-gradient(circle at 15% 20%, rgba(20,230,195,0.08), transparent 45%),
+radial-gradient(circle at 85% 30%, rgba(0,255,200,0.06), transparent 45%),
+radial-gradient(circle at 50% 85%, rgba(20,230,195,0.05), transparent 50%);
 
-  filter: blur(60px);
+filter: blur(80px);
 
-  z-index: -2;
+opacity: 0.8;
+
+z-index: -3;
 }
 
 /* =========================
-   SMOOTH UI
+ANALOG NOISE FILM GRAIN
 ========================= */
 
-* {
-  transition: all 0.2s ease;
-}
 body::after{
-  content:"";
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  pointer-events:none;
+content:"";
+position:fixed;
+inset:0;
+pointer-events:none;
 
-  background-image:url("https://grainy-gradients.vercel.app/noise.svg");
-  opacity:0.15;
+background-image:url("https://grainy-gradients.vercel.app/noise.svg");
 
-  z-index:-9;
+opacity:0.06;
+
+animation: grainMove 10s infinite linear;
+
+z-index:-2;
+}
+
+@keyframes grainMove{
+
+0%{
+transform:translate(0,0);
+}
+
+25%{
+transform:translate(-1%,1%);
+}
+
+50%{
+transform:translate(1%,-1%);
+}
+
+75%{
+transform:translate(-1%,0.5%);
+}
+
+100%{
+transform:translate(0,0);
+}
+
+}
+
+/* =========================
+UI GLOW EFFECT
+========================= */
+
+.card-glow{
+
+box-shadow:
+0 0 40px rgba(20,230,195,0.05),
+0 0 80px rgba(20,230,195,0.04),
+inset 0 0 20px rgba(20,230,195,0.02);
+
+}
+
+/* =========================
+SMOOTH UI
+========================= */
+
+*{
+transition: all 0.2s ease;
 }
