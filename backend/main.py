@@ -11,6 +11,9 @@ import time
 from services.scanner import scan_url
 from services.paypal_service import create_order
 
+from jose import jwt
+from datetime import datetime, timedelta
+
 app = FastAPI()
 
 app.add_middleware(
@@ -26,6 +29,33 @@ BEATS_FILE = "database/beats.json"
 
 AUTOPILOT_DAYS = 10
 AUTOPILOT_SECONDS = AUTOPILOT_DAYS * 24 * 60 * 60
+
+
+# =========================
+# JWT CONFIG
+# =========================
+
+SECRET_KEY = "BEATSIGNAL_SECRET_KEY"
+ALGORITHM = "HS256"
+
+
+def create_token(email: str):
+
+    payload = {
+        "email": email,
+        "exp": datetime.utcnow() + timedelta(days=7)
+    }
+
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_token(token: str):
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except:
+        return None
 
 
 # =========================
@@ -84,7 +114,7 @@ def save_beats(beats):
 # =========================
 
 @app.post("/register")
-def register(data:dict):
+def register(data: dict):
 
     email = data.get("email")
     password = data.get("password")
@@ -102,11 +132,9 @@ def register(data:dict):
 
         "email": email,
         "password": password,
-
         "plan": "trial",
         "credits": 5,
         "trial_used": True,
-
         "admin": email == "weizbeat@gmail.com"
 
     })
@@ -117,11 +145,11 @@ def register(data:dict):
 
 
 # =========================
-# LOGIN
+# LOGIN (CON TOKEN)
 # =========================
 
 @app.post("/login")
-def login(data:dict):
+def login(data: dict):
 
     email = data.get("email")
     password = data.get("password")
@@ -132,12 +160,15 @@ def login(data:dict):
 
         if user["email"] == email and user["password"] == password:
 
-            # ADMIN CHECK
+            token = create_token(email)
+
             is_admin = email == "weizbeat@gmail.com"
 
             if is_admin:
+
                 return {
                     "success": True,
+                    "token": token,
                     "plan": "admin",
                     "credits": -1,
                     "admin": True
@@ -145,8 +176,9 @@ def login(data:dict):
 
             return {
                 "success": True,
-                "plan": user.get("plan","trial"),
-                "credits": user.get("credits",0),
+                "token": token,
+                "plan": user.get("plan", "trial"),
+                "credits": user.get("credits", 0),
                 "admin": False
             }
 
@@ -154,17 +186,21 @@ def login(data:dict):
 
 
 # =========================
-# SCAN WITH CREDITS
+# SCAN WITH TOKEN
 # =========================
 
 @app.post("/scan")
-def scan(data:dict):
+def scan(data: dict):
 
+    token = data.get("token")
     url = data.get("url")
-    user_email = data.get("user")
 
-    if not url or not user_email:
-        return {"results": []}
+    payload = verify_token(token)
+
+    if not payload:
+        return {"error": "invalid_token"}
+
+    user_email = payload["email"]
 
     users = load_users()
 
@@ -194,17 +230,24 @@ def scan(data:dict):
 # =========================
 
 @app.post("/beats/add")
-def add_beat(data:dict):
+def add_beat(data: dict):
 
-    user = data.get("user")
+    token = data.get("token")
     url = data.get("url")
     name = data.get("name", "beat")
+
+    payload = verify_token(token)
+
+    if not payload:
+        return {"error": "invalid_token"}
+
+    user_email = payload["email"]
 
     beats = load_beats()
 
     beats.append({
 
-        "user": user,
+        "user": user_email,
         "url": url,
         "name": name,
 
@@ -212,7 +255,6 @@ def add_beat(data:dict):
         "next_check": None,
 
         "autopilot": True,
-
         "matches": []
 
     })
@@ -227,13 +269,11 @@ def add_beat(data:dict):
 # =========================
 
 @app.get("/beats/{user}")
-def get_beats(user:str):
+def get_beats(user: str):
 
     beats = load_beats()
 
-    user_beats = [b for b in beats if b["user"] == user]
-
-    return user_beats
+    return [b for b in beats if b["user"] == user]
 
 
 # =========================
@@ -281,7 +321,7 @@ def run_autopilot():
 # =========================
 
 @app.post("/create-paypal-order")
-def create_paypal_order(data:dict):
+def create_paypal_order(data: dict):
 
     plan = data.get("plan")
 
@@ -311,40 +351,35 @@ def create_paypal_order(data:dict):
         "credits": credits
 
     }
+
+
 # =========================
 # ADMIN PANEL
 # =========================
 
 @app.get("/admin")
-def admin_panel(email:str):
+def admin_panel(email: str):
 
     if email != "weizbeat@gmail.com":
-        return {"error":"not_admin"}
+        return {"error": "not_admin"}
 
     users = load_users()
     beats = load_beats()
 
     total_users = len(users)
-
     total_beats = len(beats)
 
-    total_credits = 0
-
-    for u in users:
-        total_credits += u.get("credits",0)
+    total_credits = sum(u.get("credits", 0) for u in users)
 
     return {
 
         "users": users,
-
         "beats_monitored": beats,
 
-        "stats":{
+        "stats": {
 
             "total_users": total_users,
-
             "total_beats": total_beats,
-
             "total_credits": total_credits
 
         }
