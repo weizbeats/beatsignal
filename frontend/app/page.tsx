@@ -16,9 +16,9 @@ const [remember,setRemember] = useState(true)
 
 useEffect(()=>{
 
-const session = localStorage.getItem("session")
+const token = localStorage.getItem("token")
 
-if(session){
+if(token){
 router.push("/dashboard")
 }
 
@@ -61,11 +61,15 @@ return
 
 }
 
-if(remember){
+/* GUARDAR TOKEN */
 
-localStorage.setItem("session","true")
+localStorage.setItem("token",data.token)
 localStorage.setItem("user",email)
 
+/* REMEMBER ME */
+
+if(remember){
+localStorage.setItem("session","true")
 }
 
 router.push("/dashboard")
