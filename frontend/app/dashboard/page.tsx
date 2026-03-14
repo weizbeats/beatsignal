@@ -6,8 +6,9 @@ import TopBar from "@/components/TopBar"
 export default function Dashboard(){
 
 const [url,setUrl]=useState("")
-const [results,setResults]=useState([])
+const [results,setResults]=useState<any[]>([])
 const [loading,setLoading]=useState(false)
+const [progress,setProgress]=useState(0)
 
 useEffect(()=>{
 
@@ -19,11 +20,43 @@ window.location.href="/"
 
 },[])
 
+
+
+/* PROGRESS ANIMATION */
+
+useEffect(()=>{
+
+let interval:any
+
+if(loading){
+
+setProgress(0)
+
+interval=setInterval(()=>{
+
+setProgress(prev=>{
+
+if(prev>=95) return prev
+return prev+4
+
+})
+
+},400)
+
+}
+
+return ()=>clearInterval(interval)
+
+},[loading])
+
+
+
 async function handleScan(){
 
 const token=localStorage.getItem("token")
 
 setLoading(true)
+setResults([])
 
 const res=await fetch(
 `${process.env.NEXT_PUBLIC_API_URL}/scan`,
@@ -36,6 +69,7 @@ body:JSON.stringify({url,token})
 
 const data=await res.json()
 
+setProgress(100)
 setLoading(false)
 
 if(data.results){
@@ -44,27 +78,35 @@ setResults(data.results)
 
 }
 
+
+
 return(
 
 <div className="flex flex-col flex-1">
 
 <TopBar/>
 
-<div className="w-full flex flex-col items-center px-6 pt-32">
+<div className="w-full flex flex-col items-center px-6 pt-16">
 
-<h1 className="text-6xl font-semibold mb-4 tracking-tight bg-gradient-to-r from-white to-[#14E6C3] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(20,230,195,0.45)]">
+<h1 className="text-6xl font-semibold mb-3 tracking-tight bg-gradient-to-r from-white to-[#14E6C3] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(20,230,195,0.45)]">
 BeatSignal
 </h1>
 
-<p className="text-sm text-white/60 mb-14">
+<p className="text-sm text-white/60 mb-10">
 Detect stolen beats on YouTube
 </p>
 
-<div className="relative w-full max-w-5xl">
+
+
+{/* SEARCH BAR */}
+
+<div className={`w-full max-w-5xl ${results.length>0 ? "sticky top-20 z-20" : ""}`}>
+
+<div className="relative">
 
 <div className="absolute inset-0 bg-[#14E6C3] opacity-20 blur-3xl rounded-xl"></div>
 
-<div className="relative bg-black/40 border border-white/10 backdrop-blur-xl rounded-xl flex p-3">
+<div className="relative bg-black/50 border border-white/10 backdrop-blur-xl rounded-xl flex p-3">
 
 <input
 value={url}
@@ -84,44 +126,68 @@ Scan
 
 </div>
 
-{/* SCANNING */}
+</div>
+
+
+
+{/* PROGRESS BAR */}
 
 {loading &&(
 
-<div className="mt-16 animate-pulse text-white/60">
-Scanning YouTube audio...
+<div className="w-full max-w-5xl mt-8">
+
+<div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+
+<div
+style={{width:`${progress}%`}}
+className="h-full bg-[#14E6C3] transition-all duration-500"
+></div>
+
+</div>
+
+<p className="text-white/50 text-sm mt-2">
+Analyzing audio fingerprint... {progress}%
+</p>
+
 </div>
 
 )}
+
+
 
 {/* RESULTS */}
 
 {results.length>0 &&(
 
-<div className="mt-16 w-full max-w-5xl grid gap-6">
+<div className="mt-12 w-full max-w-5xl grid gap-6 pb-20">
 
-{results.map((r,i)=>(
+{results.map((r,i)=>{
+
+const confidence=Math.min(Math.round(r.score || 0),100)
+
+return(
 
 <div
 key={i}
-className="
-group
-flex
-gap-6
-bg-black/40
-border border-white/10
-rounded-xl
-p-6
-backdrop-blur-xl
-transition
-hover:border-[#14E6C3]
-hover:shadow-[0_0_40px_rgba(20,230,195,0.25)]
-"
+className="relative group flex gap-6 bg-black/40 border border-white/10 rounded-xl p-6 backdrop-blur-xl transition hover:border-[#14E6C3] hover:shadow-[0_0_40px_rgba(20,230,195,0.25)] overflow-hidden"
 >
+
+
+{/* BLUR BACKGROUND */}
+
+{r.cover &&(
+
+<img
+src={r.cover}
+className="absolute inset-0 w-full h-full object-cover opacity-10 blur-3xl"
+/>
+
+)}
+
 
 {/* COVER */}
 
-<div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+<div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 z-10">
 
 {r.cover ? (
 
@@ -140,9 +206,11 @@ No Cover
 
 </div>
 
+
+
 {/* INFO */}
 
-<div className="flex flex-col flex-1">
+<div className="flex flex-col flex-1 z-10">
 
 <h2 className="text-xl text-white font-semibold">
 {r.song}
@@ -152,7 +220,35 @@ No Cover
 {r.artist}
 </p>
 
-<div className="flex flex-wrap gap-4 mt-3 text-sm text-white/50">
+
+
+{/* CONFIDENCE BAR */}
+
+<div className="mt-4">
+
+<div className="flex justify-between text-xs text-white/50 mb-1">
+
+<span>Match confidence</span>
+<span>{confidence}%</span>
+
+</div>
+
+<div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+
+<div
+style={{width:`${confidence}%`}}
+className="h-full bg-[#14E6C3] transition-all duration-700"
+></div>
+
+</div>
+
+</div>
+
+
+
+{/* META */}
+
+<div className="flex flex-wrap gap-4 mt-4 text-sm text-white/50">
 
 {r.release_date &&(
 <span>
@@ -166,15 +262,11 @@ ISRC: {r.isrc}
 </span>
 )}
 
-{r.score &&(
-<span>
-Score: {r.score}
-</span>
-)}
-
 </div>
 
 </div>
+
+
 
 {/* SPOTIFY */}
 
@@ -183,19 +275,7 @@ Score: {r.score}
 <a
 href={r.spotify_url}
 target="_blank"
-className="
-self-center
-bg-[#14E6C3]
-text-black
-px-4
-py-2
-rounded-md
-text-sm
-font-medium
-hover:scale-105
-hover:shadow-[0_0_20px_rgba(20,230,195,0.7)]
-transition
-"
+className="self-center bg-[#14E6C3] text-black px-4 py-2 rounded-md text-sm font-medium hover:scale-105 hover:shadow-[0_0_20px_rgba(20,230,195,0.7)] transition z-10"
 >
 Open Spotify
 </a>
@@ -204,7 +284,9 @@ Open Spotify
 
 </div>
 
-))}
+)
+
+})}
 
 </div>
 
