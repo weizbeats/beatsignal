@@ -37,11 +37,11 @@ interval=setInterval(()=>{
 setProgress(prev=>{
 
 if(prev>=95) return prev
-return prev+4
+return prev+3
 
 })
 
-},400)
+},350)
 
 }
 
@@ -80,6 +80,19 @@ setResults(data.results)
 
 
 
+function progressMessage(){
+
+if(progress < 20) return `Initializing scan engine... ${progress}%`
+if(progress < 40) return `Searching global music indexes... ${progress}%`
+if(progress < 60) return `Analyzing patterns with AI... ${progress}%`
+if(progress < 80) return `Matching tracks worldwide... ${progress}%`
+if(progress < 100) return `Finalizing results... ${progress}%`
+
+return `Match found`
+}
+
+
+
 return(
 
 <div className="flex flex-col flex-1">
@@ -100,24 +113,24 @@ Detect stolen beats on YouTube
 
 {/* SEARCH BAR */}
 
-<div className={`w-full max-w-5xl ${results.length>0 ? "sticky top-20 z-20" : ""}`}>
+<div className="w-full max-w-5xl">
 
 <div className="relative">
 
 <div className="absolute inset-0 bg-[#14E6C3] opacity-20 blur-3xl rounded-xl"></div>
 
-<div className="relative bg-black/50 border border-white/10 backdrop-blur-xl rounded-xl flex p-3">
+<div className="relative bg-black/50 border border-white/10 backdrop-blur-xl rounded-xl flex p-2">
 
 <input
 value={url}
 onChange={(e)=>setUrl(e.target.value)}
 placeholder="Paste YouTube link"
-className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-[#14E6C3]"
+className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white outline-none focus:border-[#14E6C3]"
 />
 
 <button
 onClick={handleScan}
-className="ml-3 bg-[#14E6C3] text-black px-10 py-3 rounded-lg font-medium hover:scale-105 hover:shadow-[0_0_25px_rgba(20,230,195,0.7)] transition"
+className="ml-3 bg-[#14E6C3] text-black px-8 py-2.5 rounded-lg font-medium hover:scale-105 hover:shadow-[0_0_20px_rgba(20,230,195,0.7)] transition"
 >
 Scan
 </button>
@@ -146,7 +159,7 @@ className="h-full bg-[#14E6C3] transition-all duration-500"
 </div>
 
 <p className="text-white/50 text-sm mt-2">
-Analyzing audio fingerprint... {progress}%
+{progressMessage()}
 </p>
 
 </div>
@@ -159,7 +172,7 @@ Analyzing audio fingerprint... {progress}%
 
 {results.length>0 &&(
 
-<div className="mt-12 w-full max-w-5xl grid gap-6 pb-20">
+<div className="mt-10 w-full max-w-5xl grid gap-4 pb-20">
 
 {results.map((r,i)=>{
 
@@ -169,7 +182,7 @@ return(
 
 <div
 key={i}
-className="relative group flex gap-6 bg-black/40 border border-white/10 rounded-xl p-6 backdrop-blur-xl transition hover:border-[#14E6C3] hover:shadow-[0_0_40px_rgba(20,230,195,0.25)] overflow-hidden"
+className="relative group flex gap-4 bg-black/40 border border-white/10 rounded-lg p-4 backdrop-blur-xl transition hover:border-[#14E6C3] hover:shadow-[0_0_30px_rgba(20,230,195,0.25)] overflow-hidden"
 >
 
 
@@ -187,7 +200,7 @@ className="absolute inset-0 w-full h-full object-cover opacity-10 blur-3xl"
 
 {/* COVER */}
 
-<div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 z-10">
+<div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 z-10">
 
 {r.cover ? (
 
@@ -212,11 +225,11 @@ No Cover
 
 <div className="flex flex-col flex-1 z-10">
 
-<h2 className="text-xl text-white font-semibold">
+<h2 className="text-lg text-white font-semibold leading-tight">
 {r.song}
 </h2>
 
-<p className="text-white/60">
+<p className="text-white/60 text-sm">
 {r.artist}
 </p>
 
@@ -224,7 +237,7 @@ No Cover
 
 {/* CONFIDENCE BAR */}
 
-<div className="mt-4">
+<div className="mt-2">
 
 <div className="flex justify-between text-xs text-white/50 mb-1">
 
@@ -233,7 +246,7 @@ No Cover
 
 </div>
 
-<div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+<div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
 
 <div
 style={{width:`${confidence}%`}}
@@ -248,7 +261,7 @@ className="h-full bg-[#14E6C3] transition-all duration-700"
 
 {/* META */}
 
-<div className="flex flex-wrap gap-4 mt-4 text-sm text-white/50">
+<div className="flex flex-wrap gap-3 mt-2 text-xs text-white/50">
 
 {r.release_date &&(
 <span>
@@ -275,9 +288,9 @@ ISRC: {r.isrc}
 <a
 href={r.spotify_url}
 target="_blank"
-className="self-center bg-[#14E6C3] text-black px-4 py-2 rounded-md text-sm font-medium hover:scale-105 hover:shadow-[0_0_20px_rgba(20,230,195,0.7)] transition z-10"
+className="self-center bg-[#14E6C3] text-black px-3 py-1.5 rounded-md text-xs font-medium hover:scale-105 hover:shadow-[0_0_15px_rgba(20,230,195,0.7)] transition z-10"
 >
-Open Spotify
+Spotify
 </a>
 
 )}
