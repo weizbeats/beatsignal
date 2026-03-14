@@ -457,6 +457,81 @@ Scan
 </div>
 )}
 
+{/* RESULTS */}
+
+{!loading && result.length > 0 && (
+
+<div className="mt-12 space-y-6">
+
+<h2 className="text-2xl font-semibold text-white">
+Matches Found
+</h2>
+
+<div className="grid gap-6">
+
+{result.map((match,i)=>(
+
+<div
+key={i}
+className="bg-[#0b0b0b]/70 border border-white/10 rounded-xl p-6 flex gap-6"
+>
+
+{/* COVER */}
+
+{match.cover && (
+
+<img
+src={match.cover}
+className="w-24 h-24 rounded-lg object-cover"
+alt=""
+/>
+
+)}
+
+{/* INFO */}
+
+<div className="flex flex-col gap-1">
+
+<p className="text-white font-semibold text-lg">
+{match.song}
+</p>
+
+<p className="text-gray-400">
+{match.artist}
+</p>
+
+<p className="text-sm text-gray-500">
+Confidence: {match.score}
+</p>
+
+<p className="text-xs text-gray-500">
+ISRC: {match.isrc}
+</p>
+
+<p className="text-xs text-gray-500">
+Release date: {match.release_date}
+</p>
+
+<a
+href={match.spotify_url}
+target="_blank"
+className="text-sm text-[#14E6C3] hover:underline mt-2"
+>
+Open on Spotify
+</a>
+
+</div>
+
+</div>
+
+))}
+
+</div>
+
+</div>
+
+)}
+
 </div>
 
 </div>
