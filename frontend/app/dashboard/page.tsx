@@ -14,6 +14,7 @@ const [history,setHistory] = useState<any[]>([])
 const [loading,setLoading] = useState(false)
 const [progress,setProgress] = useState(0)
 const [authChecked,setAuthChecked] = useState(false)
+const [message,setMessage] = useState("")
 
 
 
@@ -115,6 +116,7 @@ sessionStorage.getItem("token")
 
 setLoading(true)
 setResults([])
+setMessage("")
 
 try{
 
@@ -131,8 +133,14 @@ const data = await res.json()
 
 setProgress(100)
 
-if(data.results){
+if(data.results && data.results.length > 0){
+
 setResults(data.results)
+
+}else{
+
+setMessage("No matches found")
+
 }
 
 await loadHistory()
@@ -140,6 +148,7 @@ await loadHistory()
 }catch(e){
 
 console.error(e)
+setMessage("Scan error")
 
 }
 
@@ -157,7 +166,7 @@ if(progress < 60) return `Analyzing patterns with AI... ${progress}%`
 if(progress < 80) return `Matching tracks worldwide... ${progress}%`
 if(progress < 100) return `Finalizing results... ${progress}%`
 
-return `Match found`
+return `Scan complete`
 
 }
 
@@ -250,15 +259,23 @@ className="h-full bg-[#14E6C3] transition-all duration-500"
 
 
 
-{/* SCAN RESULTS */}
+{/* MESSAGE */}
+
+{message &&(
+
+<div className="mt-8 text-white/60 text-sm">
+{message}
+</div>
+
+)}
+
+
+
+{/* RESULTS */}
 
 {results.length>0 &&(
 
-<div className="mt-10 w-full max-w-5xl grid gap-4">
-
-<h2 className="text-xl text-white font-semibold">
-Scan Results
-</h2>
+<div className="mt-10 w-full max-w-5xl grid gap-4 pb-20">
 
 {results.map((r,i)=>{
 
@@ -297,66 +314,6 @@ className="h-full bg-[#14E6C3]"
 )
 
 })}
-
-</div>
-
-)}
-
-
-
-{/* HISTORY */}
-
-{history.length>0 &&(
-
-<div className="mt-16 w-full max-w-5xl">
-
-<h2 className="text-xl font-semibold text-white mb-4">
-Scan History
-</h2>
-
-<div className="border border-white/10 rounded-lg overflow-hidden">
-
-<div className="grid grid-cols-4 px-4 py-3 text-xs text-white/50 border-b border-white/10">
-
-<div>Track</div>
-<div>Artist</div>
-<div>Date</div>
-<div>Link</div>
-
-</div>
-
-{history.map((h,i)=>(
-
-<div
-key={i}
-className="grid grid-cols-4 px-4 py-3 text-sm border-b border-white/5"
->
-
-<div className="truncate">
-{h.title}
-</div>
-
-<div className="truncate text-white/70">
-{h.artist}
-</div>
-
-<div className="text-white/70">
-{new Date(h.date).toLocaleDateString()}
-</div>
-
-<a
-href={h.url}
-target="_blank"
-className="text-[#14E6C3] hover:underline"
->
-Open
-</a>
-
-</div>
-
-))}
-
-</div>
 
 </div>
 
