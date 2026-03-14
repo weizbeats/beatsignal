@@ -72,6 +72,8 @@ body:JSON.stringify({url})
 
 const data = await res.json()
 
+console.log("SCAN RESULT:",data)
+
 if(Array.isArray(data)){
 setResult(data)
 }else if(data.results){
@@ -129,48 +131,9 @@ Pricing
 Choose the plan that fits your needs
 </p>
 
-{/* BILLING TOGGLE */}
-
-<div className="flex justify-center mb-12">
-
-<div className="bg-white/5 border border-white/10 rounded-full p-1 flex">
-
-<button
-onClick={()=>setBilling("monthly")}
-className={`px-6 py-2 rounded-full text-sm ${
-billing==="monthly"
-? "bg-[#14E6C3] text-black"
-: "text-gray-400"
-}`}
->
-Monthly
-</button>
-
-<button
-onClick={()=>setBilling("yearly")}
-className={`px-6 py-2 rounded-full text-sm ${
-billing==="yearly"
-? "bg-[#14E6C3] text-black"
-: "text-gray-400"
-}`}
->
-Yearly
-</button>
-
-</div>
-
-</div>
-
-{/* PLANS */}
-
 <div className="grid md:grid-cols-3 gap-8">
 
-{/* PLAN 1 */}
-
-<motion.div
-whileHover={{scale:1.04}}
-className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg"
->
+<div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg">
 
 <h3 className="text-5xl font-bold text-white mb-2">
 50
@@ -181,34 +144,16 @@ monthly scans
 </p>
 
 <p className="text-white font-semibold text-lg mb-6">
-{billing==="monthly" ? "$2.49 / month" : "$24 / year"}
+$2.49 / month
 </p>
-
-<div className="text-gray-400 text-sm space-y-2 mb-8">
-
-<p>Upload unlimited beats</p>
-<p>Auto monitoring</p>
-<p>Unlimited results</p>
-
-</div>
 
 <button className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:scale-105 transition">
 Subscribe
 </button>
 
-</motion.div>
-
-
-{/* PLAN 2 RECOMMENDED */}
-
-<motion.div
-whileHover={{scale:1.06}}
-className="bg-white/5 border border-[#14E6C3] rounded-2xl p-8 text-center shadow-[0_0_40px_rgba(20,230,195,0.35)] backdrop-blur-lg"
->
-
-<div className="text-xs text-[#14E6C3] mb-2">
-MOST POPULAR
 </div>
+
+<div className="bg-white/5 border border-[#14E6C3] rounded-2xl p-8 text-center shadow-[0_0_40px_rgba(20,230,195,0.35)] backdrop-blur-lg">
 
 <h3 className="text-5xl font-bold text-white mb-2">
 100
@@ -219,30 +164,16 @@ monthly scans
 </p>
 
 <p className="text-white font-semibold text-lg mb-6">
-{billing==="monthly" ? "$4.99 / month" : "$48 / year"}
+$4.99 / month
 </p>
-
-<div className="text-gray-400 text-sm space-y-2 mb-8">
-
-<p>Upload unlimited beats</p>
-<p>Auto monitoring</p>
-<p>Unlimited results</p>
-
-</div>
 
 <button className="w-full bg-[#14E6C3] text-black py-3 rounded-lg font-semibold hover:scale-105 transition">
 Subscribe
 </button>
 
-</motion.div>
+</div>
 
-
-{/* PLAN 3 */}
-
-<motion.div
-whileHover={{scale:1.04}}
-className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg"
->
+<div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg">
 
 <h3 className="text-5xl font-bold text-white mb-2">
 Unlimited
@@ -253,22 +184,14 @@ Unlimited scans
 </p>
 
 <p className="text-white font-semibold text-lg mb-6">
-{billing==="monthly" ? "$9.99 / month" : "$96 / year"}
+$9.99 / month
 </p>
-
-<div className="text-gray-400 text-sm space-y-2 mb-8">
-
-<p>Upload unlimited beats</p>
-<p>Auto monitoring</p>
-<p>Unlimited results</p>
-
-</div>
 
 <button className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:scale-105 transition">
 Subscribe
 </button>
 
-</motion.div>
+</div>
 
 </div>
 
@@ -379,12 +302,12 @@ Detect stolen beats on YouTube
 placeholder="Paste YouTube link..."
 value={url}
 onChange={(e)=>setUrl(e.target.value)}
-className="flex-1 bg-black/40 border border-white/10 text-white p-4 rounded-lg outline-none focus:border-[#14E6C3] focus:shadow-[0_0_20px_rgba(20,230,195,0.35)] transition"
+className="flex-1 bg-black/40 border border-white/10 text-white p-4 rounded-lg outline-none focus:border-[#14E6C3]"
 />
 
 <button
 onClick={handleScan}
-className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black font-semibold px-6 rounded-lg hover:scale-105 hover:shadow-[0_0_25px_rgba(20,230,195,0.6)] transition"
+className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black font-semibold px-6 rounded-lg"
 >
 Scan
 </button>
@@ -397,6 +320,68 @@ Scan
 
 <div className="mb-12">
 <ScanProgress progress={progress}/>
+</div>
+
+)}
+
+{/* RESULTS */}
+
+{result.length > 0 && (
+
+<div className="grid md:grid-cols-2 gap-6 mt-10">
+
+{result.map((track:any,index:number)=>(
+
+<div
+key={index}
+className="flex gap-4 bg-black/40 border border-white/10 rounded-xl p-4 hover:border-[#14E6C3]"
+>
+
+<img
+src={track.cover}
+className="w-20 h-20 rounded-lg object-cover"
+/>
+
+<div className="flex flex-col justify-between flex-1">
+
+<div>
+
+<h3 className="text-white font-semibold">
+{track.song}
+</h3>
+
+<p className="text-gray-400 text-sm">
+{track.artist}
+</p>
+
+</div>
+
+<div className="text-xs text-gray-500 mt-2">
+
+<p>
+Release: {track.release_date}
+</p>
+
+<p>
+ISRC: {track.isrc}
+</p>
+
+</div>
+
+</div>
+
+<a
+href={track.spotify_url}
+target="_blank"
+className="flex items-center justify-center bg-[#1DB954] hover:bg-[#1ed760] px-3 rounded-lg text-black text-sm font-semibold"
+>
+Spotify
+</a>
+
+</div>
+
+))}
+
 </div>
 
 )}
