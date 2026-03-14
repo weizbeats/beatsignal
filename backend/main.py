@@ -6,14 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import json
 import os
-import time
+from datetime import datetime, timedelta
 
 from services.scanner import scan_url
 from services.paypal_service import create_order, capture_order
 
 from jose import jwt
-from datetime import datetime, timedelta
-
 from passlib.hash import bcrypt
 
 app = FastAPI()
@@ -27,8 +25,6 @@ app.add_middleware(
 )
 
 USERS_FILE = "database/users.json"
-BEATS_FILE = "database/beats.json"
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
@@ -60,35 +56,23 @@ def verify_token(token: str):
 
 
 # -------------------------
-# FILE INIT
-# -------------------------
-
-if not os.path.exists(USERS_FILE):
-    with open(USERS_FILE, "w") as f:
-        json.dump([], f)
-
-if not os.path.exists(BEATS_FILE):
-    with open(BEATS_FILE, "w") as f:
-        json.dump([], f)
-
-
-# -------------------------
-# STORAGE
+# USERS STORAGE
 # -------------------------
 
 def load_users():
 
-    try:
-        with open(USERS_FILE, "r") as f:
-            return json.load(f)
-    except:
-        return []
+    if not os.path.exists(USERS_FILE):
+        with open(USERS_FILE,"w") as f:
+            json.dump([],f)
+
+    with open(USERS_FILE,"r") as f:
+        return json.load(f)
 
 
 def save_users(users):
 
-    with open(USERS_FILE, "w") as f:
-        json.dump(users, f)
+    with open(USERS_FILE,"w") as f:
+        json.dump(users,f)
 
 
 # -------------------------
@@ -102,38 +86,30 @@ def register(data: dict):
     password = data.get("password")
 
     if not email or not password:
-        return {"success": False}
+        return {"success":False}
 
-    email = str(email).strip().lower()
-    password = str(password).strip()
+    email = email.lower().strip()
+    password = password.strip()[:72]
 
     users = load_users()
 
-    for user in users:
-        if user["email"] == email:
-            return {"success": False}
+    for u in users:
+        if u["email"] == email:
+            return {"success":False}
 
-    # bcrypt max 72 chars
-    password = password[:72]
-
-    try:
-        hashed_password = bcrypt.hash(password)
-    except Exception as e:
-        print("bcrypt error:", e)
-        return {"success": False}
+    hashed = bcrypt.hash(password)
 
     users.append({
-        "email": email,
-        "password": hashed_password,
-        "plan": "trial",
-        "credits": 5,
-        "trial_used": True,
-        "admin": email == "weizbeat@gmail.com"
+        "email":email,
+        "password":hashed,
+        "plan":"trial",
+        "credits":5,
+        "admin":email=="weizbeat@gmail.com"
     })
 
     save_users(users)
 
-    return {"success": True}
+    return {"success":True}
 
 
 # -------------------------
@@ -141,55 +117,44 @@ def register(data: dict):
 # -------------------------
 
 @app.post("/login")
-def login(data: dict):
+def login(data:dict):
 
     email = data.get("email")
     password = data.get("password")
 
     if not email or not password:
-        return {"success": False}
+        return {"success":False}
 
-    email = str(email).strip().lower()
-    password = str(password).strip()[:72]
+    email=email.lower().strip()
+    password=password.strip()[:72]
 
     users = load_users()
 
-    for user in users:
+    for u in users:
 
-        if user["email"] == email:
+        if u["email"]==email:
 
-            try:
+            if bcrypt.verify(password,u["password"]):
 
-                if bcrypt.verify(password, user["password"]):
+                token=create_token(email)
 
-                    token = create_token(email)
+                if u.get("admin"):
 
-                    is_admin = user.get("admin", False)
-
-                    if is_admin:
-
-                        return {
-                            "success": True,
-                            "token": token,
-                            "plan": "admin",
-                            "credits": -1,
-                            "admin": True
-                        }
-
-                    return {
-                        "success": True,
-                        "token": token,
-                        "plan": user.get("plan", "trial"),
-                        "credits": user.get("credits", 0),
-                        "admin": False
+                    return{
+                        "success":True,
+                        "token":token,
+                        "plan":"admin",
+                        "credits":-1
                     }
 
-            except Exception as e:
+                return{
+                    "success":True,
+                    "token":token,
+                    "plan":u["plan"],
+                    "credits":u["credits"]
+                }
 
-                print("bcrypt verify error:", e)
-                return {"success": False}
-
-    return {"success": False}
+    return {"success":False}
 
 
 # -------------------------
@@ -197,105 +162,37 @@ def login(data: dict):
 # -------------------------
 
 @app.post("/scan")
-def scan(data: dict):
+def scan(data:dict):
 
-    token = data.get("token")
-    url = data.get("url")
+    token=data.get("token")
+    url=data.get("url")
 
-    payload = verify_token(token)
+    payload=verify_token(token)
 
     if not payload:
-        return {"error": "invalid_token"}
+        return {"error":"invalid_token"}
 
-    user_email = payload["email"]
+    email=payload["email"]
 
-    users = load_users()
+    users=load_users()
 
-    for user in users:
+    for u in users:
 
-        if user["email"] == user_email:
+        if u["email"]==email:
 
-            is_admin = user.get("admin", False)
+            if not u.get("admin") and u["plan"]!="unlimited":
 
-            if not is_admin and user["plan"] != "unlimited":
+                if u["credits"]<=0:
+                    return {"error":"no_credits"}
 
-                if user["credits"] <= 0:
-                    return {"error": "no_credits"}
-
-                user["credits"] -= 1
+                u["credits"]-=1
                 save_users(users)
 
             break
 
-    results = scan_url(url)
+    results=scan_url(url)
 
-    return results
-
-
-# -------------------------
-# PAYPAL
-# -------------------------
-
-@app.post("/create-paypal-order")
-def create_paypal_order(data: dict):
-
-    plan = data.get("plan")
-
-    if plan == "50":
-        price = "2.49"
-
-    elif plan == "100":
-        price = "4.99"
-
-    elif plan == "unlimited":
-        price = "9.99"
-
-    else:
-        return {"error": "invalid_plan"}
-
-    order_id = create_order(price)
-
-    return {"orderID": order_id}
-
-
-@app.post("/capture-paypal-order")
-def capture_paypal_order(data: dict):
-
-    token = data.get("token")
-    order_id = data.get("orderID")
-    plan = data.get("plan")
-
-    payload = verify_token(token)
-
-    if not payload:
-        return {"error": "invalid_token"}
-
-    capture = capture_order(order_id)
-
-    if capture.get("status") != "COMPLETED":
-        return {"error": "payment_not_completed"}
-
-    user_email = payload["email"]
-
-    users = load_users()
-
-    for user in users:
-
-        if user["email"] == user_email:
-
-            if plan == "50":
-                user["credits"] += 50
-                user["plan"] = "credits"
-
-            elif plan == "100":
-                user["credits"] += 100
-                user["plan"] = "credits"
-
-            elif plan == "unlimited":
-                user["plan"] = "unlimited"
-
-            save_users(users)
-
-            break
-
-    return {"success": True}
+    return{
+        "success":True,
+        "results":results
+    }
