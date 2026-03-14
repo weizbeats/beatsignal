@@ -2,6 +2,7 @@
 
 import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { motion,AnimatePresence } from "framer-motion"
 import ScanProgress from "../../components/ScanProgress"
 
 export default function Dashboard(){
@@ -14,7 +15,9 @@ const [progress,setProgress] = useState(0)
 const [user,setUser] = useState("")
 const [result,setResult] = useState<any[]>([])
 const [menuOpen,setMenuOpen] = useState(false)
+
 const [showPlans,setShowPlans] = useState(false)
+const [billing,setBilling] = useState("monthly")
 
 useEffect(()=>{
 
@@ -97,38 +100,88 @@ return(
 
 <div className="w-full min-h-screen">
 
-{/* PLAN MODAL */}
+{/* MODAL */}
+
+<AnimatePresence>
 
 {showPlans && (
 
-<div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+<motion.div
+initial={{opacity:0}}
+animate={{opacity:1}}
+exit={{opacity:0}}
+className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50"
+>
 
-<div className="w-full max-w-6xl px-10">
+<motion.div
+initial={{scale:0.9,opacity:0}}
+animate={{scale:1,opacity:1}}
+exit={{scale:0.9,opacity:0}}
+transition={{duration:0.25}}
+className="w-full max-w-6xl px-10"
+>
 
-<h2 className="text-4xl text-white text-center mb-4 font-semibold">
+<h2 className="text-4xl text-white text-center mb-3 font-semibold">
 Pricing
 </h2>
 
-<p className="text-center text-gray-400 mb-12">
+<p className="text-center text-gray-400 mb-8">
 Choose the plan that fits your needs
 </p>
+
+{/* BILLING TOGGLE */}
+
+<div className="flex justify-center mb-12">
+
+<div className="bg-white/5 border border-white/10 rounded-full p-1 flex">
+
+<button
+onClick={()=>setBilling("monthly")}
+className={`px-6 py-2 rounded-full text-sm ${
+billing==="monthly"
+? "bg-[#14E6C3] text-black"
+: "text-gray-400"
+}`}
+>
+Monthly
+</button>
+
+<button
+onClick={()=>setBilling("yearly")}
+className={`px-6 py-2 rounded-full text-sm ${
+billing==="yearly"
+? "bg-[#14E6C3] text-black"
+: "text-gray-400"
+}`}
+>
+Yearly
+</button>
+
+</div>
+
+</div>
+
+{/* PLANS */}
 
 <div className="grid md:grid-cols-3 gap-8">
 
 {/* PLAN 1 */}
 
-<div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg">
+<motion.div
+whileHover={{scale:1.04}}
+className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg"
+>
 
 <h3 className="text-5xl font-bold text-white mb-2">
 50
 </h3>
 
 <p className="text-gray-400 mb-4">
-monthly credit plan
+monthly scans
 </p>
 
 <p className="text-white font-semibold text-lg mb-6">
-$2.49 / month
+{billing==="monthly" ? "$2.49 / month" : "$24 / year"}
 </p>
 
 <div className="text-gray-400 text-sm space-y-2 mb-8">
@@ -143,23 +196,30 @@ $2.49 / month
 Subscribe
 </button>
 
+</motion.div>
+
+
+{/* PLAN 2 RECOMMENDED */}
+
+<motion.div
+whileHover={{scale:1.06}}
+className="bg-white/5 border border-[#14E6C3] rounded-2xl p-8 text-center shadow-[0_0_40px_rgba(20,230,195,0.35)] backdrop-blur-lg"
+>
+
+<div className="text-xs text-[#14E6C3] mb-2">
+MOST POPULAR
 </div>
-
-
-{/* PLAN 2 */}
-
-<div className="bg-white/5 border border-[#14E6C3] rounded-2xl p-8 text-center shadow-[0_0_30px_rgba(20,230,195,0.25)] backdrop-blur-lg">
 
 <h3 className="text-5xl font-bold text-white mb-2">
 100
 </h3>
 
 <p className="text-gray-400 mb-4">
-monthly credit plan
+monthly scans
 </p>
 
 <p className="text-white font-semibold text-lg mb-6">
-$4.99 / month
+{billing==="monthly" ? "$4.99 / month" : "$48 / year"}
 </p>
 
 <div className="text-gray-400 text-sm space-y-2 mb-8">
@@ -174,12 +234,15 @@ $4.99 / month
 Subscribe
 </button>
 
-</div>
+</motion.div>
 
 
 {/* PLAN 3 */}
 
-<div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg">
+<motion.div
+whileHover={{scale:1.04}}
+className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg"
+>
 
 <h3 className="text-5xl font-bold text-white mb-2">
 Unlimited
@@ -190,7 +253,7 @@ Unlimited scans
 </p>
 
 <p className="text-white font-semibold text-lg mb-6">
-$9.99 / month
+{billing==="monthly" ? "$9.99 / month" : "$96 / year"}
 </p>
 
 <div className="text-gray-400 text-sm space-y-2 mb-8">
@@ -205,11 +268,11 @@ $9.99 / month
 Subscribe
 </button>
 
-</div>
+</motion.div>
 
 </div>
 
-<div className="flex justify-center mt-10">
+<div className="flex justify-center mt-12">
 
 <button
 onClick={()=>setShowPlans(false)}
@@ -220,11 +283,14 @@ Close
 
 </div>
 
-</div>
+</motion.div>
 
-</div>
+</motion.div>
 
 )}
+
+</AnimatePresence>
+
 
 {/* TOP BAR */}
 
