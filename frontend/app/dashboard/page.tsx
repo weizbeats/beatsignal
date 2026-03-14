@@ -13,6 +13,7 @@ const [loading,setLoading] = useState(false)
 const [progress,setProgress] = useState(0)
 const [user,setUser] = useState("")
 const [result,setResult] = useState<any[]>([])
+const [menuOpen,setMenuOpen] = useState(false)
 
 useEffect(()=>{
 
@@ -112,25 +113,54 @@ Plan: Free
 <button
 className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black text-xs font-semibold px-4 py-1 rounded-md w-fit transition hover:scale-105"
 >
-Actualizar Plan
+Update Plan
 </button>
 
 </div>
 
 {/* RIGHT SIDE */}
 
-<div className="flex items-center gap-4">
+<div className="relative">
 
-<p className="text-gray-300 text-sm">
+<button
+onClick={()=>setMenuOpen(!menuOpen)}
+className="flex items-center gap-2 text-sm text-gray-300 hover:text-white border border-white/10 px-4 py-1 rounded-md transition"
+>
+
 {user}
-</p>
+
+<span className="text-xs opacity-70">
+▼
+</span>
+
+</button>
+
+{menuOpen && (
+
+<div className="absolute right-0 mt-2 w-44 bg-[#111] border border-white/10 rounded-lg shadow-xl overflow-hidden">
+
+<button
+className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]"
+>
+Settings
+</button>
+
+<button
+className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]"
+>
+Billing
+</button>
 
 <button
 onClick={logout}
-className="text-sm text-gray-400 hover:text-white border border-white/10 px-4 py-1 rounded-md transition"
+className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#1b1b1b]"
 >
 Logout
 </button>
+
+</div>
+
+)}
 
 </div>
 
