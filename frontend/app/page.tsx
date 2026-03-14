@@ -3,7 +3,7 @@
 import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion,AnimatePresence } from "framer-motion"
-import ScanProgress from "../../components/ScanProgress"
+import ScanProgress from "../components/ScanProgress"
 
 export default function Dashboard(){
 
