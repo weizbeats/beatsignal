@@ -9,10 +9,10 @@ import os
 from datetime import datetime, timedelta
 
 from services.scanner import scan_url
-from services.paypal_service import create_order, capture_order
 
 from jose import jwt
 from passlib.hash import bcrypt
+
 
 app = FastAPI()
 
@@ -23,6 +23,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 USERS_FILE = "database/users.json"
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -56,23 +57,24 @@ def verify_token(token: str):
 
 
 # -------------------------
-# USERS STORAGE
+# STORAGE
 # -------------------------
 
 def load_users():
 
     if not os.path.exists(USERS_FILE):
-        with open(USERS_FILE,"w") as f:
-            json.dump([],f)
 
-    with open(USERS_FILE,"r") as f:
+        with open(USERS_FILE, "w") as f:
+            json.dump([], f)
+
+    with open(USERS_FILE, "r") as f:
         return json.load(f)
 
 
 def save_users(users):
 
-    with open(USERS_FILE,"w") as f:
-        json.dump(users,f)
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f)
 
 
 # -------------------------
@@ -86,7 +88,10 @@ def register(data: dict):
     password = data.get("password")
 
     if not email or not password:
-        return {"success":False}
+        return {
+            "success": False,
+            "error": "missing_fields"
+        }
 
     email = email.lower().strip()
     password = password.strip()[:72]
@@ -94,22 +99,36 @@ def register(data: dict):
     users = load_users()
 
     for u in users:
+
         if u["email"] == email:
-            return {"success":False}
+
+            return {
+                "success": False,
+                "error": "email_exists"
+            }
 
     hashed = bcrypt.hash(password)
 
-    users.append({
-        "email":email,
-        "password":hashed,
-        "plan":"trial",
-        "credits":5,
-        "admin":email=="weizbeat@gmail.com"
-    })
+    new_user = {
+        "email": email,
+        "password": hashed,
+        "plan": "trial",
+        "credits": 5,
+        "admin": email == "weizbeat@gmail.com"
+    }
+
+    users.append(new_user)
 
     save_users(users)
 
-    return {"success":True}
+    token = create_token(email)
+
+    return {
+        "success": True,
+        "token": token,
+        "plan": new_user["plan"],
+        "credits": new_user["credits"]
+    }
 
 
 # -------------------------
@@ -117,44 +136,58 @@ def register(data: dict):
 # -------------------------
 
 @app.post("/login")
-def login(data:dict):
+def login(data: dict):
 
     email = data.get("email")
     password = data.get("password")
 
     if not email or not password:
-        return {"success":False}
 
-    email=email.lower().strip()
-    password=password.strip()[:72]
+        return {
+            "success": False,
+            "error": "missing_fields"
+        }
+
+    email = email.lower().strip()
+    password = password.strip()[:72]
 
     users = load_users()
 
     for u in users:
 
-        if u["email"]==email:
+        if u["email"] == email:
 
-            if bcrypt.verify(password,u["password"]):
+            if bcrypt.verify(password, u["password"]):
 
-                token=create_token(email)
+                token = create_token(email)
 
                 if u.get("admin"):
 
-                    return{
-                        "success":True,
-                        "token":token,
-                        "plan":"admin",
-                        "credits":-1
+                    return {
+                        "success": True,
+                        "token": token,
+                        "plan": "admin",
+                        "credits": -1
                     }
 
-                return{
-                    "success":True,
-                    "token":token,
-                    "plan":u["plan"],
-                    "credits":u["credits"]
+                return {
+                    "success": True,
+                    "token": token,
+                    "plan": u["plan"],
+                    "credits": u["credits"]
                 }
 
-    return {"success":False}
+            else:
+
+                return {
+                    "success": False,
+                    "error": "wrong_password"
+                }
+
+    return {
+        "success": False,
+        "error": "user_not_found"
+    }
 
 
 # -------------------------
@@ -162,37 +195,37 @@ def login(data:dict):
 # -------------------------
 
 @app.post("/scan")
-def scan(data:dict):
+def scan(data: dict):
 
-    token=data.get("token")
-    url=data.get("url")
+    token = data.get("token")
+    url = data.get("url")
 
-    payload=verify_token(token)
+    payload = verify_token(token)
 
     if not payload:
-        return {"error":"invalid_token"}
+        return {"error": "invalid_token"}
 
-    email=payload["email"]
+    email = payload["email"]
 
-    users=load_users()
+    users = load_users()
 
     for u in users:
 
-        if u["email"]==email:
+        if u["email"] == email:
 
-            if not u.get("admin") and u["plan"]!="unlimited":
+            if not u.get("admin") and u["plan"] != "unlimited":
 
-                if u["credits"]<=0:
-                    return {"error":"no_credits"}
+                if u["credits"] <= 0:
+                    return {"error": "no_credits"}
 
-                u["credits"]-=1
+                u["credits"] -= 1
                 save_users(users)
 
             break
 
-    results=scan_url(url)
+    results = scan_url(url)
 
-    return{
-        "success":True,
-        "results":results
+    return {
+        "success": True,
+        "results": results
     }
