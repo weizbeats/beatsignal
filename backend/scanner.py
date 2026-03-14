@@ -19,9 +19,7 @@ def scan_url(url):
 
     audio_file = f"{TEMP_FOLDER}/{uid}.%(ext)s"
 
-    # segmentos
     segments = [0, 30, 60, 90]
-
     samples = []
 
     print("1️⃣ Downloading audio from YouTube...")
@@ -71,7 +69,7 @@ def scan_url(url):
 
             if os.path.exists(sample_file):
 
-                print(f"✔ Sample {i} created ({start}s)")
+                print(f"✔ Sample {i+1} created ({start}s)")
 
                 samples.append(sample_file)
 
@@ -119,7 +117,7 @@ def scan_url(url):
 
         matches = unique_matches
 
-        print(f"🎵 Unique matches: {len(matches)}")
+        print(f"🎵 Unique matches found: {len(matches)}")
 
         print("4️⃣ Cleaning temp files...")
 

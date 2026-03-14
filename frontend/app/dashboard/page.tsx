@@ -99,11 +99,25 @@ return(
 
 {/* TOP BAR */}
 
-<div className="flex justify-between items-center px-10 pt-8">
+<div className="flex justify-between items-start px-10 pt-8">
+
+{/* LEFT SIDE */}
+
+<div className="flex flex-col gap-2">
 
 <div className="text-sm text-[#14E6C3] font-medium">
 Plan: Free
 </div>
+
+<button
+className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black text-xs font-semibold px-4 py-1 rounded-md w-fit transition hover:scale-105"
+>
+Actualizar Plan
+</button>
+
+</div>
+
+{/* RIGHT SIDE */}
 
 <div className="flex items-center gap-4">
 
@@ -121,6 +135,9 @@ Logout
 </div>
 
 </div>
+
+
+{/* MAIN */}
 
 <div className="w-full flex justify-center">
 
