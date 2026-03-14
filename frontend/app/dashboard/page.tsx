@@ -78,7 +78,7 @@ router.push("/")
 
 async function handleScan(){
 
-if(!url || loading) return   // 🔒 BLOQUEA SPAM
+if(!url || loading) return
 
 setLoading(true)
 setProgress(0)
@@ -294,12 +294,22 @@ className="flex-1 bg-black/40 border border-white/10 text-white p-4 rounded-lg o
 <button
 onClick={handleScan}
 disabled={loading}
-className={`px-6 rounded-lg font-semibold transition
+className={`px-6 rounded-lg font-semibold flex items-center gap-2 transition
 ${loading
 ? "bg-gray-600 cursor-not-allowed"
 : "bg-[#14E6C3] hover:bg-[#0FD4B5] text-black"
 }`}
 >
+
+{loading && (
+
+<motion.div
+animate={{rotate:360}}
+transition={{repeat:Infinity,duration:1,ease:"linear"}}
+className="w-4 h-4 border-2 border-black border-t-transparent rounded-full"
+/>
+
+)}
 
 {loading ? "Scanning..." : "Scan"}
 
