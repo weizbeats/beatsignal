@@ -2,7 +2,7 @@
 
 import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
-import ScanProgress from "@/components/ScanProgress"
+import ScanProgress from "../../components/ScanProgress"
 
 export default function Dashboard(){
 
@@ -15,32 +15,22 @@ export default function Dashboard(){
 
   useEffect(()=>{
 
-    if(typeof window !== "undefined"){
+    const savedUser = localStorage.getItem("user")
 
-      const savedUser = localStorage.getItem("user")
-
-      if(savedUser){
-        setUser(savedUser)
-      }
-
+    if(savedUser){
+      setUser(savedUser)
     }
 
   },[])
 
-
   function logout(){
 
-    if(typeof window !== "undefined"){
-
-      localStorage.removeItem("session")
-      localStorage.removeItem("user")
-
-    }
+    localStorage.removeItem("session")
+    localStorage.removeItem("user")
 
     router.push("/login")
 
   }
-
 
   async function handleScan(){
 
@@ -90,13 +80,9 @@ export default function Dashboard(){
 
   }
 
-
   return(
 
     <div className="w-full min-h-screen">
-
-
-      {/* TOP BAR */}
 
       <div className="flex justify-between items-center px-10 pt-8">
 
@@ -112,14 +98,7 @@ export default function Dashboard(){
 
           <button
             onClick={logout}
-            className="
-            text-sm
-            text-gray-400
-            hover:text-white
-            border border-white/10
-            px-4 py-1 rounded-md
-            transition
-            "
+            className="text-sm text-gray-400 border border-white/10 px-4 py-1 rounded-md"
           >
             Logout
           </button>
@@ -128,25 +107,13 @@ export default function Dashboard(){
 
       </div>
 
-
-
       <div className="w-full flex justify-center">
 
         <div className="w-full max-w-5xl px-8 py-16">
 
-
-          {/* TITLE */}
-
           <div className="text-center mb-14">
 
-            <h1 className="
-            text-5xl font-semibold mb-3
-            bg-gradient-to-r
-            from-white
-            to-[#14E6C3]
-            bg-clip-text
-            text-transparent
-            ">
+            <h1 className="text-5xl font-semibold mb-3 text-white">
               BeatSignal
             </h1>
 
@@ -156,11 +123,7 @@ export default function Dashboard(){
 
           </div>
 
-
-
-          {/* SCAN BAR */}
-
-          <div className="card-glow bg-[#0b0b0b]/80 backdrop-blur-md border border-white/5 rounded-xl p-6 mb-8">
+          <div className="bg-[#0b0b0b] border border-white/5 rounded-xl p-6 mb-8">
 
             <div className="flex gap-4">
 
@@ -168,33 +131,12 @@ export default function Dashboard(){
                 placeholder="Paste YouTube link..."
                 value={url}
                 onChange={(e)=>setUrl(e.target.value)}
-                className="
-                flex-1
-                bg-black/40
-                border border-white/10
-                text-white
-                p-4
-                rounded-lg
-                outline-none
-                focus:border-[#14E6C3]
-                focus:shadow-[0_0_20px_rgba(20,230,195,0.25)]
-                transition
-                "
+                className="flex-1 bg-black border border-white/10 text-white p-4 rounded-lg"
               />
 
               <button
                 onClick={handleScan}
-                className="
-                bg-[#14E6C3]
-                hover:bg-[#0FD4B5]
-                text-black
-                font-semibold
-                px-6
-                rounded-lg
-                hover:scale-105
-                hover:shadow-[0_0_25px_rgba(20,230,195,0.5)]
-                transition
-                "
+                className="bg-[#14E6C3] text-black font-semibold px-6 rounded-lg"
               >
                 Scan
               </button>
@@ -203,35 +145,9 @@ export default function Dashboard(){
 
           </div>
 
-
-
-          {/* PROGRESS */}
-
           {loading && (
-
-            <div className="mb-12">
-
-              <ScanProgress progress={progress}/>
-
-            </div>
-
+            <ScanProgress progress={progress}/>
           )}
-
-
-
-          {/* RECENT SCANS */}
-
-          <div className="card-glow bg-[#0b0b0b]/80 backdrop-blur-md border border-white/5 rounded-xl p-6">
-
-            <h2 className="text-white mb-4 text-lg">
-              Recent scans
-            </h2>
-
-            <p className="text-gray-500">
-              No scans yet
-            </p>
-
-          </div>
 
         </div>
 

@@ -1,23 +1,19 @@
 import "./globals.css"
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body>
 
-return (
+        <div className="bg-glow"></div>
 
-```
-<html lang="en">
+        {children}
 
-  <body>
-
-    <div className="bg-glow"></div>
-
-    {children}
-
-  </body>
-
-</html>
-```
-
-)
-
+      </body>
+    </html>
+  )
 }

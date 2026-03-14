@@ -11,59 +11,29 @@ await loadSlim(engine)
 
 return(
 
-```
 <Particles
-  id="tsparticles"
-  init={particlesInit}
-  options={{
+id="tsparticles"
+init={particlesInit}
 
-    background:{
-      color:"#000000"
-    },
+options={{
 
-    fpsLimit:60,
+background:{ color:"#000000" },
 
-    particles:{
+fpsLimit:60,
 
-      number:{
-        value:80
-      },
+particles:{
+number:{ value:80 },
+color:{ value:"#14E6C3" },
+move:{ enable:true, speed:0.2 },
+size:{ value:{ min:1, max:2 } },
+opacity:{ value:{ min:0.05, max:0.3 } }
+}
 
-      color:{
-        value:"#14E6C3"
-      },
+}}
 
-      links:{
-        enable:false
-      },
-
-      move:{
-        enable:true,
-        speed:0.2
-      },
-
-      size:{
-        value:{
-          min:1,
-          max:2
-        }
-      },
-
-      opacity:{
-        value:{
-          min:0.05,
-          max:0.3
-        }
-      }
-
-    }
-
-  }}
-
-  className="fixed top-0 left-0 w-full h-full -z-10"
+className="fixed top-0 left-0 w-full h-full -z-10"
 
 />
-```
 
 )
 

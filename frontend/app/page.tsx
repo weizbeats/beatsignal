@@ -15,7 +15,6 @@ export default function LoginPage(){
   async function handleLogin(e:any){
 
     e.preventDefault()
-
     setError("")
 
     try{
@@ -80,7 +79,7 @@ export default function LoginPage(){
             placeholder="Email"
             value={email}
             onChange={(e)=>setEmail(e.target.value)}
-            className="w-full p-4 mb-4 rounded-lg bg-[#0b0b0b] border border-[#222] text-white focus:outline-none focus:border-[#3b82f6] transition"
+            className="w-full p-4 mb-4 rounded-lg bg-[#0b0b0b] border border-[#222] text-white"
           />
 
           <input
@@ -88,7 +87,7 @@ export default function LoginPage(){
             placeholder="Password"
             value={password}
             onChange={(e)=>setPassword(e.target.value)}
-            className="w-full p-4 mb-6 rounded-lg bg-[#0b0b0b] border border-[#222] text-white focus:outline-none focus:border-[#3b82f6] transition"
+            className="w-full p-4 mb-6 rounded-lg bg-[#0b0b0b] border border-[#222] text-white"
           />
 
           {error && (
@@ -99,7 +98,7 @@ export default function LoginPage(){
 
           <button
             type="submit"
-            className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] transition p-4 rounded-lg text-white font-medium"
+            className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] p-4 rounded-lg text-white"
           >
             Login
           </button>
@@ -107,11 +106,12 @@ export default function LoginPage(){
         </form>
 
         <p className="text-gray-400 text-sm mt-6 text-center">
+
           Don't have an account?
 
           <span
             onClick={()=>router.push("/register")}
-            className="text-blue-400 cursor-pointer ml-2 hover:text-blue-300"
+            className="text-blue-400 cursor-pointer ml-2"
           >
             Register
           </span>
