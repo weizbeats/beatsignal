@@ -6,122 +6,141 @@ import { motion } from "framer-motion"
 
 export default function LoginPage(){
 
-  const router = useRouter()
+const router = useRouter()
 
-  const [email,setEmail] = useState("")
-  const [password,setPassword] = useState("")
-  const [error,setError] = useState("")
+const [email,setEmail] = useState("")
+const [password,setPassword] = useState("")
+const [error,setError] = useState("")
+const [loading,setLoading] = useState(false)
 
-  async function handleLogin(e:any){
+async function handleLogin(e:any){
 
-    e.preventDefault()
-    setError("")
+e.preventDefault()
 
-    try{
+setError("")
+setLoading(true)
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/login`,
-        {
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
-          body:JSON.stringify({
-            email,
-            password
-          })
-        }
-      )
+try{
 
-      const data = await res.json()
+const res = await fetch(
+process.env.NEXT_PUBLIC_API_URL + "/login",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+password
+})
+})
 
-      if(!data.success){
-        setError("Invalid credentials")
-        return
-      }
+const data = await res.json()
 
-      localStorage.setItem("session","true")
-      localStorage.setItem("user",email)
+if(!data.success){
 
-      router.push("/dashboard")
+setError("Invalid credentials")
+setLoading(false)
+return
 
-    }catch(err){
+}
 
-      setError("Login failed")
+localStorage.setItem("session","true")
+localStorage.setItem("user",email)
 
-    }
+router.push("/dashboard")
 
-  }
+}catch(e){
 
-  return(
+setError("Login failed")
+setLoading(false)
 
-    <div className="h-screen bg-[#0a0a0a] flex items-center justify-center">
+}
 
-      <motion.div
-        initial={{opacity:0,y:40}}
-        animate={{opacity:1,y:0}}
-        transition={{duration:0.4}}
-        className="bg-[#111] w-[420px] p-10 rounded-2xl border border-[#1f1f1f] shadow-xl"
-      >
+}
 
-        <h1 className="text-white text-3xl font-semibold mb-2 text-center">
-          Welcome back
-        </h1>
+return(
 
-        <p className="text-gray-400 text-center mb-8 text-sm">
-          Login to BeatSignal
-        </p>
+<div className="min-h-screen flex items-center justify-center px-6">
 
-        <form onSubmit={handleLogin}>
+<motion.div
+initial={{opacity:0,y:30}}
+animate={{opacity:1,y:0}}
+transition={{duration:0.4}}
+className="w-full max-w-md bg-[#0b0b0b]/70 backdrop-blur-xl border border-white/10 rounded-2xl p-10 shadow-[0_0_60px_rgba(20,230,195,0.08)]"
+>
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e)=>setEmail(e.target.value)}
-            className="w-full p-4 mb-4 rounded-lg bg-[#0b0b0b] border border-[#222] text-white"
-          />
+{/* TITLE */}
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)}
-            className="w-full p-4 mb-6 rounded-lg bg-[#0b0b0b] border border-[#222] text-white"
-          />
+<div className="text-center mb-8">
 
-          {error && (
-            <p className="text-red-400 mb-4 text-sm">
-              {error}
-            </p>
-          )}
+<h1 className="text-3xl font-semibold mb-2 bg-gradient-to-r from-white to-[#14E6C3] bg-clip-text text-transparent">
+Welcome back
+</h1>
 
-          <button
-            type="submit"
-            className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] p-4 rounded-lg text-white"
-          >
-            Login
-          </button>
+<p className="text-gray-400 text-sm">
+Login to BeatSignal
+</p>
 
-        </form>
+</div>
 
-        <p className="text-gray-400 text-sm mt-6 text-center">
+{/* FORM */}
 
-          Don't have an account?
+<form onSubmit={handleLogin}>
 
-          <span
-            onClick={()=>router.push("/register")}
-            className="text-blue-400 cursor-pointer ml-2"
-          >
-            Register
-          </span>
+<input
+type="email"
+placeholder="Email"
+value={email}
+onChange={(e)=>setEmail(e.target.value)}
+className="w-full p-4 mb-4 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#14E6C3] focus:shadow-[0_0_20px_rgba(20,230,195,0.35)] transition"
+/>
 
-        </p>
+<input
+type="password"
+placeholder="Password"
+value={password}
+onChange={(e)=>setPassword(e.target.value)}
+className="w-full p-4 mb-6 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#14E6C3] focus:shadow-[0_0_20px_rgba(20,230,195,0.35)] transition"
+/>
 
-      </motion.div>
+{error && (
 
-    </div>
+<p className="text-red-400 text-sm mb-4">
+{error}
+</p>
 
-  )
+)}
+
+<button
+type="submit"
+disabled={loading}
+className="w-full bg-[#14E6C3] hover:bg-[#0FD4B5] text-black font-semibold p-4 rounded-lg transition hover:scale-[1.02]"
+>
+{loading ? "Logging in..." : "Login"}
+</button>
+
+</form>
+
+{/* REGISTER */}
+
+<p className="text-gray-400 text-sm mt-6 text-center">
+
+Don't have an account?
+
+<span
+onClick={()=>router.push("/register")}
+className="text-[#14E6C3] cursor-pointer ml-2 hover:underline"
+>
+Register
+</span>
+
+</p>
+
+</motion.div>
+
+</div>
+
+)
 
 }
