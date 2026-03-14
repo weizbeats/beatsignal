@@ -14,6 +14,7 @@ const [progress,setProgress] = useState(0)
 const [user,setUser] = useState("")
 const [result,setResult] = useState<any[]>([])
 const [menuOpen,setMenuOpen] = useState(false)
+const [showPlans,setShowPlans] = useState(false)
 
 useEffect(()=>{
 
@@ -98,6 +99,101 @@ return(
 
 <div className="w-full min-h-screen">
 
+{/* PLAN MODAL */}
+
+{showPlans && (
+
+<div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+
+<div className="bg-[#0b0b0b] border border-white/10 rounded-2xl p-10 w-full max-w-5xl relative">
+
+<button
+onClick={()=>setShowPlans(false)}
+className="absolute right-6 top-6 text-gray-400 hover:text-white text-xl"
+>
+✕
+</button>
+
+<h2 className="text-3xl text-white text-center mb-10">
+Choose your plan
+</h2>
+
+<div className="grid md:grid-cols-3 gap-8">
+
+{/* PLAN 1 */}
+
+<div className="bg-black/40 border border-white/10 rounded-xl p-6 text-center">
+
+<h3 className="text-4xl text-white mb-2">
+50
+</h3>
+
+<p className="text-gray-400 mb-4">
+Monthly scans
+</p>
+
+<p className="text-white font-semibold mb-6">
+$2.49 / month
+</p>
+
+<button className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg hover:scale-105 transition">
+Subscribe
+</button>
+
+</div>
+
+{/* PLAN 2 */}
+
+<div className="bg-black/40 border border-[#14E6C3] rounded-xl p-6 text-center shadow-[0_0_30px_rgba(20,230,195,0.25)]">
+
+<h3 className="text-4xl text-white mb-2">
+100
+</h3>
+
+<p className="text-gray-400 mb-4">
+Monthly scans
+</p>
+
+<p className="text-white font-semibold mb-6">
+$4.99 / month
+</p>
+
+<button className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg hover:scale-105 transition">
+Subscribe
+</button>
+
+</div>
+
+{/* PLAN 3 */}
+
+<div className="bg-black/40 border border-white/10 rounded-xl p-6 text-center">
+
+<h3 className="text-4xl text-white mb-2">
+Unlimited
+</h3>
+
+<p className="text-gray-400 mb-4">
+Unlimited scans
+</p>
+
+<p className="text-white font-semibold mb-6">
+$9.99 / month
+</p>
+
+<button className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg hover:scale-105 transition">
+Subscribe
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+)}
+
 {/* TOP BAR */}
 
 <div className="flex justify-between items-start px-10 pt-8">
@@ -111,6 +207,7 @@ Plan: Free
 </div>
 
 <button
+onClick={()=>setShowPlans(true)}
 className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black text-xs font-semibold px-4 py-1 rounded-md w-fit transition hover:scale-105"
 >
 Update Plan
