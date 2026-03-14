@@ -1,14 +1,13 @@
 "use client"
 
-import { useCallback } from "react"
 import Particles from "react-tsparticles"
-import { loadFull } from "tsparticles"
+import { loadSlim } from "tsparticles-slim"
 
 export default function BackgroundParticles(){
 
-  const particlesInit = useCallback(async (engine:any)=>{
-    await loadFull(engine)
-  },[])
+  async function particlesInit(engine:any){
+    await loadSlim(engine)
+  }
 
   return(
 
@@ -16,11 +15,11 @@ export default function BackgroundParticles(){
       id="tsparticles"
       init={particlesInit}
       options={{
-        fullScreen:false,
-
         background:{
-          color:"transparent"
+          color:"#000000"
         },
+
+        fpsLimit:60,
 
         particles:{
           number:{
@@ -33,27 +32,30 @@ export default function BackgroundParticles(){
 
           links:{
             enable:true,
-            color:"#14E6C3",
             distance:150,
-            opacity:0.2
+            color:"#14E6C3",
+            opacity:0.25,
+            width:1
           },
 
           move:{
             enable:true,
-            speed:0.6
-          },
-
-          opacity:{
-            value:0.3
+            speed:1,
+            direction:"none",
+            outModes:"bounce"
           },
 
           size:{
             value:{min:1,max:3}
+          },
+
+          opacity:{
+            value:0.6
           }
         }
       }}
 
-      className="fixed inset-0 -z-10"
+      className="fixed top-0 left-0 w-full h-full -z-10"
     />
 
   )
