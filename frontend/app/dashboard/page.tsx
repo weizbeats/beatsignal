@@ -1,34 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Search, Loader2 } from "lucide-react"
+import { useState } from "react"
 
 export default function Dashboard(){
 
   const [url,setUrl] = useState("")
   const [loading,setLoading] = useState(false)
-  const [step,setStep] = useState(0)
-
-  const steps = [
-    "Analyzing audio...",
-    "Matching database...",
-    "Detecting samples..."
-  ]
-
-  useEffect(()=>{
-
-    if(!loading) return
-
-    const interval = setInterval(()=>{
-
-      setStep((prev)=> (prev + 1) % steps.length)
-
-    },1500)
-
-    return ()=> clearInterval(interval)
-
-  },[loading])
 
   async function handleScan(){
 
@@ -38,16 +15,13 @@ export default function Dashboard(){
 
     try{
 
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/scan`,
-        {
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
-          body:JSON.stringify({url})
-        }
-      )
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scan`,{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({url})
+      })
 
     }catch(e){
       console.log(e)
@@ -59,15 +33,13 @@ export default function Dashboard(){
 
   return(
 
-    <div className="p-12 max-w-5xl">
+    <div className="min-h-screen bg-[#050505] flex justify-center">
 
-      <motion.div
-        initial={{opacity:0,y:20}}
-        animate={{opacity:1,y:0}}
-        transition={{duration:0.4}}
-      >
+      <div className="w-full max-w-5xl px-8 py-12">
 
-        <h1 className="text-3xl font-semibold mb-2">
+        {/* TITLE */}
+
+        <h1 className="text-3xl text-white font-semibold mb-2">
           BeatSignal Dashboard
         </h1>
 
@@ -75,128 +47,92 @@ export default function Dashboard(){
           Detect stolen beats on YouTube
         </p>
 
-      </motion.div>
 
+        {/* SCAN BAR */}
 
-      <motion.div
-        initial={{opacity:0,y:20}}
-        animate={{opacity:1,y:0}}
-        transition={{delay:0.1}}
-        className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-6 mb-12"
-      >
+        <div className="bg-[#0d0d0d] border border-[#1c1c1c] rounded-xl p-6 mb-10">
 
-        <div className="flex gap-3">
-
-          <div className="flex items-center bg-[#0b0b0b] border border-[#222] rounded-lg px-3 flex-1">
-
-            <Search size={18} className="text-gray-400 mr-2"/>
+          <div className="flex gap-4">
 
             <input
+              placeholder="Paste YouTube link..."
               value={url}
               onChange={(e)=>setUrl(e.target.value)}
-              placeholder="Paste YouTube link..."
-              className="flex-1 p-4 bg-transparent outline-none"
+              className="flex-1 bg-black border border-[#262626] text-white p-4 rounded-lg outline-none focus:border-green-500 transition"
             />
+
+            <button
+              onClick={handleScan}
+              className="bg-green-500 hover:bg-green-400 text-black font-semibold px-6 rounded-lg transition"
+            >
+              {loading ? "Scanning..." : "Scan"}
+            </button>
 
           </div>
 
-          <button
-            onClick={handleScan}
-            disabled={loading}
-            className="bg-[#22c55e] hover:bg-[#16a34a] px-8 rounded-lg font-medium transition"
-          >
+        </div>
 
-            {loading ? "Scanning..." : "Scan"}
 
-          </button>
+        {/* STATS */}
+
+        <div className="grid grid-cols-3 gap-6 mb-12">
+
+          <div className="bg-[#0d0d0d] border border-[#1c1c1c] rounded-xl p-6">
+
+            <p className="text-gray-400 text-sm mb-2">
+              Scans today
+            </p>
+
+            <p className="text-white text-2xl font-semibold">
+              0
+            </p>
+
+          </div>
+
+
+          <div className="bg-[#0d0d0d] border border-[#1c1c1c] rounded-xl p-6">
+
+            <p className="text-gray-400 text-sm mb-2">
+              Matches found
+            </p>
+
+            <p className="text-white text-2xl font-semibold">
+              0
+            </p>
+
+          </div>
+
+
+          <div className="bg-[#0d0d0d] border border-[#1c1c1c] rounded-xl p-6">
+
+            <p className="text-gray-400 text-sm mb-2">
+              Current plan
+            </p>
+
+            <p className="text-green-400 text-xl font-semibold">
+              Free
+            </p>
+
+          </div>
 
         </div>
 
-      </motion.div>
 
+        {/* RECENT SCANS */}
 
-      {loading && (
+        <div className="bg-[#0d0d0d] border border-[#1c1c1c] rounded-xl p-6">
 
-        <motion.div
-          initial={{opacity:0}}
-          animate={{opacity:1}}
-          className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-10 mb-12 flex flex-col items-center"
-        >
-
-          <Loader2 className="animate-spin text-green-400 mb-4" size={40}/>
-
-          <p className="text-gray-300 text-lg">
-            {steps[step]}
-          </p>
-
-        </motion.div>
-
-      )}
-
-
-      <motion.div
-        initial={{opacity:0}}
-        animate={{opacity:1}}
-        transition={{delay:0.3}}
-        className="grid grid-cols-3 gap-6 mb-12"
-      >
-
-        <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-6">
-
-          <p className="text-gray-400 text-sm">
-            Scans today
-          </p>
-
-          <h2 className="text-2xl font-semibold mt-2">
-            0
+          <h2 className="text-white mb-4">
+            Recent scans
           </h2>
 
-        </div>
-
-        <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-6">
-
-          <p className="text-gray-400 text-sm">
-            Matches found
+          <p className="text-gray-500">
+            No scans yet
           </p>
 
-          <h2 className="text-2xl font-semibold mt-2">
-            0
-          </h2>
-
         </div>
 
-        <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-6">
-
-          <p className="text-gray-400 text-sm">
-            Current plan
-          </p>
-
-          <h2 className="text-2xl font-semibold mt-2 text-green-400">
-            Free
-          </h2>
-
-        </div>
-
-      </motion.div>
-
-
-      <motion.div
-        initial={{opacity:0}}
-        animate={{opacity:1}}
-        transition={{delay:0.3}}
-      >
-
-        <h2 className="text-xl font-semibold mb-6">
-          Recent scans
-        </h2>
-
-        <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-6 text-gray-400">
-
-          No scans yet
-
-        </div>
-
-      </motion.div>
+      </div>
 
     </div>
 
