@@ -2,7 +2,7 @@
 
 import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion,AnimatePresence } from "framer-motion"
 import ScanProgress from "../../components/ScanProgress"
 
 export default function Dashboard(){
@@ -32,6 +32,12 @@ return
 }
 
 setUser(savedUser)
+
+if(savedUser === "weizbeat@gmail.com"){
+setIsAdmin(true)
+setPlan("admin")
+setCredits(-1)
+}
 
 },[])
 
@@ -90,20 +96,13 @@ token
 const data = await res.json()
 
 if(data.error === "invalid_token"){
-
-alert("Session expired")
-
 logout()
-
 return
 }
 
 if(data.error === "no_credits"){
-
 alert("No credits left")
-
 setLoading(false)
-
 return
 }
 
@@ -115,10 +114,6 @@ setResult(data.results)
 }
 else{
 setResult([])
-}
-
-if(plan !== "unlimited"){
-setCredits((prev)=>Math.max(prev-1,0))
 }
 
 }catch(e){
@@ -144,11 +139,13 @@ return(
 
 <div className="flex justify-between items-start px-10 pt-8">
 
+{/* LEFT PANEL */}
+
 <div className="flex flex-col gap-2">
 
 <div className={`text-sm font-semibold px-3 py-1 rounded-md w-fit
 ${isAdmin
-? "bg-yellow-400 text-black shadow-[0_0_15px_rgba(255,215,0,0.7)]"
+? "bg-yellow-400 text-black shadow-[0_0_20px_rgba(255,215,0,0.7)]"
 : "text-[#14E6C3]"
 }`}>
 
@@ -157,10 +154,19 @@ ${isAdmin
 </div>
 
 <div className="text-xs text-gray-400">
-Credits: {credits}
+{isAdmin ? "Unlimited scans" : `Credits: ${credits}`}
 </div>
 
+<button
+className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black text-xs font-semibold px-4 py-1 rounded-md w-fit"
+>
+Upgrade Plan
+</button>
+
 </div>
+
+
+{/* USER MENU */}
 
 <div className="relative">
 
@@ -175,6 +181,38 @@ className="flex items-center gap-2 text-sm text-gray-300 hover:text-white border
 
 </button>
 
+<AnimatePresence>
+
+{menuOpen && (
+
+<motion.div
+initial={{opacity:0,y:-10}}
+animate={{opacity:1,y:0}}
+exit={{opacity:0,y:-10}}
+className="absolute right-0 mt-2 w-44 bg-[#111] border border-white/10 rounded-lg shadow-xl"
+>
+
+<button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]">
+Account
+</button>
+
+<button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]">
+Billing
+</button>
+
+<button
+onClick={logout}
+className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#1b1b1b]"
+>
+Logout
+</button>
+
+</motion.div>
+
+)}
+
+</AnimatePresence>
+
 </div>
 
 </div>
@@ -186,8 +224,7 @@ className="flex items-center gap-2 text-sm text-gray-300 hover:text-white border
 
 <div className="w-full max-w-5xl px-8 py-16">
 
-
-{/* LOGO SECTION */}
+{/* LOGO */}
 
 <div className="relative text-center mb-16 flex flex-col items-center">
 
@@ -205,13 +242,7 @@ animate={{scale:[1,1.55],opacity:[0.5,0]}}
 transition={{duration:6,repeat:Infinity,ease:"easeOut"}}
 />
 
-<motion.div
-className="absolute w-[420px] h-[420px] rounded-full border border-[#14E6C3]/20"
-animate={{scale:[1,1.75],opacity:[0.4,0]}}
-transition={{duration:7,repeat:Infinity,ease:"easeOut"}}
-/>
-
-<h1 className="relative text-5xl font-semibold mb-3 bg-gradient-to-r from-white via-[#14E6C3] to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(20,230,195,0.35)]">
+<h1 className="relative text-5xl font-semibold mb-3 bg-gradient-to-r from-white via-[#14E6C3] to-emerald-400 bg-clip-text text-transparent">
 BeatSignal
 </h1>
 
@@ -222,7 +253,7 @@ Detect stolen beats on YouTube
 </div>
 
 
-{/* SEARCH BOX */}
+{/* SEARCH */}
 
 <div className="bg-[#0b0b0b]/70 backdrop-blur-md border border-[#14E6C3]/20 rounded-xl p-6 mb-8">
 
