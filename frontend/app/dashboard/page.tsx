@@ -23,55 +23,29 @@ const [menuOpen,setMenuOpen] = useState(false)
 
 useEffect(()=>{
 
+const token = localStorage.getItem("token")
 const savedUser = localStorage.getItem("user")
 
-if(!savedUser){
+if(!token || !savedUser){
 router.push("/")
 return
 }
 
 setUser(savedUser)
-loadUser(savedUser)
 
 },[])
 
-async function loadUser(email:string){
-
-try{
-
-const res = await fetch(
-process.env.NEXT_PUBLIC_API_URL + "/login",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-email,
-password:""
-})
-})
-
-const data = await res.json()
-
-setPlan(data.plan || "trial")
-setCredits(data.credits || 0)
-setIsAdmin(data.admin || false)
-
-}catch(e){
-console.log(e)
-}
-
-}
 
 function logout(){
 
 localStorage.removeItem("session")
 localStorage.removeItem("user")
+localStorage.removeItem("token")
 
 router.push("/")
 
 }
+
 
 async function handleScan(){
 
@@ -96,6 +70,7 @@ setProgress(fakeProgress)
 try{
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL
+const token = localStorage.getItem("token")
 
 const res = await fetch(apiUrl + "/scan",{
 
@@ -107,12 +82,30 @@ headers:{
 
 body:JSON.stringify({
 url,
-user
+token
 })
 
 })
 
 const data = await res.json()
+
+if(data.error === "invalid_token"){
+
+alert("Session expired")
+
+logout()
+
+return
+}
+
+if(data.error === "no_credits"){
+
+alert("No credits left")
+
+setLoading(false)
+
+return
+}
 
 if(Array.isArray(data)){
 setResult(data)
@@ -141,6 +134,7 @@ setLoading(false)
 },1200)
 
 }
+
 
 return(
 
@@ -185,34 +179,32 @@ className="flex items-center gap-2 text-sm text-gray-300 hover:text-white border
 
 </div>
 
+
 {/* MAIN */}
 
 <div className="w-full flex justify-center">
 
 <div className="w-full max-w-5xl px-8 py-16">
 
+
 {/* LOGO SECTION */}
 
 <div className="relative text-center mb-16 flex flex-col items-center">
 
-{/* base glow */}
 <div className="absolute w-[420px] h-[420px] bg-[#14E6C3]/5 rounded-full blur-3xl"></div>
 
-{/* ripple 1 */}
 <motion.div
 className="absolute w-[420px] h-[420px] rounded-full border border-[#14E6C3]/30"
 animate={{scale:[1,1.35],opacity:[0.6,0]}}
 transition={{duration:5,repeat:Infinity,ease:"easeOut"}}
 />
 
-{/* ripple 2 */}
 <motion.div
 className="absolute w-[420px] h-[420px] rounded-full border border-[#14E6C3]/25"
 animate={{scale:[1,1.55],opacity:[0.5,0]}}
 transition={{duration:6,repeat:Infinity,ease:"easeOut"}}
 />
 
-{/* ripple 3 */}
 <motion.div
 className="absolute w-[420px] h-[420px] rounded-full border border-[#14E6C3]/20"
 animate={{scale:[1,1.75],opacity:[0.4,0]}}
@@ -228,6 +220,7 @@ Detect stolen beats on YouTube
 </p>
 
 </div>
+
 
 {/* SEARCH BOX */}
 
@@ -269,6 +262,7 @@ className="w-4 h-4 border-2 border-black border-t-transparent rounded-full"
 </div>
 
 </div>
+
 
 {loading && (
 
