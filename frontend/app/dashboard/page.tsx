@@ -37,7 +37,6 @@ loadUser(savedUser)
 
 },[])
 
-
 async function loadUser(email:string){
 
 try{
@@ -180,7 +179,7 @@ return
 }
 
 window.location.href =
-"https://www.paypal.com/checkoutnow?token=" + data.orderID
+"https://www.sandbox.paypal.com/checkoutnow?token=" + data.orderID
 
 }catch(e){
 
@@ -283,21 +282,10 @@ Choose the plan that fits your needs
 
 <div className="grid md:grid-cols-3 gap-8">
 
-{/* PLAN 50 */}
-
 <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg">
-
-<h3 className="text-5xl font-bold text-white mb-2">
-50
-</h3>
-
-<p className="text-gray-400 mb-4">
-monthly scans
-</p>
-
-<p className="text-white font-semibold text-lg mb-6">
-$2.49 / month
-</p>
+<h3 className="text-5xl font-bold text-white mb-2">50</h3>
+<p className="text-gray-400 mb-4">monthly scans</p>
+<p className="text-white font-semibold text-lg mb-6">$2.49 / month</p>
 
 <button
 onClick={()=>startCheckout("50")}
@@ -308,21 +296,10 @@ Subscribe
 
 </div>
 
-{/* PLAN 100 */}
-
 <div className="bg-white/5 border border-[#14E6C3] rounded-2xl p-8 text-center shadow-[0_0_40px_rgba(20,230,195,0.35)] backdrop-blur-lg">
-
-<h3 className="text-5xl font-bold text-white mb-2">
-100
-</h3>
-
-<p className="text-gray-400 mb-4">
-monthly scans
-</p>
-
-<p className="text-white font-semibold text-lg mb-6">
-$4.99 / month
-</p>
+<h3 className="text-5xl font-bold text-white mb-2">100</h3>
+<p className="text-gray-400 mb-4">monthly scans</p>
+<p className="text-white font-semibold text-lg mb-6">$4.99 / month</p>
 
 <button
 onClick={()=>startCheckout("100")}
@@ -333,21 +310,10 @@ Subscribe
 
 </div>
 
-{/* PLAN UNLIMITED */}
-
 <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg">
-
-<h3 className="text-5xl font-bold text-white mb-2">
-Unlimited
-</h3>
-
-<p className="text-gray-400 mb-4">
-Unlimited scans
-</p>
-
-<p className="text-white font-semibold text-lg mb-6">
-$9.99 / month
-</p>
+<h3 className="text-5xl font-bold text-white mb-2">Unlimited</h3>
+<p className="text-gray-400 mb-4">Unlimited scans</p>
+<p className="text-white font-semibold text-lg mb-6">$9.99 / month</p>
 
 <button
 onClick={()=>startCheckout("unlimited")}
@@ -402,14 +368,44 @@ Upgrade Plan
 
 </div>
 
-<div>
+<div className="relative">
+
+<button
+onClick={()=>setMenuOpen(!menuOpen)}
+className="flex items-center gap-2 text-sm text-gray-300 hover:text-white border border-white/10 px-4 py-1 rounded-md"
+>
+
+{user}
+
+<span className="text-xs opacity-70">▼</span>
+
+</button>
+
+{menuOpen && (
+
+<div className="absolute right-0 mt-2 w-44 bg-[#111] border border-white/10 rounded-lg shadow-xl overflow-hidden">
+
+<button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]">
+Settings
+</button>
+
+<button
+onClick={()=>setShowPlans(true)}
+className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]"
+>
+Billing
+</button>
 
 <button
 onClick={logout}
-className="text-sm text-gray-300 border border-white/10 px-4 py-1 rounded-md"
+className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#1b1b1b]"
 >
 Logout
 </button>
+
+</div>
+
+)}
 
 </div>
 
@@ -456,11 +452,9 @@ Scan
 </div>
 
 {loading && (
-
 <div className="mb-12">
 <ScanProgress progress={progress}/>
 </div>
-
 )}
 
 </div>
