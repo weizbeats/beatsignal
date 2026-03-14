@@ -33,24 +33,28 @@ export default function Dashboard(){
 
   return(
 
-    <div className="min-h-screen bg-[#050505] flex justify-center">
+    <div className="w-full flex justify-center">
 
-      <div className="w-full max-w-5xl px-8 py-12">
+      <div className="w-full max-w-5xl px-8 py-16">
 
         {/* TITLE */}
 
-        <h1 className="text-3xl text-white font-semibold mb-2">
-          BeatSignal Dashboard
-        </h1>
+        <div className="text-center mb-12">
 
-        <p className="text-gray-400 mb-10">
-          Detect stolen beats on YouTube
-        </p>
+          <h1 className="text-4xl font-semibold text-white mb-2">
+            BeatSignal
+          </h1>
+
+          <p className="text-gray-400">
+            Detect stolen beats on YouTube
+          </p>
+
+        </div>
 
 
         {/* SCAN BAR */}
 
-        <div className="bg-[#0d0d0d] border border-[#1c1c1c] rounded-xl p-6 mb-10">
+        <div className="bg-[#0d0d0d] border border-[#1c1c1c] rounded-xl p-6 mb-12">
 
           <div className="flex gap-4">
 
@@ -58,12 +62,12 @@ export default function Dashboard(){
               placeholder="Paste YouTube link..."
               value={url}
               onChange={(e)=>setUrl(e.target.value)}
-              className="flex-1 bg-black border border-[#262626] text-white p-4 rounded-lg outline-none focus:border-green-500 transition"
+              className="flex-1 bg-black border border-[#262626] text-white p-4 rounded-lg outline-none focus:border-[#14E6C3] transition"
             />
 
             <button
               onClick={handleScan}
-              className="bg-green-500 hover:bg-green-400 text-black font-semibold px-6 rounded-lg transition"
+              className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black font-semibold px-6 rounded-lg transition"
             >
               {loading ? "Scanning..." : "Scan"}
             </button>
@@ -109,7 +113,7 @@ export default function Dashboard(){
               Current plan
             </p>
 
-            <p className="text-green-400 text-xl font-semibold">
+            <p className="text-[#14E6C3] text-xl font-semibold">
               Free
             </p>
 
