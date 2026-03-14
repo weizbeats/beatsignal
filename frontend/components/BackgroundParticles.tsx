@@ -15,6 +15,7 @@ export default function BackgroundParticles(){
       id="tsparticles"
       init={particlesInit}
       options={{
+
         background:{
           color:"#000000"
         },
@@ -22,37 +23,51 @@ export default function BackgroundParticles(){
         fpsLimit:60,
 
         particles:{
+
           number:{
-            value:60
+            value:90,
+            density:{
+              enable:true,
+              area:900
+            }
           },
 
           color:{
-            value:"#14E6C3"
+            value:["#14E6C3","#00FFC8","#1DE9B6"]
+          },
+
+          shape:{
+            type:"circle"
+          },
+
+          opacity:{
+            value:{min:0.05,max:0.35},
+            animation:{
+              enable:true,
+              speed:0.3,
+              minimumValue:0.05
+            }
+          },
+
+          size:{
+            value:{min:1,max:2.5}
           },
 
           links:{
-            enable:true,
-            distance:150,
-            color:"#14E6C3",
-            opacity:0.25,
-            width:1
+            enable:false
           },
 
           move:{
             enable:true,
-            speed:1,
+            speed:0.25,
             direction:"none",
-            outModes:"bounce"
-          },
-
-          size:{
-            value:{min:1,max:3}
-          },
-
-          opacity:{
-            value:0.6
+            random:true,
+            straight:false,
+            outModes:"out"
           }
-        }
+        },
+
+        detectRetina:true
       }}
 
       className="fixed top-0 left-0 w-full h-full -z-10"
