@@ -1,13 +1,9 @@
 import "./globals.css"
 import BackgroundParticles from "@/components/BackgroundParticles"
 
-export default function RootLayout({
-  children,
-}:{
-  children: React.ReactNode
-}){
+export default function RootLayout({ children }){
 
-  return(
+  return (
 
     <html lang="en">
 

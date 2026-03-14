@@ -16,24 +16,26 @@ export default function BackgroundParticles(){
       id="tsparticles"
       init={particlesInit}
       options={{
-        background:{color:"transparent"},
+        fullScreen:false,
 
-        fpsLimit:60,
+        background:{
+          color:"transparent"
+        },
 
         particles:{
           number:{
-            value:70,
-            density:{enable:true,area:800}
+            value:60
           },
 
-          color:{value:"#14E6C3"},
+          color:{
+            value:"#14E6C3"
+          },
 
           links:{
             enable:true,
             color:"#14E6C3",
-            distance:160,
-            opacity:0.15,
-            width:1
+            distance:150,
+            opacity:0.2
           },
 
           move:{
@@ -51,7 +53,7 @@ export default function BackgroundParticles(){
         }
       }}
 
-      className="fixed top-0 left-0 w-full h-full -z-10"
+      className="fixed inset-0 -z-10"
     />
 
   )
