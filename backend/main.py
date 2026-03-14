@@ -22,6 +22,11 @@ app.add_middleware(
 )
 
 USERS_FILE = "users.json"
+BEATS_FILE = "beats.json"
+
+AUTOPILOT_DAYS = 10
+AUTOPILOT_SECONDS = AUTOPILOT_DAYS * 24 * 60 * 60
+
 
 # =========================
 # ONLINE USERS TRACKER
@@ -44,7 +49,7 @@ def get_online_users():
 
 
 # =========================
-# CREATE USERS FILE
+# CREATE FILES
 # =========================
 
 if not os.path.exists(USERS_FILE):
@@ -52,6 +57,15 @@ if not os.path.exists(USERS_FILE):
     with open(USERS_FILE, "w") as f:
         json.dump([], f)
 
+if not os.path.exists(BEATS_FILE):
+
+    with open(BEATS_FILE, "w") as f:
+        json.dump([], f)
+
+
+# =========================
+# USERS
+# =========================
 
 def load_users():
 
@@ -69,6 +83,28 @@ def save_users(users):
 
     with open(USERS_FILE, "w") as f:
         json.dump(users, f)
+
+
+# =========================
+# BEATS
+# =========================
+
+def load_beats():
+
+    try:
+
+        with open(BEATS_FILE, "r") as f:
+            return json.load(f)
+
+    except:
+
+        return []
+
+
+def save_beats(beats):
+
+    with open(BEATS_FILE, "w") as f:
+        json.dump(beats, f)
 
 
 # =========================
@@ -144,7 +180,7 @@ def heartbeat(data: dict):
 
 
 # =========================
-# STATS REGISTERED USERS
+# STATS
 # =========================
 
 @app.get("/stats/users")
@@ -157,10 +193,6 @@ def users_count():
     }
 
 
-# =========================
-# STATS ONLINE USERS
-# =========================
-
 @app.get("/stats/online")
 def online_users_count():
 
@@ -170,7 +202,7 @@ def online_users_count():
 
 
 # =========================
-# SCAN
+# SCAN MANUAL
 # =========================
 
 @app.post("/scan")
@@ -185,7 +217,94 @@ def scan(data: dict):
 
 
 # =========================
-# PAYPAL CREATE ORDER
+# ADD BEAT TO AUTOPILOT
+# =========================
+
+@app.post("/beats/add")
+def add_beat(data: dict):
+
+    user = data.get("user")
+    url = data.get("url")
+    name = data.get("name","beat")
+
+    beats = load_beats()
+
+    beats.append({
+
+        "user": user,
+        "url": url,
+        "name": name,
+
+        "last_check": None,
+        "next_check": None,
+
+        "autopilot": True,
+
+        "matches": []
+
+    })
+
+    save_beats(beats)
+
+    return {"success":True}
+
+
+# =========================
+# LIST USER BEATS
+# =========================
+
+@app.get("/beats/{user}")
+def get_beats(user: str):
+
+    beats = load_beats()
+
+    user_beats = [b for b in beats if b["user"] == user]
+
+    return user_beats
+
+
+# =========================
+# AUTOPILOT SCAN
+# =========================
+
+@app.post("/beats/run-autopilot")
+def run_autopilot():
+
+    beats = load_beats()
+
+    now = time.time()
+
+    updated = False
+
+    for beat in beats:
+
+        if not beat.get("autopilot"):
+            continue
+
+        next_check = beat.get("next_check")
+
+        if next_check and now < next_check:
+            continue
+
+        print("AUTOPILOT scanning:", beat["name"])
+
+        results = scan_url(beat["url"])
+
+        beat["matches"] = results
+
+        beat["last_check"] = now
+        beat["next_check"] = now + AUTOPILOT_SECONDS
+
+        updated = True
+
+    if updated:
+        save_beats(beats)
+
+    return {"status":"autopilot complete"}
+
+
+# =========================
+# PAYPAL
 # =========================
 
 @app.post("/create-paypal-order")
