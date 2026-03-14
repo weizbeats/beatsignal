@@ -15,9 +15,7 @@ return(
 <div className="bg-glow"></div>
 
 <div className="relative z-10">
-
 {children}
-
 </div>
 
 </body>
