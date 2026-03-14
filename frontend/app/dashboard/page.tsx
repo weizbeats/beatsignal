@@ -117,22 +117,29 @@ user
 
 const data = await res.json()
 
+console.log("SCAN RESULT:",data)
+
 if(data.error === "no_credits"){
 
 setShowNoCredits(true)
 setLoading(false)
 return
+
 }
 
 if(Array.isArray(data)){
 setResult(data)
-}else if(data.results){
+}
+else if(Array.isArray(data.results)){
 setResult(data.results)
-}else{
+}
+else{
 setResult([])
 }
 
-setCredits((prev)=>prev-1)
+if(plan !== "unlimited"){
+setCredits((prev)=>Math.max(prev-1,0))
+}
 
 }catch(e){
 
@@ -283,6 +290,7 @@ Choose the plan that fits your needs
 <div className="grid md:grid-cols-3 gap-8">
 
 <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg">
+
 <h3 className="text-5xl font-bold text-white mb-2">50</h3>
 <p className="text-gray-400 mb-4">monthly scans</p>
 <p className="text-white font-semibold text-lg mb-6">$2.49 / month</p>
@@ -297,6 +305,7 @@ Subscribe
 </div>
 
 <div className="bg-white/5 border border-[#14E6C3] rounded-2xl p-8 text-center shadow-[0_0_40px_rgba(20,230,195,0.35)] backdrop-blur-lg">
+
 <h3 className="text-5xl font-bold text-white mb-2">100</h3>
 <p className="text-gray-400 mb-4">monthly scans</p>
 <p className="text-white font-semibold text-lg mb-6">$4.99 / month</p>
@@ -311,6 +320,7 @@ Subscribe
 </div>
 
 <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg">
+
 <h3 className="text-5xl font-bold text-white mb-2">Unlimited</h3>
 <p className="text-gray-400 mb-4">Unlimited scans</p>
 <p className="text-white font-semibold text-lg mb-6">$9.99 / month</p>
@@ -361,7 +371,7 @@ Credits: {credits}
 
 <button
 onClick={()=>setShowPlans(true)}
-className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black text-xs font-semibold px-4 py-1 rounded-md w-fit transition hover:scale-105"
+className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black text-xs font-semibold px-4 py-1 rounded-md"
 >
 Upgrade Plan
 </button>
@@ -376,14 +386,13 @@ className="flex items-center gap-2 text-sm text-gray-300 hover:text-white border
 >
 
 {user}
-
 <span className="text-xs opacity-70">▼</span>
 
 </button>
 
 {menuOpen && (
 
-<div className="absolute right-0 mt-2 w-44 bg-[#111] border border-white/10 rounded-lg shadow-xl overflow-hidden">
+<div className="absolute right-0 mt-2 w-44 bg-[#111] border border-white/10 rounded-lg shadow-xl">
 
 <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]">
 Settings
@@ -429,7 +438,7 @@ Detect stolen beats on YouTube
 
 </div>
 
-<div className="relative bg-[#0b0b0b]/70 backdrop-blur-md border border-[#14E6C3]/20 rounded-xl p-6 mb-8">
+<div className="bg-[#0b0b0b]/70 backdrop-blur-md border border-[#14E6C3]/20 rounded-xl p-6 mb-8">
 
 <div className="flex gap-4">
 
@@ -452,12 +461,12 @@ Scan
 </div>
 
 {loading && (
+
 <div className="mb-12">
 <ScanProgress progress={progress}/>
 </div>
-)}
 
-{/* RESULTS */}
+)}
 
 {!loading && result.length > 0 && (
 
@@ -467,8 +476,6 @@ Scan
 Matches Found
 </h2>
 
-<div className="grid gap-6">
-
 {result.map((match,i)=>(
 
 <div
@@ -476,19 +483,14 @@ key={i}
 className="bg-[#0b0b0b]/70 border border-white/10 rounded-xl p-6 flex gap-6"
 >
 
-{/* COVER */}
-
 {match.cover && (
 
 <img
 src={match.cover}
 className="w-24 h-24 rounded-lg object-cover"
-alt=""
 />
 
 )}
-
-{/* INFO */}
 
 <div className="flex flex-col gap-1">
 
@@ -525,8 +527,6 @@ Open on Spotify
 </div>
 
 ))}
-
-</div>
 
 </div>
 
