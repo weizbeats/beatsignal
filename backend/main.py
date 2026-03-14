@@ -123,23 +123,30 @@ def register(data:dict):
 # =========================
 
 @app.post("/login")
-def login(data: dict):
+def login(data:dict):
 
     email = data.get("email")
+    password = data.get("password")
 
     if not email:
-        return {"success": False}
+        return {"success":False}
 
-    # usuarios guardados
-    user = users_db.get(email)
+    users = load_users()
 
-    if not user:
-        # crear usuario nuevo con trial
-        users_db[email] = {
-            "plan": "trial",
-            "credits": 5
-        }
-        user = users_db[email]
+    user_found = None
+
+    for user in users:
+
+        if user["email"] == email:
+
+            if password and user["password"] != password:
+                return {"success":False}
+
+            user_found = user
+            break
+
+    if not user_found:
+        return {"success":False}
 
     # ADMIN CHECK
     admin_emails = [
@@ -149,10 +156,10 @@ def login(data: dict):
     is_admin = email in admin_emails
 
     return {
-        "success": True,
-        "plan": user.get("plan","trial"),
-        "credits": user.get("credits",0),
-        "admin": is_admin
+        "success":True,
+        "plan":user_found.get("plan","trial"),
+        "credits":user_found.get("credits",0),
+        "admin":is_admin
     }
 
 
