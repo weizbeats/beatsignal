@@ -1,17 +1,32 @@
 "use client"
 
 import { useState } from "react"
+import ScanProgress from "@/components/ScanProgress"
 
 export default function Dashboard(){
 
   const [url,setUrl] = useState("")
   const [loading,setLoading] = useState(false)
+  const [progress,setProgress] = useState(0)
 
   async function handleScan(){
 
     if(!url) return
 
     setLoading(true)
+    setProgress(0)
+
+    let fakeProgress = 0
+
+    const interval = setInterval(()=>{
+
+      fakeProgress += 8
+
+      if(fakeProgress > 95) return
+
+      setProgress(fakeProgress)
+
+    },400)
 
     try{
 
@@ -27,7 +42,14 @@ export default function Dashboard(){
       console.log(e)
     }
 
-    setLoading(false)
+    clearInterval(interval)
+
+    setProgress(100)
+
+    setTimeout(()=>{
+      setLoading(false)
+      setProgress(0)
+    },1200)
 
   }
 
@@ -54,7 +76,7 @@ export default function Dashboard(){
 
         {/* SCAN BAR */}
 
-        <div className="bg-[#0d0d0d] border border-[#1c1c1c] rounded-xl p-6 mb-12">
+        <div className="bg-[#0d0d0d] border border-[#1c1c1c] rounded-xl p-6 mb-6">
 
           <div className="flex gap-4">
 
@@ -69,12 +91,25 @@ export default function Dashboard(){
               onClick={handleScan}
               className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black font-semibold px-6 rounded-lg transition"
             >
-              {loading ? "Scanning..." : "Scan"}
+              Scan
             </button>
 
           </div>
 
         </div>
+
+
+        {/* PROGRESS BAR */}
+
+        {loading && (
+
+          <div className="mb-10">
+
+            <ScanProgress progress={progress}/>
+
+          </div>
+
+        )}
 
 
         {/* STATS */}
