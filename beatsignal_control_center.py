@@ -151,8 +151,11 @@ def test_scan_pipeline():
 
             r = requests.post(
                 BACKEND_ONLINE + "/scan",
-                json={"url": test_video},
-                timeout=30
+                json={
+                    "url": test_video,
+                    "user": "weizbeat@gmail.com"
+                },
+                timeout=40
             )
 
             if r.status_code == 200:
@@ -186,35 +189,42 @@ def start_backend():
 
     global backend_process
 
-    if backend_process is None:
+    if check_port(8000):
+        log("Backend already running on port 8000")
+        return
 
-        try:
+    try:
 
-            project_root = os.getcwd()
-            backend_path = os.path.join(project_root, "backend")
+        project_root = os.getcwd()
+        backend_path = os.path.join(project_root, "backend")
 
-            log("Starting backend...")
+        if not os.path.exists(backend_path):
+            log("Backend folder not found")
+            return
 
-            backend_process = subprocess.Popen(
-                [
-                    sys.executable,
-                    "-m",
-                    "uvicorn",
-                    "main:app",
-                    "--host",
-                    "0.0.0.0",
-                    "--port",
-                    "8000"
-                ],
-                cwd=backend_path
-            )
+        log("Starting backend...")
 
-            log("Backend started")
+        backend_process = subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "uvicorn",
+                "main:app",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8000",
+                "--reload"
+            ],
+            cwd=backend_path
+        )
 
-        except Exception as e:
+        log("Backend started")
 
-            log("Backend start failed")
-            log(str(e))
+    except Exception as e:
+
+        log("Backend start failed")
+        log(str(e))
 
 
 # =========================
@@ -282,7 +292,6 @@ def open_url(url):
 app = ctk.CTk()
 
 app.title("BeatSignal Control Center")
-
 app.geometry("900x720")
 
 
@@ -321,7 +330,7 @@ ctk.CTkButton(
 ctk.CTkButton(
     links_frame,
     text="OPEN API",
-    command=lambda: open_url(BACKEND_ONLINE),
+    command=lambda: open_url(BACKEND_ONLINE + "/docs"),
     **button_style
 ).grid(row=0, column=1, padx=8)
 

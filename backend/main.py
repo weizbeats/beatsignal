@@ -8,8 +8,8 @@ import json
 import os
 import time
 
-from scanner import scan_url
-from paypal_service import create_order
+from services.scanner import scan_url
+from services.paypal_service import create_order
 
 app = FastAPI()
 
@@ -21,8 +21,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-USERS_FILE = "users.json"
-BEATS_FILE = "beats.json"
+USERS_FILE = "database/users.json"
+BEATS_FILE = "database/beats.json"
 
 AUTOPILOT_DAYS = 10
 AUTOPILOT_SECONDS = AUTOPILOT_DAYS * 24 * 60 * 60
@@ -33,12 +33,10 @@ AUTOPILOT_SECONDS = AUTOPILOT_DAYS * 24 * 60 * 60
 # =========================
 
 if not os.path.exists(USERS_FILE):
-
     with open(USERS_FILE,"w") as f:
         json.dump([],f)
 
 if not os.path.exists(BEATS_FILE):
-
     with open(BEATS_FILE,"w") as f:
         json.dump([],f)
 
@@ -119,51 +117,6 @@ def register(data:dict):
 
 
 # =========================
-# LOGIN
-# =========================
-
-@app.post("/login")
-def login(data:dict):
-
-    email = data.get("email")
-    password = data.get("password")
-
-    if not email:
-        return {"success":False}
-
-    users = load_users()
-
-    user_found = None
-
-    for user in users:
-
-        if user["email"] == email:
-
-            if password and user["password"] != password:
-                return {"success":False}
-
-            user_found = user
-            break
-
-    if not user_found:
-        return {"success":False}
-
-    # ADMIN CHECK
-    admin_emails = [
-        "weizbeat@gmail.com"
-    ]
-
-    is_admin = email in admin_emails
-
-    return {
-        "success":True,
-        "plan":user_found.get("plan","trial"),
-        "credits":user_found.get("credits",0),
-        "admin":is_admin
-    }
-
-
-# =========================
 # SCAN WITH CREDITS
 # =========================
 
@@ -178,18 +131,22 @@ def scan(data:dict):
 
     users = load_users()
 
+    admin_emails = [
+        "weizbeat@gmail.com"
+    ]
+
+    is_admin = user_email in admin_emails
+
     for user in users:
 
         if user["email"] == user_email:
 
-            if user["plan"] != "unlimited":
+            if not is_admin and user["plan"] != "unlimited":
 
                 if user["credits"] <= 0:
-
                     return {"error":"no_credits"}
 
                 user["credits"] -= 1
-
                 save_users(users)
 
             break
