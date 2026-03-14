@@ -1,8 +1,8 @@
 "use client"
 
-export default function ScanProgress({ progress }: { progress: number }) {
+export default function ScanProgress({progress}:{progress:number}){
 
-return (
+return(
 
 ```
 <div className="w-full">
