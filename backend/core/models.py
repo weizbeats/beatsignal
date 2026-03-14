@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from .db import Base
 from datetime import datetime
-from database import Base
 
 
 class User(Base):
@@ -10,51 +10,40 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     email = Column(String, unique=True, index=True)
-
     password = Column(String)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    plan = Column(String, default="trial")
+    credits = Column(Integer, default=5)
 
+    admin = Column(Boolean, default=False)
 
-class Beat(Base):
-
-    __tablename__ = "beats"
-
-    id = Column(Integer, primary_key=True, index=True)
-
-    user_id = Column(Integer, ForeignKey("users.id"))
-
-    name = Column(String)
-
-    producer = Column(String)
-
-    url = Column(String)
+    verified = Column(Boolean, default=False)
+    verify_token = Column(String, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    last_scan = Column(DateTime, nullable=True)
 
+# -----------------------------------------
+# SCAN RESULTS TABLE
+# -----------------------------------------
 
-class Result(Base):
+class ScanResult(Base):
 
-    __tablename__ = "results"
+    __tablename__ = "scan_results"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(Integer)
+    user_email = Column(String, index=True)
 
-    beat_id = Column(Integer)
+    youtube_video_id = Column(String, index=True)
 
-    song = Column(String)
+    title = Column(String)
+    channel = Column(String)
 
-    artist = Column(String)
+    views = Column(Integer, default=0)
 
-    score = Column(Integer)
+    youtube_url = Column(String)
 
-    isrc = Column(String)
+    detected_at = Column(DateTime, default=datetime.utcnow)
 
-    spotify_url = Column(String)
-
-    cover = Column(String)
-
-    date_found = Column(DateTime, default=datetime.utcnow)
+    status = Column(String, default="detected")

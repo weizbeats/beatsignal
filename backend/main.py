@@ -16,7 +16,7 @@ from jose import jwt
 from passlib.context import CryptContext
 
 from database.db import SessionLocal, engine
-from database.models import Base, User
+from database.models import Base, User, ScanResult
 
 # RATE LIMIT
 from slowapi import Limiter
@@ -30,16 +30,11 @@ app = FastAPI()
 Base.metadata.create_all(bind=engine)
 
 
-# PASSWORD HASH CONTEXT
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto"
 )
 
-
-# -------------------------
-# RATE LIMIT CONFIG
-# -------------------------
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -120,6 +115,7 @@ def verify_token(token: str):
 # -------------------------
 
 def generate_verify_token():
+
     return secrets.token_urlsafe(32)
 
 
@@ -150,6 +146,7 @@ def send_verification_email(email, token):
         )
 
     except Exception as e:
+
         print("Email send error:", e)
 
 
@@ -209,37 +206,6 @@ def register(request: Request, data: dict):
         "success": True,
         "message": "Verification email sent"
     }
-
-
-# -------------------------
-# RESEND EMAIL
-# -------------------------
-
-@limiter.limit("3/minute")
-@app.post("/resend-verification")
-def resend_verification(request: Request, data: dict):
-
-    email = data.get("email")
-
-    db = SessionLocal()
-
-    user = db.query(User).filter(User.email == email).first()
-
-    if not user:
-        return {"success": False}
-
-    if user.verified:
-        return {"success": False}
-
-    verify_token = generate_verify_token()
-
-    user.verify_token = verify_token
-
-    db.commit()
-
-    send_verification_email(email, verify_token)
-
-    return {"success": True}
 
 
 # -------------------------
@@ -312,15 +278,6 @@ def login(request: Request, data: dict):
 
     token = create_token(email)
 
-    if user.admin:
-
-        return {
-            "success": True,
-            "token": token,
-            "plan": "admin",
-            "credits": -1
-        }
-
     return {
         "success": True,
         "token": token,
@@ -363,19 +320,55 @@ def scan(data: dict):
 
     results = scan_url(url)
 
+    new_results = []
+
+    for r in results:
+
+        try:
+
+            song = r.get("song")
+            artist = r.get("artist")
+
+            exists = db.query(ScanResult).filter(
+                ScanResult.user_email == email,
+                ScanResult.title == song,
+                ScanResult.channel == artist
+            ).first()
+
+            if exists:
+                continue
+
+            new_entry = ScanResult(
+                user_email=email,
+                youtube_video_id=f"{song}-{artist}",
+                title=song,
+                channel=artist,
+                youtube_url=url
+            )
+
+            db.add(new_entry)
+
+            new_results.append(r)
+
+        except:
+            continue
+
+    db.commit()
+
     return {
         "success": True,
-        "results": results
+        "results": new_results
     }
+
+
 # -------------------------
-# CHANGE PLAN (TEMPORARY)
+# SCAN HISTORY
 # -------------------------
 
-@app.post("/change-plan")
-def change_plan(data: dict):
+@app.post("/scan-history")
+def scan_history(data: dict):
 
     token = data.get("token")
-    plan = data.get("plan")
 
     payload = verify_token(token)
 
@@ -385,32 +378,25 @@ def change_plan(data: dict):
     email = payload["email"]
 
     db = SessionLocal()
-    user = db.query(User).filter(User.email == email).first()
 
-    if not user:
-        return {"error": "user_not_found"}
+    results = db.query(ScanResult)\
+        .filter(ScanResult.user_email == email)\
+        .order_by(ScanResult.detected_at.desc())\
+        .all()
 
-    # Starter
-    if plan == "starter":
-        user.plan = "starter"
-        user.credits = 50
+    output = []
 
-    # Pro
-    elif plan == "pro":
-        user.plan = "pro"
-        user.credits = 100
+    for r in results:
 
-    # Unlimited monthly
-    elif plan == "unlimited":
-        user.plan = "unlimited"
-        user.credits = -1
+        output.append({
+            "title": r.title,
+            "artist": r.channel,
+            "url": r.youtube_url,
+            "views": r.views,
+            "date": r.detected_at
+        })
 
-    # Unlimited annual
-    elif plan == "unlimited_annual":
-        user.plan = "unlimited_annual"
-        user.credits = -1
-
-    db.commit()
-
-    return {"success": True}
-
+    return {
+        "success": True,
+        "results": output
+    }
