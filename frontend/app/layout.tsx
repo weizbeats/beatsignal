@@ -1,22 +1,28 @@
+"use client"
+
 import "./globals.css"
 import BackgroundParticles from "@/components/BackgroundParticles"
 
 export default function RootLayout({children}:{children:React.ReactNode}){
 
-  return(
+return(
 
-    <html lang="en">
+```
+<html lang="en">
 
-      <body className="bg-black text-white">
+  <body>
 
-        <BackgroundParticles/>
+    <div className="bg-glow"></div>
 
-        {children}
+    <BackgroundParticles/>
 
-      </body>
+    {children}
 
-    </html>
+  </body>
 
-  )
+</html>
+```
+
+)
 
 }
