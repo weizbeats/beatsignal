@@ -3,59 +3,63 @@
 import { useState } from "react"
 import ScanProgress from "@/components/ScanProgress"
 
-export default function Dashboard(){
+export default function Dashboard() {
 
-const [url,setUrl] = useState("")
-const [loading,setLoading] = useState(false)
-const [progress,setProgress] = useState(0)
+const [url, setUrl] = useState("")
+const [loading, setLoading] = useState(false)
+const [progress, setProgress] = useState(0)
 
-async function handleScan(){
+async function handleScan() {
 
 ```
-if(!url) return
+if (!url) return
 
 setLoading(true)
 setProgress(0)
 
 let fakeProgress = 0
 
-const interval = setInterval(()=>{
+const interval = setInterval(() => {
 
   fakeProgress += 8
 
-  if(fakeProgress > 95) return
+  if (fakeProgress > 95) return
 
   setProgress(fakeProgress)
 
-},400)
+}, 400)
 
-try{
+try {
 
-  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scan`,{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
+  await fetch(apiUrl + "/scan", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
     },
-    body:JSON.stringify({url})
+    body: JSON.stringify({ url })
   })
 
-}catch(e){
+} catch (e) {
+
   console.log(e)
+
 }
 
 clearInterval(interval)
 
 setProgress(100)
 
-setTimeout(()=>{
+setTimeout(() => {
   setLoading(false)
   setProgress(0)
-},1200)
+}, 1200)
 ```
 
 }
 
-return(
+return (
 
 ```
 <div className="w-full flex justify-center">
@@ -74,9 +78,7 @@ return(
       bg-clip-text
       text-transparent
       ">
-
         BeatSignal
-
       </h1>
 
       <p className="text-gray-400">
@@ -95,7 +97,7 @@ return(
         <input
           placeholder="Paste YouTube link..."
           value={url}
-          onChange={(e)=>setUrl(e.target.value)}
+          onChange={(e) => setUrl(e.target.value)}
           className="
           flex-1
           bg-black/40
@@ -135,80 +137,4 @@ return(
     {/* PROGRESS BAR */}
 
     {loading && (
-
-      <div className="mb-12">
-
-        <ScanProgress progress={progress}/>
-
-      </div>
-
-    )}
-
-
-    {/* STATS */}
-
-    <div className="grid grid-cols-3 gap-6 mb-14">
-
-      <div className="card-glow bg-[#0b0b0b]/80 backdrop-blur-md border border-white/5 rounded-xl p-6">
-
-        <p className="text-gray-400 text-sm mb-2">
-          Scans today
-        </p>
-
-        <p className="text-white text-3xl font-semibold">
-          0
-        </p>
-
-      </div>
-
-
-      <div className="card-glow bg-[#0b0b0b]/80 backdrop-blur-md border border-white/5 rounded-xl p-6">
-
-        <p className="text-gray-400 text-sm mb-2">
-          Matches found
-        </p>
-
-        <p className="text-white text-3xl font-semibold">
-          0
-        </p>
-
-      </div>
-
-
-      <div className="card-glow bg-[#0b0b0b]/80 backdrop-blur-md border border-white/5 rounded-xl p-6">
-
-        <p className="text-gray-400 text-sm mb-2">
-          Current plan
-        </p>
-
-        <p className="text-[#14E6C3] text-2xl font-semibold">
-          Free
-        </p>
-
-      </div>
-
-    </div>
-
-
-    {/* RECENT SCANS */}
-
-    <div className="card-glow bg-[#0b0b0b]/80 backdrop-blur-md border border-white/5 rounded-xl p-6">
-
-      <h2 className="text-white mb-4 text-lg">
-        Recent scans
-      </h2>
-
-      <p className="text-gray-500">
-        No scans yet
-      </p>
-
-    </div>
-
-  </div>
-
-</div>
 ```
-
-)
-
-}
