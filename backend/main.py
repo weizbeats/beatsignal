@@ -132,13 +132,22 @@ def login(data:dict):
 
         if user["email"] == email and user["password"] == password:
 
+            # ADMIN CHECK
+            is_admin = email == "weizbeat@gmail.com"
+
+            if is_admin:
+                return {
+                    "success": True,
+                    "plan": "admin",
+                    "credits": -1,
+                    "admin": True
+                }
+
             return {
-
                 "success": True,
-                "plan": user.get("plan", "trial"),
-                "credits": user.get("credits", 0),
-                "admin": user.get("admin", False)
-
+                "plan": user.get("plan","trial"),
+                "credits": user.get("credits",0),
+                "admin": False
             }
 
     return {"success": False}
