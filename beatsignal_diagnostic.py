@@ -1,271 +1,201 @@
 import requests
 import time
-import json
+import traceback
+from datetime import datetime
 
-FRONTEND = "https://beatsignal-2uec.vercel.app"
 BACKEND = "https://beatsignal-production.up.railway.app"
-
-SCAN = BACKEND + "/scan"
-DOCS = BACKEND + "/docs"
+FRONTEND = "https://beatsignal-2uec.vercel.app"
 
 TEST_VIDEO = "https://www.youtube.com/watch?v=jNQXAC9IVRw"
 
-TOKEN = ""   # opcional si tu backend usa auth
-
-log_file = open("diagnostic_log.txt","w",encoding="utf-8")
+LOG_FILE = "diagnostic.log"
 
 
-def log(msg):
-    print(msg)
-    log_file.write(msg+"\n")
+# ==========================================
+# LOGGER
+# ==========================================
+
+def log(message):
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    line = f"[{timestamp}] {message}"
+
+    print(line)
+
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(line + "\n")
 
 
-def section(title):
-    line = "="*60
-    log("\n"+line)
-    log(title)
-    log(line)
+log("\n============================================================")
+log("BEATSIGNAL DIAGNOSTIC V5 START")
+log("============================================================\n")
 
 
-def separator():
-    log("-"*60)
+# ==========================================
+# FRONTEND TEST
+# ==========================================
+
+log("FRONTEND TEST")
+
+try:
+
+    r = requests.get(FRONTEND, timeout=10)
+
+    log(f"Status: {r.status_code}")
+    log(f"Content length: {len(r.text)}")
+
+    if r.status_code == 200:
+        log("Frontend reachable ✓")
+
+except Exception as e:
+
+    log("Frontend ERROR")
+    log(str(e))
+    log(traceback.format_exc())
+
+log("------------------------------------------------------------\n")
 
 
-def analyze_error(data):
+# ==========================================
+# BACKEND TEST
+# ==========================================
 
-    if not isinstance(data,dict):
-        return
+log("BACKEND ROOT TEST")
 
-    if "error" not in data:
-        return
+try:
 
-    err = data["error"]
+    r = requests.get(BACKEND, timeout=10)
 
-    section("ERROR ANALYSIS")
+    log(f"Status: {r.status_code}")
 
-    log(f"Backend returned error: {err}")
+except Exception as e:
 
-    if err == "invalid_token":
+    log("Backend ERROR")
+    log(str(e))
+    log(traceback.format_exc())
 
-        log("\nCause detected:")
-        log("Authentication layer rejected the request.")
+log("------------------------------------------------------------\n")
 
-        log("\nSuggested fix:")
-        log("Add Authorization token to the diagnostic tool.")
 
-    elif err == "credits_exceeded":
+# ==========================================
+# DOCS TEST
+# ==========================================
 
-        log("\nCause detected:")
-        log("User ran out of scan credits.")
+log("DOCS ENDPOINT TEST")
 
-        log("\nSuggested fix:")
-        log("Use admin account or refill credits.")
+try:
 
-    elif err == "missing_url":
+    r = requests.get(BACKEND + "/docs", timeout=10)
 
-        log("\nCause detected:")
-        log("Scan request did not include a video URL.")
+    log(f"Status: {r.status_code}")
 
-    elif err == "scan_failed":
+    if r.status_code == 200:
+        log("Docs endpoint accessible ✓")
 
-        log("\nCause detected:")
-        log("Internal scanner failure.")
+except Exception as e:
 
-        log("\nPossible issues:")
-        log("- yt-dlp not installed")
-        log("- ffmpeg missing")
-        log("- audio extraction failed")
+    log("Docs ERROR")
+    log(str(e))
+    log(traceback.format_exc())
+
+log("------------------------------------------------------------\n")
+
+
+# ==========================================
+# SCAN DIAGNOSTIC
+# ==========================================
+
+log("SCAN DIAGNOSTIC ENDPOINT")
+
+try:
+
+    r = requests.get(BACKEND + "/scan-diagnostic", timeout=10)
+
+    if r.status_code == 200:
+
+        data = r.json()
+
+        log(f"Backend: {data.get('backend')}")
+        log(f"FFMPEG: {data.get('ffmpeg')}")
+        log(f"YT-DLP: {data.get('yt_dlp')}")
+        log(f"Scanner: {data.get('scanner')}")
 
     else:
 
-        log("\nUnknown backend error.")
-        log("Check backend logs for details.")
+        log("Diagnostic endpoint returned unexpected status")
+
+except Exception as e:
+
+    log("Diagnostic ERROR")
+    log(str(e))
+    log(traceback.format_exc())
+
+log("------------------------------------------------------------\n")
 
 
-def test_frontend():
+# ==========================================
+# SCAN TEST
+# ==========================================
 
-    section("FRONTEND TEST")
+log("SCAN ENDPOINT TEST")
 
-    try:
+payload = {
+    "url": TEST_VIDEO,
+    "token": "test_token"
+}
 
-        r = requests.get(FRONTEND,timeout=10)
+try:
 
-        log(f"URL: {FRONTEND}")
-        log(f"Status: {r.status_code}")
+    start = time.time()
 
-        log(f"Content length: {len(r.text)}")
+    r = requests.post(BACKEND + "/scan", json=payload, timeout=60)
 
-        if r.status_code==200:
-            log("Frontend reachable ✓")
+    elapsed = round(time.time() - start, 2)
 
-    except Exception as e:
+    log(f"HTTP status: {r.status_code}")
+    log(f"Response time: {elapsed}s")
 
-        log(f"Frontend ERROR: {e}")
-
-
-def test_backend():
-
-    section("BACKEND ROOT TEST")
-
-    try:
-
-        r = requests.get(BACKEND,timeout=10)
-
-        log(f"URL: {BACKEND}")
-        log(f"Status: {r.status_code}")
-
-    except Exception as e:
-
-        log(f"Backend ERROR: {e}")
-
-
-def test_docs():
-
-    section("DOCS ENDPOINT TEST")
+    log("RAW RESPONSE:")
+    log(r.text)
 
     try:
 
-        r = requests.get(DOCS,timeout=10)
+        data = r.json()
 
-        log(f"URL: {DOCS}")
-        log(f"Status: {r.status_code}")
+        if data.get("error") == "invalid_token":
 
-        if r.status_code==200:
-            log("Docs endpoint accessible")
+            log("AUTHENTICATION FAILED")
+            log("Scan rejected due to invalid token")
 
-    except Exception as e:
+        elif data.get("status") == "error":
 
-        log(f"/docs ERROR: {e}")
+            log("SCAN ENGINE ERROR")
+            log(str(data))
 
+        elif data.get("status") == "success":
 
-def test_scan():
+            results = data.get("results", [])
 
-    section("SCAN ENDPOINT TEST")
+            log(f"SCAN SUCCESS")
+            log(f"Matches found: {len(results)}")
 
-    payload = {
-        "url": TEST_VIDEO
-    }
+        else:
 
-    headers = {}
+            log("UNKNOWN RESPONSE FORMAT")
 
-    if TOKEN:
-        headers["Authorization"] = f"Bearer {TOKEN}"
+    except:
 
-    try:
+        log("Response is not JSON")
 
-        log(f"Scan URL: {SCAN}")
-        log(f"Test video: {TEST_VIDEO}")
+except Exception as e:
 
-        start = time.time()
+    log("SCAN REQUEST FAILED")
+    log(str(e))
+    log(traceback.format_exc())
 
-        r = requests.post(
-            SCAN,
-            json=payload,
-            headers=headers,
-            timeout=180
-        )
-
-        elapsed = time.time()-start
-
-        separator()
-
-        log("HTTP RESPONSE")
-
-        log(f"Status code: {r.status_code}")
-        log(f"Response time: {elapsed:.2f}s")
-
-        separator()
-
-        log("RAW RESPONSE")
-
-        log(r.text)
-
-        separator()
-
-        try:
-
-            data = r.json()
-
-            size = len(json.dumps(data))
-
-            log(f"JSON size: {size} chars")
-
-            if isinstance(data,dict):
-
-                log(f"Keys detected: {list(data.keys())}")
-
-            analyze_error(data)
-
-        except Exception as e:
-
-            log("JSON parsing failed")
-            log(str(e))
-
-        separator()
-
-        if elapsed < 2:
-
-            log("WARNING: scan finished extremely fast")
-
-            log("Possible causes:")
-            log("- authentication rejected")
-            log("- scanner returned early")
-            log("- request validation failed")
-
-    except Exception as e:
-
-        section("SCAN REQUEST FAILED")
-
-        log(str(e))
-
-        log("\nPossible causes:")
-        log("- backend crashed")
-        log("- network timeout")
-        log("- incorrect endpoint")
+log("------------------------------------------------------------\n")
 
 
-def summary():
-
-    section("DIAGNOSTIC SUMMARY")
-
-    log("Diagnostic completed.")
-
-    log("\nIf scans return errors:")
-
-    log("- Check authentication token")
-    log("- Verify backend logs in Railway")
-    log("- Confirm yt-dlp and ffmpeg availability")
-
-
-
-def main():
-
-    section("BEATSIGNAL DIAGNOSTIC V3")
-
-    test_frontend()
-
-    separator()
-
-    test_backend()
-
-    separator()
-
-    test_docs()
-
-    separator()
-
-    test_scan()
-
-    summary()
-
-
-if __name__ == "__main__":
-
-    main()
-
-    log_file.close()
-
-    print("\nDiagnostic saved to diagnostic_log.txt")
-
-    print("\nPress ENTER to exit...")
-    input()
+log("DIAGNOSTIC COMPLETE")
+log("Results saved to diagnostic.log")
