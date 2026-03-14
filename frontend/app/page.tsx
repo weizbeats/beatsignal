@@ -15,6 +15,8 @@ async function handleLogin(e:any){
 
 e.preventDefault()
 
+setError("")
+
 try{
 
 const res = await fetch(
@@ -29,7 +31,7 @@ body:JSON.stringify({ email,password })
 const data = await res.json()
 
 if(!data.token){
-setError("Invalid login")
+setError("Invalid email or password")
 return
 }
 
@@ -39,7 +41,7 @@ localStorage.setItem("user",email)
 router.push("/dashboard")
 
 }catch{
-setError("Login failed")
+setError("Server error")
 }
 
 }
@@ -50,44 +52,113 @@ return(
 
 <form
 onSubmit={handleLogin}
-className="card-glow bg-black/40 border border-white/10 backdrop-blur-xl rounded-xl p-8 flex flex-col gap-4 w-[340px]"
+className="
+card-glow
+bg-black/40
+border border-white/10
+backdrop-blur-xl
+rounded-xl
+p-10
+flex flex-col gap-4
+w-[380px]
+"
 >
 
-<h1 className="text-2xl font-semibold text-center mb-2">
+{/* TITLE */}
 
-Beat<span className="text-[var(--accent)]">Signal</span>
+<h1 className="text-2xl font-semibold text-center">
+
+Beat<span className="text-[#14E6C3]">Signal</span>
 
 </h1>
 
+<p className="text-xs text-center text-white/60 -mt-1">
+Detect stolen beats on YouTube
+</p>
+
+<p className="text-xs text-center text-[#14E6C3] mb-3">
+Login to continue
+</p>
+
+
+{/* EMAIL */}
+
 <input
-className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-[var(--accent)]"
 placeholder="Email"
 value={email}
 onChange={(e)=>setEmail(e.target.value)}
+className="
+bg-black/40
+border border-white/10
+rounded-lg
+px-3 py-2
+outline-none
+text-white
+focus:border-[#14E6C3]
+focus:shadow-[0_0_10px_rgba(20,230,195,0.4)]
+transition
+"
 />
+
+
+{/* PASSWORD */}
 
 <input
 type="password"
-className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-[var(--accent)]"
 placeholder="Password"
 value={password}
 onChange={(e)=>setPassword(e.target.value)}
+className="
+bg-black/40
+border border-white/10
+rounded-lg
+px-3 py-2
+outline-none
+text-white
+focus:border-[#14E6C3]
+focus:shadow-[0_0_10px_rgba(20,230,195,0.4)]
+transition
+"
 />
 
-{error && <p className="text-red-400 text-sm">{error}</p>}
+
+{/* ERROR */}
+
+{error && (
+
+<p className="text-red-400 text-sm text-center">
+{error}
+</p>
+
+)}
+
+
+{/* LOGIN BUTTON */}
 
 <button
 type="submit"
-className="bg-[var(--accent)] text-black py-2 rounded-lg font-medium hover:opacity-90"
+className="
+bg-[#14E6C3]
+text-black
+py-2
+rounded-lg
+font-medium
+hover:scale-[1.02]
+hover:shadow-[0_0_20px_rgba(20,230,195,0.6)]
+transition
+"
 >
 Login
 </button>
 
+
+{/* REGISTER LINK */}
+
 <p
-className="text-sm text-white/50 text-center cursor-pointer hover:text-white"
+className="text-sm text-white/50 text-center cursor-pointer hover:text-white transition"
 onClick={()=>router.push("/register")}
 >
-Register
+Don't have an account? <span className="text-[#14E6C3]">Create account</span>
 </p>
 
 </form>

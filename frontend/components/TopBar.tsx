@@ -29,14 +29,13 @@ setOpen(false)
 }
 
 document.addEventListener("mousedown",handleClick)
-
 return ()=>document.removeEventListener("mousedown",handleClick)
 
 },[])
 
 return(
 
-<div className="w-full flex justify-between items-start px-12 pt-8">
+<div className="w-full flex justify-between items-start px-16 pt-4">
 
 {/* LEFT */}
 
@@ -51,7 +50,7 @@ text-xs
 font-semibold
 px-3 py-1
 rounded-md
-shadow-[0_0_10px_rgba(255,200,0,0.5)]
+shadow-[0_0_15px_rgba(255,200,0,0.6)]
 w-fit
 ">
 {plan}
@@ -69,14 +68,13 @@ px-3 py-1
 rounded-md
 w-fit
 hover:scale-105
-hover:shadow-[0_0_15px_rgba(20,230,195,0.6)]
+hover:shadow-[0_0_15px_rgba(20,230,195,0.7)]
 transition
 ">
 Upgrade Plan
 </button>
 
 </div>
-
 
 {/* RIGHT */}
 
@@ -85,16 +83,26 @@ Upgrade Plan
 <button
 onClick={()=>setOpen(!open)}
 className="
+flex items-center gap-2
 bg-black/40
 border border-white/10
 px-4 py-1.5
 rounded-md
 text-sm
 hover:border-[#14E6C3]
+hover:shadow-[0_0_10px_rgba(20,230,195,0.4)]
 transition
 "
 >
+
+<span className="text-gray-200">
 {user}
+</span>
+
+<span className={`transition ${open ? "rotate-180":""}`}>
+▼
+</span>
+
 </button>
 
 {open && (
@@ -110,6 +118,7 @@ border border-white/10
 rounded-lg
 shadow-lg
 overflow-hidden
+animate-fade
 ">
 
 <button className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm">

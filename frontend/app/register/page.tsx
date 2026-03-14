@@ -15,6 +15,8 @@ async function handleRegister(e:any){
 
 e.preventDefault()
 
+setError("")
+
 try{
 
 const res = await fetch(
@@ -28,55 +30,129 @@ body:JSON.stringify({ email,password })
 
 if(res.ok){
 router.push("/")
+return
 }
 
+setError("Registration failed")
+
 }catch{
-setError("Register failed")
+setError("Server error")
 }
 
 }
 
 return(
 
-<div className="min-h-screen flex items-center justify-center">
+<div className="min-h-screen flex items-center justify-center px-6">
 
 <form
 onSubmit={handleRegister}
-className="card-glow bg-black/40 border border-white/10 backdrop-blur-xl rounded-xl p-8 flex flex-col gap-4 w-[340px]"
+className="
+card-glow
+bg-black/40
+border border-white/10
+backdrop-blur-xl
+rounded-xl
+p-10
+flex flex-col gap-4
+w-[380px]
+"
 >
 
-<h1 className="text-2xl font-semibold text-center mb-2">
+{/* TITLE */}
 
-Beat<span className="text-[#14E6C3]">Signal</span>
+<h1 className="text-2xl font-semibold text-center">
+
+Create Account
 
 </h1>
+
+<p className="text-xs text-center text-white/60 -mt-1">
+Start using BeatSignal
+</p>
+
+<p className="text-xs text-center text-[#14E6C3] mb-3">
+Free trial includes 5 scans
+</p>
+
+
+{/* EMAIL */}
 
 <input
 placeholder="Email"
 value={email}
 onChange={(e)=>setEmail(e.target.value)}
-className="bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+className="
+bg-black/40
+border border-white/10
+rounded-lg
+px-3 py-2
+outline-none
+text-white
+focus:border-[#14E6C3]
+focus:shadow-[0_0_10px_rgba(20,230,195,0.4)]
+transition
+"
 />
+
+
+{/* PASSWORD */}
 
 <input
 type="password"
 placeholder="Password"
 value={password}
 onChange={(e)=>setPassword(e.target.value)}
-className="bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+className="
+bg-black/40
+border border-white/10
+rounded-lg
+px-3 py-2
+outline-none
+text-white
+focus:border-[#14E6C3]
+focus:shadow-[0_0_10px_rgba(20,230,195,0.4)]
+transition
+"
 />
 
-{error && <p className="text-red-400 text-sm">{error}</p>}
 
-<button className="bg-[#14E6C3] text-black py-2 rounded-lg">
+{/* ERROR */}
+
+{error && (
+
+<p className="text-red-400 text-sm text-center">
+{error}
+</p>
+
+)}
+
+
+{/* BUTTON */}
+
+<button
+className="
+bg-[#14E6C3]
+text-black
+py-2
+rounded-lg
+font-medium
+hover:scale-[1.02]
+hover:shadow-[0_0_20px_rgba(20,230,195,0.6)]
+transition
+"
+>
 Create account
 </button>
 
+
+{/* LOGIN LINK */}
+
 <p
-className="text-sm text-white/50 text-center cursor-pointer"
+className="text-sm text-white/50 text-center cursor-pointer hover:text-white transition"
 onClick={()=>router.push("/")}
 >
-Login
+Already have an account? <span className="text-[#14E6C3]">Login</span>
 </p>
 
 </form>

@@ -36,17 +36,9 @@ return(
 
 <div className="flex flex-col flex-1">
 
-{/* TOP BAR */}
-
 <TopBar/>
 
-
-{/* CENTER AREA */}
-
-<div className="flex-1 flex flex-col items-center justify-center px-6 -mt-10">
-
-
-{/* TITLE */}
+<div className="flex-1 flex flex-col items-center justify-center px-6 -mt-24">
 
 <h1 className="
 text-6xl
@@ -58,34 +50,25 @@ from-white
 to-[#14E6C3]
 bg-clip-text
 text-transparent
-drop-shadow-[0_0_25px_rgba(20,230,195,0.35)]
+drop-shadow-[0_0_30px_rgba(20,230,195,0.45)]
 ">
 BeatSignal
 </h1>
 
-
-<p className="text-sm text-white/60 mb-12">
+<p className="text-sm text-white/60 mb-14">
 Detect stolen beats on YouTube
 </p>
 
-
-{/* SCAN BAR */}
-
-<div className="
-relative
-w-full
-max-w-4xl
-">
+<div className="relative w-full max-w-5xl">
 
 <div className="
 absolute
 inset-0
 bg-[#14E6C3]
-opacity-10
-blur-2xl
+opacity-20
+blur-3xl
 rounded-xl
 "></div>
-
 
 <div className="
 relative
@@ -122,12 +105,12 @@ className="
 ml-3
 bg-[#14E6C3]
 text-black
-px-8
+px-10
 py-3
 rounded-lg
 font-medium
 hover:scale-105
-hover:shadow-[0_0_20px_rgba(20,230,195,0.6)]
+hover:shadow-[0_0_25px_rgba(20,230,195,0.7)]
 transition
 "
 >
@@ -137,7 +120,6 @@ Scan
 </div>
 
 </div>
-
 
 </div>
 
