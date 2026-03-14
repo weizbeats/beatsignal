@@ -2,27 +2,18 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
 
-export default function LoginPage(){
+export default function Login(){
 
 const router = useRouter()
 
 const [email,setEmail] = useState("")
 const [password,setPassword] = useState("")
 const [error,setError] = useState("")
-const [loading,setLoading] = useState(false)
 
 async function handleLogin(e:any){
 
 e.preventDefault()
-
-if(!email || !password){
-setError("Fill all fields")
-return
-}
-
-setLoading(true)
 
 try{
 
@@ -39,7 +30,6 @@ const data = await res.json()
 
 if(!data.token){
 setError("Invalid login")
-setLoading(false)
 return
 }
 
@@ -52,37 +42,18 @@ router.push("/dashboard")
 setError("Login failed")
 }
 
-setLoading(false)
-
 }
 
 return(
 
-<div className="min-h-screen flex items-center justify-center px-6">
+<div className="min-h-screen flex items-center justify-center">
 
-<motion.div
-initial={{opacity:0,y:40}}
-animate={{opacity:1,y:0}}
-transition={{duration:0.4}}
-className="w-full max-w-md bg-[#0b0b0b]/70 backdrop-blur-xl border border-white/10 rounded-2xl p-10 shadow-[0_0_60px_rgba(20,230,195,0.08)]"
->
-
-<h1 className="text-white text-3xl font-semibold mb-2 text-center">
-BeatSignal
-</h1>
-
-<p className="text-gray-400 text-center mb-8 text-sm">
-Login to your account
-</p>
-
-<form onSubmit={handleLogin}>
+<form onSubmit={handleLogin} className="flex flex-col gap-4">
 
 <input
-type="email"
 placeholder="Email"
 value={email}
 onChange={(e)=>setEmail(e.target.value)}
-className="w-full p-4 mb-4 rounded-lg bg-black/40 border border-white/10 text-white"
 />
 
 <input
@@ -90,35 +61,19 @@ type="password"
 placeholder="Password"
 value={password}
 onChange={(e)=>setPassword(e.target.value)}
-className="w-full p-4 mb-6 rounded-lg bg-black/40 border border-white/10 text-white"
 />
 
-{error && <p className="text-red-400 mb-4 text-sm">{error}</p>}
+{error && <p>{error}</p>}
 
-<button
-type="submit"
-disabled={loading}
-className="w-full bg-[#14E6C3] hover:bg-[#0FD4B5] text-black font-semibold p-4 rounded-lg"
->
-{loading ? "Loading..." : "Login"}
+<button type="submit">
+Login
 </button>
 
-</form>
-
-<p className="text-gray-400 text-sm mt-6 text-center">
-
-Don't have an account?
-
-<span
-onClick={()=>router.push("/register")}
-className="text-[#14E6C3] cursor-pointer ml-2 hover:underline"
->
+<p onClick={()=>router.push("/register")}>
 Register
-</span>
-
 </p>
 
-</motion.div>
+</form>
 
 </div>
 

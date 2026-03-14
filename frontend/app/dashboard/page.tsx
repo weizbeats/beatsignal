@@ -13,13 +13,23 @@ const [loading,setLoading] = useState(false)
 const [progress,setProgress] = useState(0)
 const [result,setResult] = useState<any[]>([])
 
+const [user,setUser] = useState("")
+const [isAdmin,setIsAdmin] = useState(false)
+
 useEffect(()=>{
 
 const token = localStorage.getItem("token")
-const user = localStorage.getItem("user")
+const savedUser = localStorage.getItem("user")
 
-if(!token || !user){
+if(!token || !savedUser){
 window.location.href="/"
+return
+}
+
+setUser(savedUser)
+
+if(savedUser==="weizbeat@gmail.com"){
+setIsAdmin(true)
 }
 
 },[])
@@ -36,7 +46,6 @@ async function handleScan(){
 if(!url) return
 
 setLoading(true)
-setProgress(0)
 
 try{
 
@@ -46,39 +55,24 @@ const res = await fetch(
 `${process.env.NEXT_PUBLIC_API_URL}/scan`,
 {
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-url,
-token
-})
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({ url,token })
 }
 )
 
 const data = await res.json()
 
-console.log("SCAN RESPONSE:",data)
+console.log(data)
 
-if(data.results){
-setResult(data.results)
-}
-else if(Array.isArray(data)){
+if(Array.isArray(data)){
 setResult(data)
-}
-else{
-setResult([])
 }
 
 }catch(err){
 console.log(err)
 }
 
-setProgress(100)
-
-setTimeout(()=>{
 setLoading(false)
-},1200)
 
 }
 
@@ -86,7 +80,7 @@ return(
 
 <div className="min-h-screen flex flex-col items-center justify-center">
 
-<h1 className="text-5xl mb-6 text-white">
+<h1 className="text-5xl text-white mb-6">
 BeatSignal
 </h1>
 
@@ -96,40 +90,22 @@ BeatSignal
 value={url}
 onChange={(e)=>setUrl(e.target.value)}
 placeholder="Paste YouTube link"
-className="p-4 w-[500px]"
 />
 
-<button
-onClick={handleScan}
-className="bg-[#14E6C3] px-6 py-4 rounded-lg"
->
+<button onClick={handleScan}>
 Scan
 </button>
 
 </div>
 
-{loading && (
-<ScanProgress progress={progress}/>
-)}
-
-{result.length > 0 && (
-
-<div className="mt-10">
+{loading && <ScanProgress progress={progress}/>}
 
 {result.map((r,i)=>(
-
 <div key={i}>
-
 <p>{r.song}</p>
 <p>{r.artist}</p>
-
 </div>
-
 ))}
-
-</div>
-
-)}
 
 </div>
 
