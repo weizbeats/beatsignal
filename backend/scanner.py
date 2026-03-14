@@ -19,8 +19,10 @@ def scan_url(url):
 
     audio_file = f"{TEMP_FOLDER}/{uid}.%(ext)s"
 
-    sample1 = f"{TEMP_FOLDER}/{uid}_sample1.mp3"
-    sample2 = f"{TEMP_FOLDER}/{uid}_sample2.mp3"
+    # segmentos
+    segments = [0, 30, 60, 90]
+
+    samples = []
 
     print("1️⃣ Downloading audio from YouTube...")
 
@@ -47,59 +49,49 @@ def scan_url(url):
 
         print("2️⃣ Creating samples...")
 
-        # SAMPLE 1 (0 → 20s)
+        for i, start in enumerate(segments):
 
-        subprocess.run([
-            "ffmpeg",
-            "-y",
-            "-i",
-            downloaded_file,
-            "-t",
-            "20",
-            "-acodec",
-            "mp3",
-            sample1
-        ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL)
+            sample_file = f"{TEMP_FOLDER}/{uid}_sample{i}.mp3"
 
-        # SAMPLE 2 (40 → 60s)
+            subprocess.run([
+                "ffmpeg",
+                "-y",
+                "-ss",
+                str(start),
+                "-i",
+                downloaded_file,
+                "-t",
+                "20",
+                "-acodec",
+                "mp3",
+                sample_file
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL)
 
-        subprocess.run([
-            "ffmpeg",
-            "-y",
-            "-i",
-            downloaded_file,
-            "-ss",
-            "40",
-            "-t",
-            "20",
-            "-acodec",
-            "mp3",
-            sample2
-        ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL)
+            if os.path.exists(sample_file):
 
-        print("✅ Samples ready")
+                print(f"✔ Sample {i} created ({start}s)")
+
+                samples.append(sample_file)
 
         print("3️⃣ Sending samples to ACRCloud...")
 
         matches = []
 
-        if os.path.exists(sample1):
+        for sample in samples:
 
-            r1 = recognize_audio(sample1)
+            try:
 
-            if r1:
-                matches.extend(r1)
+                result = recognize_audio(sample)
 
-        if os.path.exists(sample2):
+                if result:
 
-            r2 = recognize_audio(sample2)
+                    matches.extend(result)
 
-            if r2:
-                matches.extend(r2)
+            except Exception as e:
+
+                print("ACRCloud error:", e)
 
         print("✅ Recognition finished")
 
@@ -136,11 +128,8 @@ def scan_url(url):
             if os.path.exists(downloaded_file):
                 os.remove(downloaded_file)
 
-            if os.path.exists(sample1):
-                os.remove(sample1)
-
-            if os.path.exists(sample2):
-                os.remove(sample2)
+            for sample in samples:
+                os.remove(sample)
 
         except Exception as e:
 
