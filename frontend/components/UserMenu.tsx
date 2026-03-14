@@ -43,8 +43,7 @@ border border-white/10
 px-3 py-1
 rounded-md
 text-sm
-hover:border-[var(--accent)]
-hover:shadow-[0_0_10px_rgba(20,230,195,0.4)]
+hover:border-[#14E6C3]
 transition
 "
 >
@@ -57,14 +56,13 @@ transition
 absolute
 right-0
 mt-2
-w-44
+w-48
 bg-black/40
 backdrop-blur-xl
 border border-white/10
 rounded-lg
 shadow-lg
 overflow-hidden
-animate-fade
 ">
 
 <button className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm">
