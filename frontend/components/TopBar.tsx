@@ -36,9 +36,9 @@ return ()=>document.removeEventListener("mousedown",handleClick)
 
 return(
 
-<div className="flex justify-between items-start mb-10 px-4">
+<div className="w-full flex justify-between items-start px-12 pt-8">
 
-{/* LEFT SIDE */}
+{/* LEFT */}
 
 <div className="flex flex-col gap-2">
 
@@ -69,7 +69,7 @@ px-3 py-1
 rounded-md
 w-fit
 hover:scale-105
-hover:shadow-[0_0_12px_rgba(20,230,195,0.6)]
+hover:shadow-[0_0_15px_rgba(20,230,195,0.6)]
 transition
 ">
 Upgrade Plan
@@ -78,42 +78,31 @@ Upgrade Plan
 </div>
 
 
-{/* RIGHT SIDE */}
+{/* RIGHT */}
 
-<div ref={ref} className="relative flex items-center gap-3">
+<div ref={ref} className="relative">
 
 <button
 onClick={()=>setOpen(!open)}
 className="
-flex items-center
-gap-2
 bg-black/40
 border border-white/10
-px-3 py-1
+px-4 py-1.5
 rounded-md
 text-sm
 hover:border-[#14E6C3]
 transition
 "
 >
-
-<div className="w-8 h-8 bg-[#14E6C3]/60 rounded-full"></div>
-
-<span className="text-gray-300">
 {user}
-</span>
-
 </button>
-
-
-{/* DROPDOWN */}
 
 {open && (
 
 <div className="
 absolute
 right-0
-top-10
+mt-2
 w-44
 bg-black/40
 backdrop-blur-xl
@@ -121,7 +110,6 @@ border border-white/10
 rounded-lg
 shadow-lg
 overflow-hidden
-animate-fade
 ">
 
 <button className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm">
