@@ -5,6 +5,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import os
+import secrets
+import smtplib
+
+from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 
 from services.scanner import scan_url
@@ -32,6 +36,10 @@ app.add_middleware(
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
+
+EMAIL_USER = os.getenv("EMAIL_USER")
+EMAIL_PASS = os.getenv("EMAIL_PASS")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 
 # -------------------------
@@ -62,6 +70,50 @@ def verify_token(token: str):
     except:
 
         return None
+
+
+# -------------------------
+# EMAIL
+# -------------------------
+
+def generate_verify_token():
+
+    return secrets.token_urlsafe(32)
+
+
+def send_verification_email(email, token):
+
+    link = f"{FRONTEND_URL}/verify?token={token}"
+
+    body = f"""
+Welcome to BeatSignal
+
+Click the link below to verify your account:
+
+{link}
+
+If you didn't create this account you can ignore this email.
+"""
+
+    msg = MIMEText(body)
+
+    msg["Subject"] = "Verify your BeatSignal account"
+    msg["From"] = EMAIL_USER
+    msg["To"] = email
+
+    try:
+
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(EMAIL_USER, EMAIL_PASS)
+
+        server.sendmail(EMAIL_USER, email, msg.as_string())
+
+        server.quit()
+
+    except Exception as e:
+
+        print("Email send error:", e)
 
 
 # -------------------------
@@ -97,25 +149,50 @@ def register(data: dict):
 
     hashed_password = bcrypt.hash(password)
 
+    verify_token = generate_verify_token()
+
     new_user = User(
         email=email,
         password=hashed_password,
         plan="trial",
         credits=5,
-        admin=email == "weizbeat@gmail.com"
+        admin=email == "weizbeat@gmail.com",
+        verified=False,
+        verify_token=verify_token
     )
 
     db.add(new_user)
     db.commit()
 
-    token = create_token(email)
+    send_verification_email(email, verify_token)
 
     return {
         "success": True,
-        "token": token,
-        "plan": new_user.plan,
-        "credits": new_user.credits
+        "message": "Verification email sent"
     }
+
+
+# -------------------------
+# VERIFY EMAIL
+# -------------------------
+
+@app.get("/verify-email")
+def verify_email(token: str):
+
+    db = SessionLocal()
+
+    user = db.query(User).filter(User.verify_token == token).first()
+
+    if not user:
+
+        return {"success": False}
+
+    user.verified = True
+    user.verify_token = None
+
+    db.commit()
+
+    return {"success": True}
 
 
 # -------------------------
@@ -147,6 +224,13 @@ def login(data: dict):
         return {
             "success": False,
             "error": "user_not_found"
+        }
+
+    if not user.verified:
+
+        return {
+            "success": False,
+            "error": "email_not_verified"
         }
 
     if not bcrypt.verify(password, user.password):

@@ -14,3 +14,6 @@ class User(Base):
     credits = Column(Integer, default=5)
 
     admin = Column(Boolean, default=False)
+
+    verified = Column(Boolean, default=False)
+    verify_token = Column(String, nullable=True)
