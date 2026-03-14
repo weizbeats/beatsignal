@@ -268,13 +268,35 @@ Logout
 
 <div className="w-full max-w-5xl px-8 py-16">
 
-<div className="text-center mb-14">
+{/* LOGO AREA */}
 
-<h1 className="text-5xl font-semibold mb-3 bg-gradient-to-r from-white to-[#14E6C3] bg-clip-text text-transparent">
+<div className="relative text-center mb-14 flex flex-col items-center">
+
+{/* water ripple waves */}
+
+<motion.div
+className="absolute w-[420px] h-[420px] rounded-full border border-[#14E6C3]/10"
+animate={{scale:[1,1.4],opacity:[0.2,0]}}
+transition={{duration:6,repeat:Infinity,ease:"easeOut"}}
+/>
+
+<motion.div
+className="absolute w-[420px] h-[420px] rounded-full border border-[#14E6C3]/10"
+animate={{scale:[1,1.6],opacity:[0.15,0]}}
+transition={{duration:7,repeat:Infinity,ease:"easeOut"}}
+/>
+
+<motion.div
+className="absolute w-[420px] h-[420px] rounded-full border border-[#14E6C3]/10"
+animate={{scale:[1,1.8],opacity:[0.1,0]}}
+transition={{duration:8,repeat:Infinity,ease:"easeOut"}}
+/>
+
+<h1 className="relative text-5xl font-semibold mb-3 bg-gradient-to-r from-white via-[#14E6C3] to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(20,230,195,0.25)]">
 BeatSignal
 </h1>
 
-<p className="text-gray-400">
+<p className="relative text-gray-400">
 Detect stolen beats on YouTube
 </p>
 
