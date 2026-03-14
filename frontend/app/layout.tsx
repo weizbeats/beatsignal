@@ -2,20 +2,22 @@ import "./globals.css"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 
-  return (
+return (
 
-    <html lang="en">
+```
+<html lang="en">
 
-      <body>
+  <body>
 
-        <div className="bg-glow"></div>
+    <div className="bg-glow"></div>
 
-        {children}
+    {children}
 
-      </body>
+  </body>
 
-    </html>
+</html>
+```
 
-  )
+)
 
 }

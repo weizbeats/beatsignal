@@ -2,9 +2,14 @@
 
 import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
 
-import BackgroundParticles from "@/components/BackgroundParticles"
 import ScanProgress from "@/components/ScanProgress"
+
+const BackgroundParticles = dynamic(
+() => import("@/components/BackgroundParticles"),
+{ ssr:false }
+)
 
 export default function Dashboard(){
 
@@ -18,10 +23,14 @@ const [user,setUser] = useState("")
 useEffect(()=>{
 
 ```
-const savedUser = localStorage.getItem("user")
+if(typeof window !== "undefined"){
 
-if(savedUser){
-  setUser(savedUser)
+  const savedUser = window.localStorage.getItem("user")
+
+  if(savedUser){
+    setUser(savedUser)
+  }
+
 }
 ```
 
@@ -30,8 +39,12 @@ if(savedUser){
 function logout(){
 
 ```
-localStorage.removeItem("session")
-localStorage.removeItem("user")
+if(typeof window !== "undefined"){
+
+  window.localStorage.removeItem("session")
+  window.localStorage.removeItem("user")
+
+}
 
 router.push("/login")
 ```
