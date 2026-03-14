@@ -1,8 +1,8 @@
 "use client"
 
-import { useState,useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { motion,AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import ScanProgress from "../components/ScanProgress"
 
 export default function Dashboard(){
@@ -27,7 +27,7 @@ const token = localStorage.getItem("token")
 const savedUser = localStorage.getItem("user")
 
 if(!token || !savedUser){
-router.replace("/")
+window.location.href = "/"
 return
 }
 
@@ -41,14 +41,14 @@ setCredits(-1)
 
 },[])
 
-
 function logout(){
 
-localStorage.clear()
-router.replace("/")
+localStorage.removeItem("token")
+localStorage.removeItem("user")
+
+window.location.href = "/"
 
 }
-
 
 async function handleScan(){
 
@@ -84,7 +84,6 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL
 const res = await fetch(apiUrl + "/scan",{
 
 method:"POST",
-
 headers:{
 "Content-Type":"application/json"
 },
@@ -145,10 +144,7 @@ return(
 <div className="flex flex-col gap-2">
 
 <div className={`text-sm font-semibold px-3 py-1 rounded-md w-fit
-${isAdmin
-? "bg-yellow-400 text-black"
-: "text-[#14E6C3]"
-}`}>
+${isAdmin ? "bg-yellow-400 text-black" : "text-[#14E6C3]"}`}>
 
 {isAdmin ? "ADMIN" : `Plan: ${plan}`}
 
@@ -167,7 +163,6 @@ Upgrade Plan
 
 </div>
 
-
 <div className="relative">
 
 <button
@@ -176,7 +171,6 @@ className="flex items-center gap-2 text-sm text-gray-300 hover:text-white border
 >
 
 {user}
-
 <span className="text-xs opacity-70">▼</span>
 
 </button>
@@ -191,17 +185,6 @@ animate={{opacity:1,y:0}}
 exit={{opacity:0,y:-10}}
 className="absolute right-0 mt-2 w-44 bg-[#111] border border-white/10 rounded-lg shadow-xl"
 >
-
-<button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]">
-Account
-</button>
-
-<button
-onClick={()=>router.push("/plans")}
-className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]"
->
-Billing
-</button>
 
 <button
 onClick={logout}
@@ -220,12 +203,11 @@ Logout
 
 </div>
 
-
 <div className="w-full flex justify-center">
 
 <div className="w-full max-w-5xl px-8 py-16">
 
-<div className="text-center mb-16 flex flex-col items-center">
+<div className="text-center mb-16">
 
 <h1 className="text-5xl font-semibold mb-3 bg-gradient-to-r from-white via-[#14E6C3] to-emerald-400 bg-clip-text text-transparent">
 BeatSignal
@@ -236,7 +218,6 @@ Detect stolen beats on YouTube
 </p>
 
 </div>
-
 
 <div className="bg-[#0b0b0b]/70 backdrop-blur-md border border-[#14E6C3]/20 rounded-xl p-6 mb-8">
 
@@ -252,7 +233,7 @@ className="flex-1 bg-black/40 border border-white/10 text-white p-4 rounded-lg o
 <button
 onClick={handleScan}
 disabled={loading}
-className={`px-6 rounded-lg font-semibold flex items-center gap-2 transition
+className={`px-6 rounded-lg font-semibold transition
 ${loading
 ? "bg-gray-600 cursor-not-allowed"
 : "bg-[#14E6C3] hover:bg-[#0FD4B5] text-black"
@@ -267,13 +248,11 @@ ${loading
 
 </div>
 
-
 {loading && (
 <div className="mb-12">
 <ScanProgress progress={progress}/>
 </div>
 )}
-
 
 {result.length > 0 && (
 
@@ -298,25 +277,10 @@ className="bg-[#0b0b0b]/70 border border-[#14E6C3]/20 p-4 rounded-lg"
 {r.artist || "Unknown artist"}
 </div>
 
-{r.score && (
-<div className="text-[#14E6C3] text-sm mt-1">
-Match: {Math.round(r.score)}%
-</div>
-)}
-
 </div>
 
 ))}
 
-</div>
-
-)}
-
-
-{progress === 100 && result.length === 0 && !loading && (
-
-<div className="text-center text-gray-400 mt-10">
-No matches detected
 </div>
 
 )}

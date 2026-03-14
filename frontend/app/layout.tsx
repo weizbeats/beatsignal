@@ -1,5 +1,3 @@
-"use client"
-
 import "./globals.css"
 
 export default function RootLayout({
@@ -14,11 +12,7 @@ return(
 
 <body>
 
-{/* GLOBAL BACKGROUND */}
-
 <div className="bg-glow"></div>
-
-{/* APP */}
 
 <div className="relative z-10">
 
