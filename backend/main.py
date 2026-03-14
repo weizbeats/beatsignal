@@ -6,9 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import os
 import secrets
-import smtplib
+import requests
 
-from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 
 from services.scanner import scan_url
@@ -61,9 +60,8 @@ app.add_middleware(
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
-EMAIL_USER = os.getenv("EMAIL_USER")
-EMAIL_PASS = os.getenv("EMAIL_PASS")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 
 
 # -------------------------
@@ -111,13 +109,9 @@ def verify_token(token: str):
         return None
 
     try:
-
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
         return payload
-
     except:
-
         return None
 
 
@@ -126,7 +120,6 @@ def verify_token(token: str):
 # -------------------------
 
 def generate_verify_token():
-
     return secrets.token_urlsafe(32)
 
 
@@ -134,34 +127,29 @@ def send_verification_email(email, token):
 
     link = f"{FRONTEND_URL}/verify?token={token}"
 
-    body = f"""
-Welcome to BeatSignal
-
-Click the link below to verify your account:
-
-{link}
-
-If you didn't create this account you can ignore this email.
-"""
-
-    msg = MIMEText(body)
-
-    msg["Subject"] = "Verify your BeatSignal account"
-    msg["From"] = EMAIL_USER
-    msg["To"] = email
+    data = {
+        "from": "BeatSignal <onboarding@resend.dev>",
+        "to": [email],
+        "subject": "Verify your BeatSignal account",
+        "html": f"""
+        <h2>Verify your BeatSignal account</h2>
+        <p>Click the link below to activate your account:</p>
+        <a href="{link}">{link}</a>
+        """
+    }
 
     try:
 
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(EMAIL_USER, EMAIL_PASS)
-
-        server.sendmail(EMAIL_USER, email, msg.as_string())
-
-        server.quit()
+        requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json=data
+        )
 
     except Exception as e:
-
         print("Email send error:", e)
 
 
@@ -266,7 +254,6 @@ def verify_email(token: str):
     user = db.query(User).filter(User.verify_token == token).first()
 
     if not user:
-
         return {"success": False}
 
     user.verified = True
@@ -355,10 +342,7 @@ def scan(data: dict):
     payload = verify_token(token)
 
     if not payload:
-
-        return {
-            "error": "invalid_token"
-        }
+        return {"error": "invalid_token"}
 
     email = payload["email"]
 
@@ -367,18 +351,12 @@ def scan(data: dict):
     user = db.query(User).filter(User.email == email).first()
 
     if not user:
-
-        return {
-            "error": "user_not_found"
-        }
+        return {"error": "user_not_found"}
 
     if not user.admin and user.plan != "unlimited":
 
         if user.credits <= 0:
-
-            return {
-                "error": "no_credits"
-            }
+            return {"error": "no_credits"}
 
         user.credits -= 1
         db.commit()
