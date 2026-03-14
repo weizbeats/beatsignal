@@ -8,7 +8,7 @@ FRONTEND TEST
 ============================================================
 URL: https://beatsignal-2uec.vercel.app
 Status: 200
-Content length: 7214
+Content length: 8642
 Frontend reachable ✓
 ------------------------------------------------------------
 
@@ -35,7 +35,7 @@ Test video: https://www.youtube.com/watch?v=jNQXAC9IVRw
 ------------------------------------------------------------
 HTTP RESPONSE
 Status code: 200
-Response time: 1.28s
+Response time: 1.30s
 ------------------------------------------------------------
 RAW RESPONSE
 {"error":"invalid_token"}

@@ -29,9 +29,6 @@ app.add_middleware(
 USERS_FILE = "database/users.json"
 BEATS_FILE = "database/beats.json"
 
-AUTOPILOT_DAYS = 10
-AUTOPILOT_SECONDS = AUTOPILOT_DAYS * 24 * 60 * 60
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
@@ -94,21 +91,6 @@ def save_users(users):
         json.dump(users, f)
 
 
-def load_beats():
-
-    try:
-        with open(BEATS_FILE, "r") as f:
-            return json.load(f)
-    except:
-        return []
-
-
-def save_beats(beats):
-
-    with open(BEATS_FILE, "w") as f:
-        json.dump(beats, f)
-
-
 # -------------------------
 # REGISTER
 # -------------------------
@@ -122,16 +104,23 @@ def register(data: dict):
     if not email or not password:
         return {"success": False}
 
+    email = str(email).strip().lower()
+    password = str(password).strip()
+
     users = load_users()
 
     for user in users:
         if user["email"] == email:
             return {"success": False}
 
-    # bcrypt max length = 72
+    # bcrypt max 72 chars
     password = password[:72]
 
-    hashed_password = bcrypt.hash(password)
+    try:
+        hashed_password = bcrypt.hash(password)
+    except Exception as e:
+        print("bcrypt error:", e)
+        return {"success": False}
 
     users.append({
         "email": email,
@@ -160,34 +149,45 @@ def login(data: dict):
     if not email or not password:
         return {"success": False}
 
+    email = str(email).strip().lower()
+    password = str(password).strip()[:72]
+
     users = load_users()
 
     for user in users:
 
         if user["email"] == email:
 
-            if bcrypt.verify(password[:72], user["password"]):
+            try:
 
-                token = create_token(email)
+                if bcrypt.verify(password, user["password"]):
 
-                is_admin = user.get("admin", False)
+                    token = create_token(email)
 
-                if is_admin:
+                    is_admin = user.get("admin", False)
+
+                    if is_admin:
+
+                        return {
+                            "success": True,
+                            "token": token,
+                            "plan": "admin",
+                            "credits": -1,
+                            "admin": True
+                        }
+
                     return {
                         "success": True,
                         "token": token,
-                        "plan": "admin",
-                        "credits": -1,
-                        "admin": True
+                        "plan": user.get("plan", "trial"),
+                        "credits": user.get("credits", 0),
+                        "admin": False
                     }
 
-                return {
-                    "success": True,
-                    "token": token,
-                    "plan": user.get("plan", "trial"),
-                    "credits": user.get("credits", 0),
-                    "admin": False
-                }
+            except Exception as e:
+
+                print("bcrypt verify error:", e)
+                return {"success": False}
 
     return {"success": False}
 
