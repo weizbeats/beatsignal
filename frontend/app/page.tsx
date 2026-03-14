@@ -117,7 +117,7 @@ return
 if(Array.isArray(data)){
 setResult(data)
 }
-else if(Array.isArray(data.results)){
+else if(data && Array.isArray(data.results)){
 setResult(data.results)
 }
 else{
@@ -277,7 +277,7 @@ ${loading
 )}
 
 
-{!loading && result.length > 0 && (
+{result.length > 0 && (
 
 <div className="mt-10 space-y-4">
 
@@ -306,18 +306,6 @@ Match: {Math.round(r.score)}%
 </div>
 )}
 
-{r.youtube && (
-
-<a
-href={r.youtube}
-target="_blank"
-className="text-sm text-blue-400 hover:underline mt-2 block"
->
-Open video
-</a>
-
-)}
-
 </div>
 
 ))}
@@ -327,7 +315,7 @@ Open video
 )}
 
 
-{!loading && result.length === 0 && progress === 100 && (
+{progress === 100 && result.length === 0 && !loading && (
 
 <div className="text-center text-gray-400 mt-10">
 No matches detected
