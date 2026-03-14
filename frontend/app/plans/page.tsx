@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
+const API_URL = "https://beatsignal-production.up.railway.app"
+
 export default function Plans(){
 
 const router = useRouter()
@@ -12,8 +14,10 @@ async function buyPlan(plan:string){
 
 localStorage.setItem("selectedPlan",plan)
 
+try{
+
 const res = await fetch(
-process.env.NEXT_PUBLIC_API_URL + "/create-paypal-order",
+API_URL + "/create-paypal-order",
 {
 method:"POST",
 headers:{
@@ -31,6 +35,13 @@ return
 
 window.location.href =
 "https://www.paypal.com/checkoutnow?token=" + data.orderID
+
+}catch(err){
+
+console.error(err)
+alert("Payment error")
+
+}
 
 }
 
@@ -56,17 +67,16 @@ return(
 
 <div className="min-h-screen flex flex-col items-center justify-center px-6">
 
-{/* BACK BUTTON */}
-
 <div className="absolute top-6 left-6">
 
 <button
 onClick={()=>router.back()}
 className="bg-[#111] hover:bg-[#14E6C3] hover:text-black transition-all duration-300 px-4 py-2 rounded-lg border border-white/10"
-
 >
 
-← Back </button>
+← Back
+
+</button>
 
 </div>
 
@@ -78,29 +88,27 @@ Pricing
 Choose the plan that fits you
 </p>
 
-{/* BILLING TOGGLE */}
-
 <div className="flex items-center gap-4 mb-12">
 
 <button
 onClick={()=>setBilling("monthly")}
 className={`px-5 py-2 rounded-lg transition-all duration-300 ${billing==="monthly" ? "bg-[#14E6C3] text-black" : "bg-[#111] hover:bg-[#1a1a1a]"}`}
-
 >
 
-Monthly </button>
+Monthly
+
+</button>
 
 <button
 onClick={()=>setBilling("yearly")}
 className={`px-5 py-2 rounded-lg transition-all duration-300 ${billing==="yearly" ? "bg-[#14E6C3] text-black" : "bg-[#111] hover:bg-[#1a1a1a]"}`}
-
 >
 
-Yearly (40% off) </button>
+Yearly (40% off)
+
+</button>
 
 </div>
-
-{/* PLANS */}
 
 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
 
@@ -129,10 +137,11 @@ ${price[50]} {billing==="monthly" ? "/ month" : "/ year"}
 <button
 onClick={()=>buyPlan("50")}
 className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full transition-all duration-300 hover:scale-105 active:scale-95"
-
 >
 
-Subscribe </button>
+Subscribe
+
+</button>
 
 </div>
 
@@ -165,10 +174,11 @@ ${price[100]} {billing==="monthly" ? "/ month" : "/ year"}
 <button
 onClick={()=>buyPlan("100")}
 className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full transition-all duration-300 hover:scale-105 active:scale-95"
-
 >
 
-Subscribe </button>
+Subscribe
+
+</button>
 
 </div>
 
@@ -197,10 +207,11 @@ ${price.unlimited} {billing==="monthly" ? "/ month" : "/ year"}
 <button
 onClick={()=>buyPlan("unlimited")}
 className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full transition-all duration-300 hover:scale-105 active:scale-95"
-
 >
 
-Subscribe </button>
+Subscribe
+
+</button>
 
 </div>
 
