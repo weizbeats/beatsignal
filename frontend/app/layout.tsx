@@ -10,7 +10,7 @@ return(
 
 <html lang="en">
 
-<body>
+<body className="bg-background text-foreground">
 
 <div className="bg-glow"></div>
 
