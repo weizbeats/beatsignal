@@ -8,20 +8,23 @@ FRONTEND TEST
 ============================================================
 URL: https://beatsignal-2uec.vercel.app
 Status: 200
-Content length: 7108
+Content length: 7214
 Frontend reachable ✓
 ------------------------------------------------------------
 
 ============================================================
 BACKEND ROOT TEST
 ============================================================
-Backend ERROR: HTTPSConnectionPool(host='beatsignal-production.up.railway.app', port=443): Max retries exceeded with url: / (Caused by NameResolutionError("HTTPSConnection(host='beatsignal-production.up.railway.app', port=443): Failed to resolve 'beatsignal-production.up.railway.app' ([Errno 11001] getaddrinfo failed)"))
+URL: https://beatsignal-production.up.railway.app
+Status: 404
 ------------------------------------------------------------
 
 ============================================================
 DOCS ENDPOINT TEST
 ============================================================
-/docs ERROR: HTTPSConnectionPool(host='beatsignal-production.up.railway.app', port=443): Max retries exceeded with url: /docs (Caused by NameResolutionError("HTTPSConnection(host='beatsignal-production.up.railway.app', port=443): Failed to resolve 'beatsignal-production.up.railway.app' ([Errno 11002] getaddrinfo failed)"))
+URL: https://beatsignal-production.up.railway.app/docs
+Status: 200
+Docs endpoint accessible
 ------------------------------------------------------------
 
 ============================================================
@@ -29,16 +32,33 @@ SCAN ENDPOINT TEST
 ============================================================
 Scan URL: https://beatsignal-production.up.railway.app/scan
 Test video: https://www.youtube.com/watch?v=jNQXAC9IVRw
+------------------------------------------------------------
+HTTP RESPONSE
+Status code: 200
+Response time: 1.28s
+------------------------------------------------------------
+RAW RESPONSE
+{"error":"invalid_token"}
+------------------------------------------------------------
+JSON size: 26 chars
+Keys detected: ['error']
 
 ============================================================
-SCAN REQUEST FAILED
+ERROR ANALYSIS
 ============================================================
-HTTPSConnectionPool(host='beatsignal-production.up.railway.app', port=443): Max retries exceeded with url: /scan (Caused by NameResolutionError("HTTPSConnection(host='beatsignal-production.up.railway.app', port=443): Failed to resolve 'beatsignal-production.up.railway.app' ([Errno 11002] getaddrinfo failed)"))
+Backend returned error: invalid_token
 
+Cause detected:
+Authentication layer rejected the request.
+
+Suggested fix:
+Add Authorization token to the diagnostic tool.
+------------------------------------------------------------
+WARNING: scan finished extremely fast
 Possible causes:
-- backend crashed
-- network timeout
-- incorrect endpoint
+- authentication rejected
+- scanner returned early
+- request validation failed
 
 ============================================================
 DIAGNOSTIC SUMMARY
