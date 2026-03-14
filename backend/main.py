@@ -29,38 +29,18 @@ AUTOPILOT_SECONDS = AUTOPILOT_DAYS * 24 * 60 * 60
 
 
 # =========================
-# ONLINE USERS TRACKER
-# =========================
-
-online_users = {}
-
-def get_online_users():
-
-    now = time.time()
-
-    active = []
-
-    for user, last_seen in online_users.items():
-
-        if now - last_seen < 60:
-            active.append(user)
-
-    return len(active)
-
-
-# =========================
 # CREATE FILES
 # =========================
 
 if not os.path.exists(USERS_FILE):
 
-    with open(USERS_FILE, "w") as f:
-        json.dump([], f)
+    with open(USERS_FILE,"w") as f:
+        json.dump([],f)
 
 if not os.path.exists(BEATS_FILE):
 
-    with open(BEATS_FILE, "w") as f:
-        json.dump([], f)
+    with open(BEATS_FILE,"w") as f:
+        json.dump([],f)
 
 
 # =========================
@@ -70,19 +50,16 @@ if not os.path.exists(BEATS_FILE):
 def load_users():
 
     try:
-
-        with open(USERS_FILE, "r") as f:
+        with open(USERS_FILE,"r") as f:
             return json.load(f)
-
     except:
-
         return []
 
 
 def save_users(users):
 
-    with open(USERS_FILE, "w") as f:
-        json.dump(users, f)
+    with open(USERS_FILE,"w") as f:
+        json.dump(users,f)
 
 
 # =========================
@@ -92,19 +69,16 @@ def save_users(users):
 def load_beats():
 
     try:
-
-        with open(BEATS_FILE, "r") as f:
+        with open(BEATS_FILE,"r") as f:
             return json.load(f)
-
     except:
-
         return []
 
 
 def save_beats(beats):
 
-    with open(BEATS_FILE, "w") as f:
-        json.dump(beats, f)
+    with open(BEATS_FILE,"w") as f:
+        json.dump(beats,f)
 
 
 # =========================
@@ -112,31 +86,36 @@ def save_beats(beats):
 # =========================
 
 @app.post("/register")
-def register(data: dict):
+def register(data:dict):
 
     email = data.get("email")
     password = data.get("password")
 
     if not email or not password:
-        return {"success": False}
+        return {"success":False}
 
     users = load_users()
 
     for user in users:
 
         if user["email"] == email:
-            return {"success": False}
+            return {"success":False}
 
     users.append({
-        "email": email,
-        "password": password,
-        "plan": "free",
-        "credits": 10
+
+        "email":email,
+        "password":password,
+
+        "plan":"trial",
+
+        "credits":5,
+
+        "trial_used":True
     })
 
     save_users(users)
 
-    return {"success": True}
+    return {"success":True}
 
 
 # =========================
@@ -144,7 +123,7 @@ def register(data: dict):
 # =========================
 
 @app.post("/login")
-def login(data: dict):
+def login(data:dict):
 
     email = data.get("email")
     password = data.get("password")
@@ -156,72 +135,61 @@ def login(data: dict):
         if user["email"] == email and user["password"] == password:
 
             return {
-                "success": True,
-                "email": email,
-                "plan": user.get("plan","free"),
-                "credits": user.get("credits",0)
+
+                "success":True,
+
+                "email":email,
+
+                "plan":user.get("plan","trial"),
+
+                "credits":user.get("credits",0)
             }
 
-    return {"success": False}
+    return {"success":False}
 
 
 # =========================
-# HEARTBEAT
-# =========================
-
-@app.post("/heartbeat")
-def heartbeat(data: dict):
-
-    user = data.get("user", "guest")
-
-    online_users[user] = time.time()
-
-    return {"status": "ok"}
-
-
-# =========================
-# STATS
-# =========================
-
-@app.get("/stats/users")
-def users_count():
-
-    users = load_users()
-
-    return {
-        "registered_users": len(users)
-    }
-
-
-@app.get("/stats/online")
-def online_users_count():
-
-    return {
-        "online_users": get_online_users()
-    }
-
-
-# =========================
-# SCAN MANUAL
+# SCAN WITH CREDITS
 # =========================
 
 @app.post("/scan")
-def scan(data: dict):
+def scan(data:dict):
 
     url = data.get("url")
+    user_email = data.get("user")
 
-    if not url:
-        return {"results": []}
+    if not url or not user_email:
+        return {"results":[]}
 
-    return scan_url(url)
+    users = load_users()
+
+    for user in users:
+
+        if user["email"] == user_email:
+
+            if user["plan"] != "unlimited":
+
+                if user["credits"] <= 0:
+
+                    return {"error":"no_credits"}
+
+                user["credits"] -= 1
+
+                save_users(users)
+
+            break
+
+    results = scan_url(url)
+
+    return results
 
 
 # =========================
-# ADD BEAT TO AUTOPILOT
+# ADD BEAT AUTOPILOT
 # =========================
 
 @app.post("/beats/add")
-def add_beat(data: dict):
+def add_beat(data:dict):
 
     user = data.get("user")
     url = data.get("url")
@@ -231,17 +199,16 @@ def add_beat(data: dict):
 
     beats.append({
 
-        "user": user,
-        "url": url,
-        "name": name,
+        "user":user,
+        "url":url,
+        "name":name,
 
-        "last_check": None,
-        "next_check": None,
+        "last_check":None,
+        "next_check":None,
 
-        "autopilot": True,
+        "autopilot":True,
 
-        "matches": []
-
+        "matches":[]
     })
 
     save_beats(beats)
@@ -254,7 +221,7 @@ def add_beat(data: dict):
 # =========================
 
 @app.get("/beats/{user}")
-def get_beats(user: str):
+def get_beats(user:str):
 
     beats = load_beats()
 
@@ -264,7 +231,7 @@ def get_beats(user: str):
 
 
 # =========================
-# AUTOPILOT SCAN
+# AUTOPILOT
 # =========================
 
 @app.post("/beats/run-autopilot")
@@ -286,7 +253,7 @@ def run_autopilot():
         if next_check and now < next_check:
             continue
 
-        print("AUTOPILOT scanning:", beat["name"])
+        print("AUTOPILOT scanning:",beat["name"])
 
         results = scan_url(beat["url"])
 
@@ -308,24 +275,32 @@ def run_autopilot():
 # =========================
 
 @app.post("/create-paypal-order")
-def create_paypal_order(data: dict):
+def create_paypal_order(data:dict):
 
     plan = data.get("plan")
 
     if plan == "50":
+
         price = "2.49"
+        credits = 50
 
     elif plan == "100":
+
         price = "4.99"
+        credits = 100
 
     elif plan == "unlimited":
+
         price = "9.99"
+        credits = -1
 
     else:
-        return {"error": "invalid plan"}
+        return {"error":"invalid plan"}
 
     order_id = create_order(price)
 
     return {
-        "orderID": order_id
+
+        "orderID":order_id,
+        "credits":credits
     }

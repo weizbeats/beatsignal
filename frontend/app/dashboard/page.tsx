@@ -12,22 +12,65 @@ const router = useRouter()
 const [url,setUrl] = useState("")
 const [loading,setLoading] = useState(false)
 const [progress,setProgress] = useState(0)
+
 const [user,setUser] = useState("")
+const [plan,setPlan] = useState("trial")
+const [credits,setCredits] = useState(0)
+
 const [result,setResult] = useState<any[]>([])
 const [menuOpen,setMenuOpen] = useState(false)
 
 const [showPlans,setShowPlans] = useState(false)
-const [billing,setBilling] = useState("monthly")
+
 
 useEffect(()=>{
 
 const savedUser = localStorage.getItem("user")
 
-if(savedUser){
-setUser(savedUser)
+if(!savedUser){
+
+router.push("/login")
+return
+
 }
 
+setUser(savedUser)
+
+loadUser(savedUser)
+
 },[])
+
+
+async function loadUser(email:string){
+
+try{
+
+const res = await fetch(
+process.env.NEXT_PUBLIC_API_URL + "/login",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+password:""
+})
+})
+
+const data = await res.json()
+
+setPlan(data.plan || "trial")
+setCredits(data.credits || 0)
+
+}catch(e){
+
+console.log(e)
+
+}
+
+}
+
 
 function logout(){
 
@@ -37,6 +80,8 @@ localStorage.removeItem("user")
 router.push("/login")
 
 }
+
+
 
 async function handleScan(){
 
@@ -63,16 +108,31 @@ try{
 const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
 const res = await fetch(apiUrl + "/scan",{
+
 method:"POST",
+
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({url})
+
+body:JSON.stringify({
+url,
+user
+})
+
 })
 
 const data = await res.json()
 
-console.log("SCAN RESULT:",data)
+if(data.error === "no_credits"){
+
+alert("No credits left. Please upgrade your plan.")
+
+setLoading(false)
+
+return
+
+}
 
 if(Array.isArray(data)){
 setResult(data)
@@ -81,6 +141,8 @@ setResult(data.results)
 }else{
 setResult([])
 }
+
+setCredits((prev)=>prev-1)
 
 }catch(e){
 
@@ -97,6 +159,7 @@ setLoading(false)
 },1200)
 
 }
+
 
 return(
 
@@ -222,14 +285,18 @@ Close
 <div className="flex flex-col gap-2">
 
 <div className="text-sm text-[#14E6C3] font-medium">
-Plan: Free
+Plan: {plan}
+</div>
+
+<div className="text-xs text-gray-400">
+Credits: {credits}
 </div>
 
 <button
 onClick={()=>setShowPlans(true)}
 className="bg-[#14E6C3] hover:bg-[#0FD4B5] text-black text-xs font-semibold px-4 py-1 rounded-md w-fit transition hover:scale-105"
 >
-Update Plan
+Upgrade Plan
 </button>
 
 </div>
@@ -275,6 +342,7 @@ Logout
 </div>
 
 </div>
+
 
 {/* MAIN */}
 
@@ -323,8 +391,6 @@ Scan
 </div>
 
 )}
-
-{/* RESULTS */}
 
 {result.length > 0 && (
 
