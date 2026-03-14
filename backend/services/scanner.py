@@ -19,7 +19,9 @@ def scan_url(url):
 
     audio_file = f"{TEMP_FOLDER}/{uid}.%(ext)s"
 
-    segments = [0, 30, 60, 90]
+    # 4 FRAGMENTOS DE 25 SEGUNDOS
+    segments = [0, 25, 50, 75]
+
     samples = []
 
     print("1️⃣ Downloading audio from YouTube...")
@@ -59,7 +61,7 @@ def scan_url(url):
                 "-i",
                 downloaded_file,
                 "-t",
-                "20",
+                "25",
                 "-acodec",
                 "mp3",
                 sample_file
@@ -84,7 +86,6 @@ def scan_url(url):
                 result = recognize_audio(sample)
 
                 if result:
-
                     matches.extend(result)
 
             except Exception as e:
@@ -93,9 +94,7 @@ def scan_url(url):
 
         print("✅ Recognition finished")
 
-        # =========================
         # REMOVE DUPLICATES
-        # =========================
 
         unique_matches = []
         seen = set()
@@ -109,7 +108,6 @@ def scan_url(url):
                 if key not in seen:
 
                     seen.add(key)
-
                     unique_matches.append(track)
 
             except:
