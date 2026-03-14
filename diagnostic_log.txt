@@ -1,0 +1,71 @@
+
+============================================================
+BEATSIGNAL DIAGNOSTIC V3
+============================================================
+
+============================================================
+FRONTEND TEST
+============================================================
+URL: https://beatsignal-2uec.vercel.app
+Status: 200
+Content length: 8762
+Frontend reachable ✓
+------------------------------------------------------------
+
+============================================================
+BACKEND ROOT TEST
+============================================================
+URL: https://beatsignal-production.up.railway.app
+Status: 404
+------------------------------------------------------------
+
+============================================================
+DOCS ENDPOINT TEST
+============================================================
+URL: https://beatsignal-production.up.railway.app/docs
+Status: 200
+Docs endpoint accessible
+------------------------------------------------------------
+
+============================================================
+SCAN ENDPOINT TEST
+============================================================
+Scan URL: https://beatsignal-production.up.railway.app/scan
+Test video: https://www.youtube.com/watch?v=jNQXAC9IVRw
+------------------------------------------------------------
+HTTP RESPONSE
+Status code: 200
+Response time: 1.34s
+------------------------------------------------------------
+RAW RESPONSE
+{"error":"invalid_token"}
+------------------------------------------------------------
+JSON size: 26 chars
+Keys detected: ['error']
+
+============================================================
+ERROR ANALYSIS
+============================================================
+Backend returned error: invalid_token
+
+Cause detected:
+Authentication layer rejected the request.
+
+Suggested fix:
+Add Authorization token to the diagnostic tool.
+------------------------------------------------------------
+WARNING: scan finished extremely fast
+Possible causes:
+- authentication rejected
+- scanner returned early
+- request validation failed
+
+============================================================
+DIAGNOSTIC SUMMARY
+============================================================
+Diagnostic completed.
+
+If scans return errors:
+- Check authentication token
+- Verify backend logs in Railway
+- Confirm yt-dlp and ffmpeg availability

@@ -57,6 +57,13 @@ async function handleScan(){
 
 if(!url || loading) return
 
+const token = localStorage.getItem("token")
+
+if(!token){
+logout()
+return
+}
+
 setLoading(true)
 setProgress(0)
 setResult([])
@@ -76,7 +83,6 @@ setProgress(fakeProgress)
 try{
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL
-const token = localStorage.getItem("token")
 
 const res = await fetch(apiUrl + "/scan",{
 
@@ -87,8 +93,8 @@ headers:{
 },
 
 body:JSON.stringify({
-url,
-token
+url:url,
+token:token
 })
 
 })
@@ -130,22 +136,17 @@ setLoading(false)
 
 }
 
-
 return(
 
 <div className="w-full min-h-screen">
 
-{/* TOP BAR */}
-
 <div className="flex justify-between items-start px-10 pt-8">
-
-{/* LEFT PANEL */}
 
 <div className="flex flex-col gap-2">
 
 <div className={`text-sm font-semibold px-3 py-1 rounded-md w-fit
 ${isAdmin
-? "bg-yellow-400 text-black shadow-[0_0_20px_rgba(255,215,0,0.7)]"
+? "bg-yellow-400 text-black"
 : "text-[#14E6C3]"
 }`}>
 
@@ -166,8 +167,6 @@ Upgrade Plan
 
 </div>
 
-
-{/* USER MENU */}
 
 <div className="relative">
 
@@ -222,18 +221,13 @@ Logout
 </div>
 
 
-{/* MAIN */}
-
 <div className="w-full flex justify-center">
 
 <div className="w-full max-w-5xl px-8 py-16">
 
-{/* LOGO */}
-
 <div className="text-center mb-16 flex flex-col items-center">
 
-<h1 className="text-5xl font-semibold mb-3 bg-gradient-to-r from-white via-[#14E6C3] to-emerald-400 bg-clip-text text-transparent
-drop-shadow-[0_0_6px_rgba(20,230,195,0.25)]">
+<h1 className="text-5xl font-semibold mb-3 bg-gradient-to-r from-white via-[#14E6C3] to-emerald-400 bg-clip-text text-transparent">
 
 BeatSignal
 
@@ -245,8 +239,6 @@ Detect stolen beats on YouTube
 
 </div>
 
-
-{/* SEARCH */}
 
 <div className="bg-[#0b0b0b]/70 backdrop-blur-md border border-[#14E6C3]/20 rounded-xl p-6 mb-8">
 
@@ -269,16 +261,6 @@ ${loading
 }`}
 >
 
-{loading && (
-
-<motion.div
-animate={{rotate:360}}
-transition={{repeat:Infinity,duration:1,ease:"linear"}}
-className="w-4 h-4 border-2 border-black border-t-transparent rounded-full"
-/>
-
-)}
-
 {loading ? "Scanning..." : "Scan"}
 
 </button>
@@ -287,13 +269,10 @@ className="w-4 h-4 border-2 border-black border-t-transparent rounded-full"
 
 </div>
 
-
 {loading && (
-
 <div className="mb-12">
 <ScanProgress progress={progress}/>
 </div>
-
 )}
 
 </div>
