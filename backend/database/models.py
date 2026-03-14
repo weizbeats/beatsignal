@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from .db import Base
+from datetime import datetime
 
 class User(Base):
 
@@ -17,3 +18,5 @@ class User(Base):
 
     verified = Column(Boolean, default=False)
     verify_token = Column(String, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)

@@ -75,7 +75,7 @@ return
 localStorage.setItem("token",data.token)
 localStorage.setItem("user",email)
 
-router.push("/dashboard")
+router.push("/check-email")
 
 }catch{
 

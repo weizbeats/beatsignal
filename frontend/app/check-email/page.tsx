@@ -1,10 +1,50 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 export default function CheckEmail(){
 
 const router = useRouter()
+
+const [loading,setLoading] = useState(false)
+const [message,setMessage] = useState("")
+
+async function resendEmail(){
+
+if(loading) return
+
+setLoading(true)
+setMessage("Sending email...")
+
+try{
+
+const email = localStorage.getItem("user")
+
+const res = await fetch(
+`${process.env.NEXT_PUBLIC_API_URL}/resend-verification`,
+{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({ email })
+}
+)
+
+const data = await res.json()
+
+if(data.success){
+setMessage("Verification email sent again")
+}else{
+setMessage("Failed to send email")
+}
+
+}catch{
+setMessage("Server error")
+}
+
+setLoading(false)
+
+}
 
 return(
 
@@ -37,7 +77,7 @@ Check your email
 </h2>
 
 <p className="text-sm text-white/60 leading-relaxed">
-We sent you a verification link.  
+We sent you a verification link.
 Please check your inbox and click the link to activate your account.
 </p>
 
@@ -46,9 +86,9 @@ If you don't see the email check your spam folder.
 </p>
 
 <button
-onClick={()=>router.push("/")}
+onClick={resendEmail}
+disabled={loading}
 className="
-mt-2
 bg-[#14E6C3]
 text-black
 px-6
@@ -57,6 +97,25 @@ rounded-lg
 font-medium
 hover:scale-[1.02]
 hover:shadow-[0_0_20px_rgba(20,230,195,0.6)]
+transition
+"
+>
+{loading ? "Sending..." : "Resend email"}
+</button>
+
+{message && (
+
+<p className="text-xs text-white/60">
+{message}
+</p>
+
+)}
+
+<button
+onClick={()=>router.push("/")}
+className="
+text-sm text-white/50
+hover:text-white
 transition
 "
 >

@@ -19,10 +19,27 @@ from passlib.hash import bcrypt
 from database.db import SessionLocal, engine
 from database.models import Base, User
 
+# RATE LIMIT
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+
 
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
+
+
+# -------------------------
+# RATE LIMIT CONFIG
+# -------------------------
+
+limiter = Limiter(key_func=get_remote_address)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, lambda r,e: {"error":"Too many requests"})
+app.add_middleware(SlowAPIMiddleware)
 
 
 app.add_middleware(
@@ -40,6 +57,31 @@ ALGORITHM = "HS256"
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
+
+
+# -------------------------
+# CLEAN OLD USERS
+# -------------------------
+
+def delete_unverified_users():
+
+    db = SessionLocal()
+
+    limit_time = datetime.utcnow() - timedelta(hours=24)
+
+    users = db.query(User).filter(
+        User.verified == False
+    ).all()
+
+    for u in users:
+
+        if u.verify_token and u.created_at < limit_time:
+            db.delete(u)
+
+    db.commit()
+
+
+delete_unverified_users()
 
 
 # -------------------------
@@ -120,6 +162,7 @@ If you didn't create this account you can ignore this email.
 # REGISTER
 # -------------------------
 
+@limiter.limit("5/minute")
 @app.post("/register")
 def register(data: dict):
 
@@ -158,7 +201,8 @@ def register(data: dict):
         credits=5,
         admin=email == "weizbeat@gmail.com",
         verified=False,
-        verify_token=verify_token
+        verify_token=verify_token,
+        created_at=datetime.utcnow()
     )
 
     db.add(new_user)
@@ -170,6 +214,37 @@ def register(data: dict):
         "success": True,
         "message": "Verification email sent"
     }
+
+
+# -------------------------
+# RESEND EMAIL
+# -------------------------
+
+@limiter.limit("3/minute")
+@app.post("/resend-verification")
+def resend_verification(data: dict):
+
+    email = data.get("email")
+
+    db = SessionLocal()
+
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        return {"success": False}
+
+    if user.verified:
+        return {"success": False}
+
+    verify_token = generate_verify_token()
+
+    user.verify_token = verify_token
+
+    db.commit()
+
+    send_verification_email(email, verify_token)
+
+    return {"success": True}
 
 
 # -------------------------
@@ -199,6 +274,7 @@ def verify_email(token: str):
 # LOGIN
 # -------------------------
 
+@limiter.limit("10/minute")
 @app.post("/login")
 def login(data: dict):
 
