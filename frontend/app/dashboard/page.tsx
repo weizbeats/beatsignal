@@ -1,14 +1,36 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { Search, Loader2 } from "lucide-react"
 
 export default function Dashboard(){
 
   const [url,setUrl] = useState("")
-  const [results,setResults] = useState<any[]>([])
   const [loading,setLoading] = useState(false)
+  const [step,setStep] = useState(0)
 
-  async function scan(){
+  const steps = [
+    "Analyzing audio...",
+    "Matching database...",
+    "Detecting samples..."
+  ]
+
+  useEffect(()=>{
+
+    if(!loading) return
+
+    const interval = setInterval(()=>{
+
+      setStep((prev)=> (prev + 1) % steps.length)
+
+    },1500)
+
+    return ()=> clearInterval(interval)
+
+  },[loading])
+
+  async function handleScan(){
 
     if(!url) return
 
@@ -16,25 +38,19 @@ export default function Dashboard(){
 
     try{
 
-      const res = await fetch(
+      await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/scan`,
         {
           method:"POST",
           headers:{
             "Content-Type":"application/json"
           },
-          body:JSON.stringify({
-            url:url
-          })
+          body:JSON.stringify({url})
         }
       )
 
-      const data = await res.json()
-
-      setResults(data)
-
-    }catch(err){
-      console.log(err)
+    }catch(e){
+      console.log(e)
     }
 
     setLoading(false)
@@ -43,119 +59,144 @@ export default function Dashboard(){
 
   return(
 
-    <div style={{padding:"40px"}}>
+    <div className="p-12 max-w-5xl">
 
-      <h2>BeatSignal Dashboard</h2>
+      <motion.div
+        initial={{opacity:0,y:20}}
+        animate={{opacity:1,y:0}}
+        transition={{duration:0.4}}
+      >
 
-      <div style={{
-        display:"flex",
-        gap:"10px",
-        marginTop:"20px"
-      }}>
+        <h1 className="text-3xl font-semibold mb-2">
+          BeatSignal Dashboard
+        </h1>
 
-        <input
-          value={url}
-          onChange={(e)=>setUrl(e.target.value)}
-          placeholder="Paste YouTube link"
-          style={{
-            width:"600px",
-            padding:"12px",
-            background:"#111",
-            border:"1px solid #333",
-            color:"#fff"
-          }}
-        />
+        <p className="text-gray-400 mb-10">
+          Detect stolen beats on YouTube
+        </p>
 
-        <button
-          onClick={scan}
-          style={{
-            background:"#00e676",
-            border:"none",
-            padding:"12px 20px",
-            fontWeight:600
-          }}
+      </motion.div>
+
+
+      <motion.div
+        initial={{opacity:0,y:20}}
+        animate={{opacity:1,y:0}}
+        transition={{delay:0.1}}
+        className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-6 mb-12"
+      >
+
+        <div className="flex gap-3">
+
+          <div className="flex items-center bg-[#0b0b0b] border border-[#222] rounded-lg px-3 flex-1">
+
+            <Search size={18} className="text-gray-400 mr-2"/>
+
+            <input
+              value={url}
+              onChange={(e)=>setUrl(e.target.value)}
+              placeholder="Paste YouTube link..."
+              className="flex-1 p-4 bg-transparent outline-none"
+            />
+
+          </div>
+
+          <button
+            onClick={handleScan}
+            disabled={loading}
+            className="bg-[#22c55e] hover:bg-[#16a34a] px-8 rounded-lg font-medium transition"
+          >
+
+            {loading ? "Scanning..." : "Scan"}
+
+          </button>
+
+        </div>
+
+      </motion.div>
+
+
+      {loading && (
+
+        <motion.div
+          initial={{opacity:0}}
+          animate={{opacity:1}}
+          className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-10 mb-12 flex flex-col items-center"
         >
-          {loading ? "Scanning..." : "Scan"}
-        </button>
 
-      </div>
+          <Loader2 className="animate-spin text-green-400 mb-4" size={40}/>
 
-      <div style={{marginTop:"40px"}}>
+          <p className="text-gray-300 text-lg">
+            {steps[step]}
+          </p>
 
-        {results.map((r:any,i:number)=>{
+        </motion.div>
 
-          return(
+      )}
 
-            <div
-              key={i}
-              style={{
-                display:"flex",
-                alignItems:"center",
-                gap:"20px",
-                padding:"20px",
-                borderBottom:"1px solid #111"
-              }}
-            >
 
-              {r.cover && (
+      <motion.div
+        initial={{opacity:0}}
+        animate={{opacity:1}}
+        transition={{delay:0.3}}
+        className="grid grid-cols-3 gap-6 mb-12"
+      >
 
-                <img
-                  src={r.cover}
-                  style={{
-                    width:"70px",
-                    borderRadius:"6px"
-                  }}
-                />
+        <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-6">
 
-              )}
+          <p className="text-gray-400 text-sm">
+            Scans today
+          </p>
 
-              <div style={{flex:1}}>
+          <h2 className="text-2xl font-semibold mt-2">
+            0
+          </h2>
 
-                <div style={{fontWeight:600,fontSize:"18px"}}>
-                  {r.song}
-                </div>
+        </div>
 
-                <div style={{opacity:0.7}}>
-                  {r.artist}
-                </div>
+        <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-6">
 
-                <div style={{marginTop:"6px",fontSize:"13px"}}>
+          <p className="text-gray-400 text-sm">
+            Matches found
+          </p>
 
-                  ISRC: {r.isrc || "-"}
+          <h2 className="text-2xl font-semibold mt-2">
+            0
+          </h2>
 
-                  {" | "}
+        </div>
 
-                  Release: {r.release_date || "-"}
+        <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-6">
 
-                  {" | "}
+          <p className="text-gray-400 text-sm">
+            Current plan
+          </p>
 
-                  Score: {r.score}
+          <h2 className="text-2xl font-semibold mt-2 text-green-400">
+            Free
+          </h2>
 
-                </div>
+        </div>
 
-              </div>
+      </motion.div>
 
-              {r.spotify_url && (
 
-                <a
-                  href={r.spotify_url}
-                  target="_blank"
-                  style={{
-                    color:"#1DB954"
-                  }}
-                >
-                  Spotify
-                </a>
+      <motion.div
+        initial={{opacity:0}}
+        animate={{opacity:1}}
+        transition={{delay:0.3}}
+      >
 
-              )}
+        <h2 className="text-xl font-semibold mb-6">
+          Recent scans
+        </h2>
 
-            </div>
+        <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-6 text-gray-400">
 
-          )
+          No scans yet
 
-        })}
+        </div>
 
-      </div>
+      </motion.div>
 
     </div>
 
