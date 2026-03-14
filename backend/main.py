@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from services.scanner import scan_url
 
 from jose import jwt
-from passlib.hash import bcrypt
+from passlib.context import CryptContext
 
 from database.db import SessionLocal, engine
 from database.models import Base, User
@@ -29,6 +29,13 @@ from slowapi.middleware import SlowAPIMiddleware
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
+
+
+# PASSWORD HASH CONTEXT
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto"
+)
 
 
 # -------------------------
@@ -190,7 +197,7 @@ def register(request: Request, data: dict):
             "error": "email_exists"
         }
 
-    hashed_password = bcrypt.hash(password)
+    hashed_password = pwd_context.hash(password)
 
     verify_token = generate_verify_token()
 
@@ -309,7 +316,7 @@ def login(request: Request, data: dict):
             "error": "email_not_verified"
         }
 
-    if not bcrypt.verify(password, user.password):
+    if not pwd_context.verify(password, user.password):
 
         return {
             "success": False,
