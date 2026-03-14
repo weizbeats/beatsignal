@@ -10,6 +10,8 @@ const [billing,setBilling] = useState("monthly")
 
 async function buyPlan(plan:string){
 
+localStorage.setItem("selectedPlan",plan)
+
 const res = await fetch(
 process.env.NEXT_PUBLIC_API_URL + "/create-paypal-order",
 {
@@ -28,7 +30,7 @@ return
 }
 
 window.location.href =
-"https://www.sandbox.paypal.com/checkoutnow?token=" + data.orderID
+"https://www.paypal.com/checkoutnow?token=" + data.orderID
 
 }
 
@@ -54,6 +56,20 @@ return(
 
 <div className="min-h-screen flex flex-col items-center justify-center px-6">
 
+{/* BACK BUTTON */}
+
+<div className="absolute top-6 left-6">
+
+<button
+onClick={()=>router.back()}
+className="bg-[#111] hover:bg-[#14E6C3] hover:text-black transition-all duration-300 px-4 py-2 rounded-lg border border-white/10"
+
+>
+
+← Back </button>
+
+</div>
+
 <h1 className="text-4xl font-semibold mb-2">
 Pricing
 </h1>
@@ -68,7 +84,7 @@ Choose the plan that fits you
 
 <button
 onClick={()=>setBilling("monthly")}
-className={`px-4 py-2 rounded-lg ${billing==="monthly" ? "bg-[#14E6C3] text-black" : "bg-[#111]"}`}
+className={`px-5 py-2 rounded-lg transition-all duration-300 ${billing==="monthly" ? "bg-[#14E6C3] text-black" : "bg-[#111] hover:bg-[#1a1a1a]"}`}
 
 >
 
@@ -76,7 +92,7 @@ Monthly </button>
 
 <button
 onClick={()=>setBilling("yearly")}
-className={`px-4 py-2 rounded-lg ${billing==="yearly" ? "bg-[#14E6C3] text-black" : "bg-[#111]"}`}
+className={`px-5 py-2 rounded-lg transition-all duration-300 ${billing==="yearly" ? "bg-[#14E6C3] text-black" : "bg-[#111] hover:bg-[#1a1a1a]"}`}
 
 >
 
@@ -90,7 +106,7 @@ Yearly (40% off) </button>
 
 {/* PLAN 50 */}
 
-<div className="bg-[#111] p-8 rounded-xl border border-white/10 w-[270px]">
+<div className="bg-[#111] p-8 rounded-xl border border-white/10 w-[270px] transition-all duration-300 hover:scale-105 hover:border-[#14E6C3]">
 
 <h2 className="text-4xl font-bold mb-2">
 50
@@ -112,7 +128,7 @@ ${price[50]} {billing==="monthly" ? "/ month" : "/ year"}
 
 <button
 onClick={()=>buyPlan("50")}
-className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full"
+className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full transition-all duration-300 hover:scale-105 active:scale-95"
 
 >
 
@@ -120,9 +136,9 @@ Subscribe </button>
 
 </div>
 
-{/* PLAN 100 (POPULAR) */}
+{/* PLAN 100 */}
 
-<div className="bg-[#111] p-8 rounded-xl border border-[#14E6C3] w-[270px] relative scale-105">
+<div className="bg-[#111] p-8 rounded-xl border border-[#14E6C3] w-[270px] relative scale-105 transition-all duration-300 hover:scale-110">
 
 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#14E6C3] text-black text-xs px-3 py-1 rounded-full">
 Most Popular
@@ -148,7 +164,7 @@ ${price[100]} {billing==="monthly" ? "/ month" : "/ year"}
 
 <button
 onClick={()=>buyPlan("100")}
-className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full"
+className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full transition-all duration-300 hover:scale-105 active:scale-95"
 
 >
 
@@ -158,7 +174,7 @@ Subscribe </button>
 
 {/* PLAN UNLIMITED */}
 
-<div className="bg-[#111] p-8 rounded-xl border border-white/10 w-[270px]">
+<div className="bg-[#111] p-8 rounded-xl border border-white/10 w-[270px] transition-all duration-300 hover:scale-105 hover:border-[#14E6C3]">
 
 <h2 className="text-4xl font-bold mb-2">
 Unlimited
@@ -180,7 +196,7 @@ ${price.unlimited} {billing==="monthly" ? "/ month" : "/ year"}
 
 <button
 onClick={()=>buyPlan("unlimited")}
-className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full"
+className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full transition-all duration-300 hover:scale-105 active:scale-95"
 
 >
 
