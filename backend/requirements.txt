@@ -8,9 +8,14 @@ librosa
 numpy
 python-multipart
 
-# auth + database
+# auth
+passlib[bcrypt]
+bcrypt
+python-jose
+
+# database
 sqlalchemy
 psycopg2-binary
-passlib[bcrypt]
-python-jose
+
+# payments
 paypal-checkout-serversdk

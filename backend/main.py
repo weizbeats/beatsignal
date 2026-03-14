@@ -36,9 +36,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 
-# ---------------------------
+# -------------------------
 # TOKEN
-# ---------------------------
+# -------------------------
 
 def create_token(email: str):
 
@@ -58,14 +58,13 @@ def verify_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-
     except:
         return None
 
 
-# ---------------------------
+# -------------------------
 # FILE INIT
-# ---------------------------
+# -------------------------
 
 if not os.path.exists(USERS_FILE):
     with open(USERS_FILE, "w") as f:
@@ -76,9 +75,9 @@ if not os.path.exists(BEATS_FILE):
         json.dump([], f)
 
 
-# ---------------------------
-# USER STORAGE
-# ---------------------------
+# -------------------------
+# STORAGE
+# -------------------------
 
 def load_users():
 
@@ -110,9 +109,9 @@ def save_beats(beats):
         json.dump(beats, f)
 
 
-# ---------------------------
+# -------------------------
 # REGISTER
-# ---------------------------
+# -------------------------
 
 @app.post("/register")
 def register(data: dict):
@@ -128,6 +127,9 @@ def register(data: dict):
     for user in users:
         if user["email"] == email:
             return {"success": False}
+
+    # bcrypt max length = 72
+    password = password[:72]
 
     hashed_password = bcrypt.hash(password)
 
@@ -145,9 +147,9 @@ def register(data: dict):
     return {"success": True}
 
 
-# ---------------------------
+# -------------------------
 # LOGIN
-# ---------------------------
+# -------------------------
 
 @app.post("/login")
 def login(data: dict):
@@ -162,36 +164,37 @@ def login(data: dict):
 
     for user in users:
 
-        if user["email"] == email and bcrypt.verify(password, user["password"]):
+        if user["email"] == email:
 
-            token = create_token(email)
+            if bcrypt.verify(password[:72], user["password"]):
 
-            is_admin = user.get("admin", False)
+                token = create_token(email)
 
-            if is_admin:
+                is_admin = user.get("admin", False)
+
+                if is_admin:
+                    return {
+                        "success": True,
+                        "token": token,
+                        "plan": "admin",
+                        "credits": -1,
+                        "admin": True
+                    }
 
                 return {
                     "success": True,
                     "token": token,
-                    "plan": "admin",
-                    "credits": -1,
-                    "admin": True
+                    "plan": user.get("plan", "trial"),
+                    "credits": user.get("credits", 0),
+                    "admin": False
                 }
-
-            return {
-                "success": True,
-                "token": token,
-                "plan": user.get("plan", "trial"),
-                "credits": user.get("credits", 0),
-                "admin": False
-            }
 
     return {"success": False}
 
 
-# ---------------------------
+# -------------------------
 # SCAN
-# ---------------------------
+# -------------------------
 
 @app.post("/scan")
 def scan(data: dict):
@@ -229,89 +232,9 @@ def scan(data: dict):
     return results
 
 
-# ---------------------------
-# BEATS
-# ---------------------------
-
-@app.post("/beats/add")
-def add_beat(data: dict):
-
-    token = data.get("token")
-    url = data.get("url")
-    name = data.get("name", "beat")
-
-    payload = verify_token(token)
-
-    if not payload:
-        return {"error": "invalid_token"}
-
-    user_email = payload["email"]
-
-    beats = load_beats()
-
-    beats.append({
-        "user": user_email,
-        "url": url,
-        "name": name,
-        "last_check": None,
-        "next_check": None,
-        "autopilot": True,
-        "matches": []
-    })
-
-    save_beats(beats)
-
-    return {"success": True}
-
-
-@app.get("/beats/{user}")
-def get_beats(user: str):
-
-    beats = load_beats()
-
-    return [b for b in beats if b["user"] == user]
-
-
-# ---------------------------
-# AUTOPILOT
-# ---------------------------
-
-@app.post("/beats/run-autopilot")
-def run_autopilot():
-
-    beats = load_beats()
-
-    now = time.time()
-
-    updated = False
-
-    for beat in beats:
-
-        if not beat.get("autopilot"):
-            continue
-
-        next_check = beat.get("next_check")
-
-        if next_check and now < next_check:
-            continue
-
-        results = scan_url(beat["url"])
-
-        beat["matches"] = results
-        beat["last_check"] = now
-        beat["next_check"] = now + AUTOPILOT_SECONDS
-
-        updated = True
-
-    if updated:
-        save_beats(beats)
-
-    return {"status": "autopilot complete"}
-
-
-# ---------------------------
+# -------------------------
 # PAYPAL
-# ---------------------------
+# -------------------------
 
 @app.post("/create-paypal-order")
 def create_paypal_order(data: dict):
@@ -376,32 +299,3 @@ def capture_paypal_order(data: dict):
             break
 
     return {"success": True}
-
-
-# ---------------------------
-# ADMIN
-# ---------------------------
-
-@app.get("/admin")
-def admin_panel(email: str):
-
-    if email != "weizbeat@gmail.com":
-        return {"error": "not_admin"}
-
-    users = load_users()
-    beats = load_beats()
-
-    total_users = len(users)
-    total_beats = len(beats)
-
-    total_credits = sum(u.get("credits", 0) for u in users)
-
-    return {
-        "users": users,
-        "beats_monitored": beats,
-        "stats": {
-            "total_users": total_users,
-            "total_beats": total_beats,
-            "total_credits": total_credits
-        }
-    }
