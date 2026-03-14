@@ -1,14 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 export default function Plans(){
 
 const router = useRouter()
+const [billing,setBilling] = useState("monthly")
 
 async function buyPlan(plan:string){
-
-const token = localStorage.getItem("token")
 
 const res = await fetch(
 process.env.NEXT_PUBLIC_API_URL + "/create-paypal-order",
@@ -17,7 +17,7 @@ method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({plan})
+body:JSON.stringify({plan,billing})
 })
 
 const data = await res.json()
@@ -32,6 +32,24 @@ window.location.href =
 
 }
 
+const prices = {
+
+monthly:{
+50:2.49,
+100:4.99,
+unlimited:9.99
+},
+
+yearly:{
+50:17.93,
+100:35.93,
+unlimited:71.93
+}
+
+}
+
+const price = prices[billing]
+
 return(
 
 <div className="min-h-screen flex flex-col items-center justify-center px-6">
@@ -40,15 +58,39 @@ return(
 Pricing
 </h1>
 
-<p className="text-gray-400 mb-12">
+<p className="text-gray-400 mb-8">
 Choose the plan that fits you
 </p>
+
+{/* BILLING TOGGLE */}
+
+<div className="flex items-center gap-4 mb-12">
+
+<button
+onClick={()=>setBilling("monthly")}
+className={`px-4 py-2 rounded-lg ${billing==="monthly" ? "bg-[#14E6C3] text-black" : "bg-[#111]"}`}
+
+>
+
+Monthly </button>
+
+<button
+onClick={()=>setBilling("yearly")}
+className={`px-4 py-2 rounded-lg ${billing==="yearly" ? "bg-[#14E6C3] text-black" : "bg-[#111]"}`}
+
+>
+
+Yearly (40% off) </button>
+
+</div>
+
+{/* PLANS */}
 
 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
 
 {/* PLAN 50 */}
 
-<div className="bg-[#111] p-8 rounded-xl border border-white/10 w-[260px]">
+<div className="bg-[#111] p-8 rounded-xl border border-white/10 w-[270px]">
 
 <h2 className="text-4xl font-bold mb-2">
 50
@@ -58,23 +100,33 @@ Choose the plan that fits you
 monthly credit plan
 </p>
 
-<p className="text-xl mb-6">
-$2.49 / month
+<p className="text-2xl mb-6">
+${price[50]} {billing==="monthly" ? "/ month" : "/ year"}
 </p>
+
+<ul className="text-gray-400 text-sm mb-6 space-y-2">
+<li>Upload unlimited beats</li>
+<li>Automatic scanning</li>
+<li>Unlimited results</li>
+</ul>
 
 <button
 onClick={()=>buyPlan("50")}
 className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full"
+
 >
-Subscribe
-</button>
+
+Subscribe </button>
 
 </div>
 
+{/* PLAN 100 (POPULAR) */}
 
-{/* PLAN 100 */}
+<div className="bg-[#111] p-8 rounded-xl border border-[#14E6C3] w-[270px] relative scale-105">
 
-<div className="bg-[#111] p-8 rounded-xl border border-[#14E6C3] w-[260px]">
+<div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#14E6C3] text-black text-xs px-3 py-1 rounded-full">
+Most Popular
+</div>
 
 <h2 className="text-4xl font-bold mb-2">
 100
@@ -84,22 +136,29 @@ Subscribe
 monthly credit plan
 </p>
 
-<p className="text-xl mb-6">
-$4.99 / month
+<p className="text-2xl mb-6">
+${price[100]} {billing==="monthly" ? "/ month" : "/ year"}
 </p>
+
+<ul className="text-gray-400 text-sm mb-6 space-y-2">
+<li>Upload unlimited beats</li>
+<li>Automatic scanning</li>
+<li>Unlimited results</li>
+</ul>
 
 <button
 onClick={()=>buyPlan("100")}
 className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full"
+
 >
-Subscribe
-</button>
+
+Subscribe </button>
 
 </div>
 
-a{/* PLAN UNLIMITED */}
+{/* PLAN UNLIMITED */}
 
-<div className="bg-[#111] p-8 rounded-xl border border-white/10 w-[260px]">
+<div className="bg-[#111] p-8 rounded-xl border border-white/10 w-[270px]">
 
 <h2 className="text-4xl font-bold mb-2">
 Unlimited
@@ -109,16 +168,23 @@ Unlimited
 Unlimited scans
 </p>
 
-<p className="text-xl mb-6">
-$9.99 / month
+<p className="text-2xl mb-6">
+${price.unlimited} {billing==="monthly" ? "/ month" : "/ year"}
 </p>
+
+<ul className="text-gray-400 text-sm mb-6 space-y-2">
+<li>Upload unlimited beats</li>
+<li>Automatic scanning</li>
+<li>Unlimited results</li>
+</ul>
 
 <button
 onClick={()=>buyPlan("unlimited")}
 className="bg-[#14E6C3] text-black px-6 py-2 rounded-lg w-full"
+
 >
-Subscribe
-</button>
+
+Subscribe </button>
 
 </div>
 
