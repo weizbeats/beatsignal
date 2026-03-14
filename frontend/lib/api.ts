@@ -1,16 +1,27 @@
 export async function scanBeat(url: string) {
 
-  const response = await fetch("http://localhost:8000/scan", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ url })
-  })
+const token =
+localStorage.getItem("token") ||
+sessionStorage.getItem("token")
 
-  if (!response.ok) {
-    throw new Error("Scan failed")
-  }
+const response = await fetch(
+`${process.env.NEXT_PUBLIC_API_URL}/scan`,
+{
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+url,
+token
+})
+}
+)
 
-  return response.json()
+if (!response.ok) {
+throw new Error("Scan failed")
+}
+
+return response.json()
+
 }

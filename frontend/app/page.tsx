@@ -15,18 +15,17 @@ const [error,setError] = useState("")
 const [loading,setLoading] = useState(false)
 const [status,setStatus] = useState("")
 
-/* AUTO LOGIN */
-
 useEffect(()=>{
 
-const token = localStorage.getItem("token")
+const token =
+localStorage.getItem("token") ||
+sessionStorage.getItem("token")
 
 if(token){
 router.push("/dashboard")
 }
 
 },[])
-
 
 function validate(){
 
@@ -43,7 +42,6 @@ return false
 return true
 
 }
-
 
 async function handleLogin(e:any){
 
@@ -76,6 +74,7 @@ if(!data.success){
 
 if(data.error==="user_not_found") setError("User not found")
 else if(data.error==="wrong_password") setError("Wrong password")
+else if(data.error==="email_not_verified") setError("Verify your email first")
 else setError("Login failed")
 
 setLoading(false)
@@ -108,8 +107,6 @@ setStatus("")
 
 }
 
-
-
 return(
 
 <div className="min-h-screen flex items-center justify-center px-6">
@@ -139,7 +136,6 @@ Detect stolen beats on YouTube
 <p className="text-xs text-center text-[#14E6C3] mb-3">
 Login to continue
 </p>
-
 
 <input
 placeholder="Email"
@@ -176,9 +172,6 @@ transition
 "
 />
 
-
-{/* REMEMBER ME */}
-
 <label className="flex items-center gap-2 text-sm text-white/60">
 
 <input
@@ -191,7 +184,6 @@ className="accent-[#14E6C3]"
 Remember me
 
 </label>
-
 
 {error && (
 
@@ -208,7 +200,6 @@ Remember me
 </p>
 
 )}
-
 
 <button
 type="submit"
@@ -229,7 +220,6 @@ ${loading
 ) : "Login"}
 
 </button>
-
 
 <p
 className="text-sm text-white/50 text-center cursor-pointer hover:text-white transition"

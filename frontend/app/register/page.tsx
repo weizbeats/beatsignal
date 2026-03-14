@@ -13,7 +13,6 @@ const [error,setError] = useState("")
 const [loading,setLoading] = useState(false)
 const [status,setStatus] = useState("")
 
-
 function validate(){
 
 if(!email.includes("@")){
@@ -29,7 +28,6 @@ return false
 return true
 
 }
-
 
 async function handleRegister(e:any){
 
@@ -72,7 +70,8 @@ return
 
 }
 
-localStorage.setItem("token",data.token)
+/* REGISTER NO DEVUELVE TOKEN */
+
 localStorage.setItem("user",email)
 
 router.push("/check-email")
@@ -86,8 +85,6 @@ setStatus("")
 }
 
 }
-
-
 
 return(
 
@@ -118,7 +115,6 @@ Start using BeatSignal
 <p className="text-xs text-center text-[#14E6C3] mb-3">
 Free trial includes 5 scans
 </p>
-
 
 <input
 placeholder="Email"
@@ -155,7 +151,6 @@ transition
 "
 />
 
-
 {error && (
 
 <p className="text-red-400 text-sm text-center animate-pulse">
@@ -171,7 +166,6 @@ transition
 </p>
 
 )}
-
 
 <button
 disabled={loading}
@@ -191,7 +185,6 @@ ${loading
 ) : "Create account"}
 
 </button>
-
 
 <p
 className="text-sm text-white/50 text-center cursor-pointer hover:text-white transition"
