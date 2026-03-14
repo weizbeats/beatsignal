@@ -10,12 +10,16 @@ const router = useRouter()
 const [email,setEmail] = useState("")
 const [password,setPassword] = useState("")
 const [error,setError] = useState("")
+const [loading,setLoading] = useState(false)
 
 async function handleRegister(e:any){
 
 e.preventDefault()
 
+if(loading) return
+
 setError("")
+setLoading(true)
 
 try{
 
@@ -28,15 +32,27 @@ body:JSON.stringify({ email,password })
 }
 )
 
-if(res.ok){
-router.push("/")
+const data = await res.json()
+
+if(!data.success){
+
+if(data.error==="email_exists") setError("Email already registered")
+else setError("Registration failed")
+
+setLoading(false)
 return
 }
 
-setError("Registration failed")
+localStorage.setItem("token",data.token)
+localStorage.setItem("user",email)
+
+router.push("/dashboard")
 
 }catch{
+
 setError("Server error")
+setLoading(false)
+
 }
 
 }
@@ -59,12 +75,8 @@ w-[380px]
 "
 >
 
-{/* TITLE */}
-
 <h1 className="text-2xl font-semibold text-center">
-
 Create Account
-
 </h1>
 
 <p className="text-xs text-center text-white/60 -mt-1">
@@ -75,13 +87,11 @@ Start using BeatSignal
 Free trial includes 5 scans
 </p>
 
-
-{/* EMAIL */}
-
 <input
 placeholder="Email"
 value={email}
 onChange={(e)=>setEmail(e.target.value)}
+disabled={loading}
 className="
 bg-black/40
 border border-white/10
@@ -90,19 +100,16 @@ px-3 py-2
 outline-none
 text-white
 focus:border-[#14E6C3]
-focus:shadow-[0_0_10px_rgba(20,230,195,0.4)]
 transition
 "
 />
-
-
-{/* PASSWORD */}
 
 <input
 type="password"
 placeholder="Password"
 value={password}
 onChange={(e)=>setPassword(e.target.value)}
+disabled={loading}
 className="
 bg-black/40
 border border-white/10
@@ -111,42 +118,35 @@ px-3 py-2
 outline-none
 text-white
 focus:border-[#14E6C3]
-focus:shadow-[0_0_10px_rgba(20,230,195,0.4)]
 transition
 "
 />
 
-
-{/* ERROR */}
-
 {error && (
-
 <p className="text-red-400 text-sm text-center">
 {error}
 </p>
-
 )}
 
-
-{/* BUTTON */}
-
 <button
-className="
-bg-[#14E6C3]
-text-black
-py-2
-rounded-lg
-font-medium
-hover:scale-[1.02]
-hover:shadow-[0_0_20px_rgba(20,230,195,0.6)]
-transition
-"
+disabled={loading}
+className={`
+py-2 rounded-lg font-medium transition flex items-center justify-center gap-2
+${loading
+? "bg-gray-600 cursor-not-allowed"
+: "bg-[#14E6C3] text-black hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(20,230,195,0.6)]"
+}
+`}
 >
-Create account
+
+{loading ? (
+<>
+<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+Creating...
+</>
+) : "Create account"}
+
 </button>
-
-
-{/* LOGIN LINK */}
 
 <p
 className="text-sm text-white/50 text-center cursor-pointer hover:text-white transition"
