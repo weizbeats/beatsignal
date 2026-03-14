@@ -2,34 +2,20 @@
 
 import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
-import ScanProgress from "../../components/ScanProgress"
 
 export default function Dashboard(){
 
 const router = useRouter()
 
 const [url,setUrl] = useState("")
-const [loading,setLoading] = useState(false)
-const [progress,setProgress] = useState(0)
 const [result,setResult] = useState<any[]>([])
-
-const [user,setUser] = useState("")
-const [isAdmin,setIsAdmin] = useState(false)
 
 useEffect(()=>{
 
 const token = localStorage.getItem("token")
-const savedUser = localStorage.getItem("user")
 
-if(!token || !savedUser){
+if(!token){
 window.location.href="/"
-return
-}
-
-setUser(savedUser)
-
-if(savedUser==="weizbeat@gmail.com"){
-setIsAdmin(true)
 }
 
 },[])
@@ -42,12 +28,6 @@ window.location.href="/"
 }
 
 async function handleScan(){
-
-if(!url) return
-
-setLoading(true)
-
-try{
 
 const token = localStorage.getItem("token")
 
@@ -68,19 +48,13 @@ if(Array.isArray(data)){
 setResult(data)
 }
 
-}catch(err){
-console.log(err)
-}
-
-setLoading(false)
-
 }
 
 return(
 
 <div className="min-h-screen flex flex-col items-center justify-center">
 
-<h1 className="text-5xl text-white mb-6">
+<h1 className="text-5xl mb-6">
 BeatSignal
 </h1>
 
@@ -96,9 +70,11 @@ placeholder="Paste YouTube link"
 Scan
 </button>
 
-</div>
+<button onClick={logout}>
+Logout
+</button>
 
-{loading && <ScanProgress progress={progress}/>}
+</div>
 
 {result.map((r,i)=>(
 <div key={i}>
