@@ -96,12 +96,6 @@ with open(BEATS_FILE, "w") as f:
     json.dump(beats, f)
 ```
 
-# =========================
-
-# REGISTER
-
-# =========================
-
 @app.post("/register")
 def register(data: dict):
 
@@ -133,12 +127,6 @@ save_users(users)
 
 return {"success": True}
 ```
-
-# =========================
-
-# LOGIN
-
-# =========================
 
 @app.post("/login")
 def login(data: dict):
@@ -178,12 +166,6 @@ for user in users:
 return {"success": False}
 ```
 
-# =========================
-
-# SCAN
-
-# =========================
-
 @app.post("/scan")
 def scan(data: dict):
 
@@ -221,12 +203,6 @@ results = scan_url(url)
 return results
 ```
 
-# =========================
-
-# ADD BEAT AUTOPILOT
-
-# =========================
-
 @app.post("/beats/add")
 def add_beat(data: dict):
 
@@ -249,10 +225,8 @@ beats.append({
     "user": user_email,
     "url": url,
     "name": name,
-
     "last_check": None,
     "next_check": None,
-
     "autopilot": True,
     "matches": []
 
@@ -263,12 +237,6 @@ save_beats(beats)
 return {"success": True}
 ```
 
-# =========================
-
-# LIST USER BEATS
-
-# =========================
-
 @app.get("/beats/{user}")
 def get_beats(user: str):
 
@@ -277,12 +245,6 @@ beats = load_beats()
 
 return [b for b in beats if b["user"] == user]
 ```
-
-# =========================
-
-# AUTOPILOT
-
-# =========================
 
 @app.post("/beats/run-autopilot")
 def run_autopilot():
@@ -318,12 +280,6 @@ if updated:
 return {"status": "autopilot complete"}
 ```
 
-# =========================
-
-# PAYPAL CREATE ORDER
-
-# =========================
-
 @app.post("/create-paypal-order")
 def create_paypal_order(data: dict):
 
@@ -346,12 +302,6 @@ order_id = create_order(price)
 
 return {"orderID": order_id}
 ```
-
-# =========================
-
-# PAYPAL CAPTURE PAYMENT
-
-# =========================
 
 @app.post("/capture-paypal-order")
 def capture_paypal_order(data: dict):
@@ -396,12 +346,6 @@ for user in users:
 
 return {"success": True}
 ```
-
-# =========================
-
-# ADMIN PANEL
-
-# =========================
 
 @app.get("/admin")
 def admin_panel(email: str):
