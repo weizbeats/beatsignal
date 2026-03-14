@@ -27,7 +27,7 @@ const token = localStorage.getItem("token")
 const savedUser = localStorage.getItem("user")
 
 if(!token || !savedUser){
-router.push("/")
+router.replace("/")
 return
 }
 
@@ -44,11 +44,8 @@ setCredits(-1)
 
 function logout(){
 
-localStorage.removeItem("session")
-localStorage.removeItem("user")
-localStorage.removeItem("token")
-
-router.push("/")
+localStorage.clear()
+router.replace("/")
 
 }
 
@@ -110,6 +107,7 @@ return
 
 if(data.error === "no_credits"){
 alert("No credits left")
+router.push("/plans")
 setLoading(false)
 return
 }
