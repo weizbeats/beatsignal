@@ -14,6 +14,8 @@ from services.paypal_service import create_order, capture_order
 from jose import jwt
 from datetime import datetime, timedelta
 
+from passlib.hash import bcrypt
+
 app = FastAPI()
 
 app.add_middleware(
@@ -30,9 +32,13 @@ BEATS_FILE = "database/beats.json"
 AUTOPILOT_DAYS = 10
 AUTOPILOT_SECONDS = AUTOPILOT_DAYS * 24 * 60 * 60
 
-SECRET_KEY = "BEATSIGNAL_SECRET_KEY"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
+
+# ---------------------------
+# TOKEN
+# ---------------------------
 
 def create_token(email: str):
 
@@ -46,12 +52,20 @@ def create_token(email: str):
 
 def verify_token(token: str):
 
+    if not token:
+        return None
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
+
     except:
         return None
 
+
+# ---------------------------
+# FILE INIT
+# ---------------------------
 
 if not os.path.exists(USERS_FILE):
     with open(USERS_FILE, "w") as f:
@@ -61,6 +75,10 @@ if not os.path.exists(BEATS_FILE):
     with open(BEATS_FILE, "w") as f:
         json.dump([], f)
 
+
+# ---------------------------
+# USER STORAGE
+# ---------------------------
 
 def load_users():
 
@@ -92,6 +110,10 @@ def save_beats(beats):
         json.dump(beats, f)
 
 
+# ---------------------------
+# REGISTER
+# ---------------------------
+
 @app.post("/register")
 def register(data: dict):
 
@@ -107,9 +129,11 @@ def register(data: dict):
         if user["email"] == email:
             return {"success": False}
 
+    hashed_password = bcrypt.hash(password)
+
     users.append({
         "email": email,
-        "password": password,
+        "password": hashed_password,
         "plan": "trial",
         "credits": 5,
         "trial_used": True,
@@ -121,21 +145,28 @@ def register(data: dict):
     return {"success": True}
 
 
+# ---------------------------
+# LOGIN
+# ---------------------------
+
 @app.post("/login")
 def login(data: dict):
 
     email = data.get("email")
     password = data.get("password")
 
+    if not email or not password:
+        return {"success": False}
+
     users = load_users()
 
     for user in users:
 
-        if user["email"] == email and user["password"] == password:
+        if user["email"] == email and bcrypt.verify(password, user["password"]):
 
             token = create_token(email)
 
-            is_admin = email == "weizbeat@gmail.com"
+            is_admin = user.get("admin", False)
 
             if is_admin:
 
@@ -157,6 +188,10 @@ def login(data: dict):
 
     return {"success": False}
 
+
+# ---------------------------
+# SCAN
+# ---------------------------
 
 @app.post("/scan")
 def scan(data: dict):
@@ -193,6 +228,10 @@ def scan(data: dict):
 
     return results
 
+
+# ---------------------------
+# BEATS
+# ---------------------------
 
 @app.post("/beats/add")
 def add_beat(data: dict):
@@ -233,6 +272,10 @@ def get_beats(user: str):
     return [b for b in beats if b["user"] == user]
 
 
+# ---------------------------
+# AUTOPILOT
+# ---------------------------
+
 @app.post("/beats/run-autopilot")
 def run_autopilot():
 
@@ -265,6 +308,10 @@ def run_autopilot():
 
     return {"status": "autopilot complete"}
 
+
+# ---------------------------
+# PAYPAL
+# ---------------------------
 
 @app.post("/create-paypal-order")
 def create_paypal_order(data: dict):
@@ -330,6 +377,10 @@ def capture_paypal_order(data: dict):
 
     return {"success": True}
 
+
+# ---------------------------
+# ADMIN
+# ---------------------------
 
 @app.get("/admin")
 def admin_panel(email: str):
