@@ -28,10 +28,8 @@ useEffect(()=>{
 const savedUser = localStorage.getItem("user")
 
 if(!savedUser){
-
-router.push("/login")
+router.push("/")
 return
-
 }
 
 setUser(savedUser)
@@ -70,17 +68,14 @@ console.log(e)
 
 }
 
-
 function logout(){
 
 localStorage.removeItem("session")
 localStorage.removeItem("user")
 
-router.push("/login")
+router.push("/")
 
 }
-
-
 
 async function handleScan(){
 
@@ -126,9 +121,7 @@ const data = await res.json()
 if(data.error === "no_credits"){
 
 setShowNoCredits(true)
-
 setLoading(false)
-
 return
 }
 
@@ -160,6 +153,43 @@ setLoading(false)
 
 }
 
+/* =========================
+PAYPAL CHECKOUT
+========================= */
+
+async function startCheckout(plan:string){
+
+try{
+
+const res = await fetch(
+process.env.NEXT_PUBLIC_API_URL + "/create-paypal-order",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({ plan })
+}
+)
+
+const data = await res.json()
+
+if(!data.orderID){
+alert("Payment error")
+return
+}
+
+window.location.href =
+"https://www.paypal.com/checkoutnow?token=" + data.orderID
+
+}catch(e){
+
+console.log(e)
+alert("Payment failed")
+
+}
+
+}
 
 return(
 
@@ -223,9 +253,7 @@ Close
 
 </AnimatePresence>
 
-
-
-{/* PLANS MODAL */}
+{/* PRICING MODAL */}
 
 <AnimatePresence>
 
@@ -242,7 +270,6 @@ className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-
 initial={{scale:0.9,opacity:0}}
 animate={{scale:1,opacity:1}}
 exit={{scale:0.9,opacity:0}}
-transition={{duration:0.25}}
 className="w-full max-w-6xl px-10"
 >
 
@@ -255,6 +282,8 @@ Choose the plan that fits your needs
 </p>
 
 <div className="grid md:grid-cols-3 gap-8">
+
+{/* PLAN 50 */}
 
 <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg">
 
@@ -270,11 +299,16 @@ monthly scans
 $2.49 / month
 </p>
 
-<button className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:scale-105 transition">
+<button
+onClick={()=>startCheckout("50")}
+className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:scale-105 transition"
+>
 Subscribe
 </button>
 
 </div>
+
+{/* PLAN 100 */}
 
 <div className="bg-white/5 border border-[#14E6C3] rounded-2xl p-8 text-center shadow-[0_0_40px_rgba(20,230,195,0.35)] backdrop-blur-lg">
 
@@ -290,11 +324,16 @@ monthly scans
 $4.99 / month
 </p>
 
-<button className="w-full bg-[#14E6C3] text-black py-3 rounded-lg font-semibold hover:scale-105 transition">
+<button
+onClick={()=>startCheckout("100")}
+className="w-full bg-[#14E6C3] text-black py-3 rounded-lg font-semibold hover:scale-105 transition"
+>
 Subscribe
 </button>
 
 </div>
+
+{/* PLAN UNLIMITED */}
 
 <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center backdrop-blur-lg">
 
@@ -310,7 +349,10 @@ Unlimited scans
 $9.99 / month
 </p>
 
-<button className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:scale-105 transition">
+<button
+onClick={()=>startCheckout("unlimited")}
+className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:scale-105 transition"
+>
 Subscribe
 </button>
 
@@ -337,7 +379,6 @@ Close
 
 </AnimatePresence>
 
-
 {/* TOP BAR */}
 
 <div className="flex justify-between items-start px-10 pt-8">
@@ -361,44 +402,18 @@ Upgrade Plan
 
 </div>
 
-<div className="relative">
-
-<button
-onClick={()=>setMenuOpen(!menuOpen)}
-className="flex items-center gap-2 text-sm text-gray-300 hover:text-white border border-white/10 px-4 py-1 rounded-md transition"
->
-
-{user}
-
-<span className="text-xs opacity-70">
-▼
-</span>
-
-</button>
-
-{menuOpen && (
-
-<div className="absolute right-0 mt-2 w-44 bg-[#111] border border-white/10 rounded-lg shadow-xl overflow-hidden">
-
-<button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#1b1b1b]">
-Settings
-</button>
+<div>
 
 <button
 onClick={logout}
-className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#1b1b1b]"
+className="text-sm text-gray-300 border border-white/10 px-4 py-1 rounded-md"
 >
 Logout
 </button>
 
 </div>
 
-)}
-
 </div>
-
-</div>
-
 
 {/* MAIN */}
 
@@ -418,7 +433,7 @@ Detect stolen beats on YouTube
 
 </div>
 
-<div className="relative bg-[#0b0b0b]/70 backdrop-blur-md border border-[#14E6C3]/20 rounded-xl p-6 mb-8 shadow-[0_0_40px_rgba(20,230,195,0.08)]">
+<div className="relative bg-[#0b0b0b]/70 backdrop-blur-md border border-[#14E6C3]/20 rounded-xl p-6 mb-8">
 
 <div className="flex gap-4">
 
