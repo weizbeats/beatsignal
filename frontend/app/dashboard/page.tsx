@@ -10,6 +10,7 @@ const router = useRouter()
 
 const [url,setUrl] = useState("")
 const [results,setResults] = useState<any[]>([])
+const [history,setHistory] = useState<any[]>([])
 const [loading,setLoading] = useState(false)
 const [progress,setProgress] = useState(0)
 const [authChecked,setAuthChecked] = useState(false)
@@ -32,8 +33,46 @@ return
 }
 
 setAuthChecked(true)
+loadHistory()
 
 },[])
+
+
+
+/* LOAD HISTORY */
+
+async function loadHistory(){
+
+const token =
+localStorage.getItem("token") ||
+sessionStorage.getItem("token")
+
+try{
+
+const res = await fetch(
+`${process.env.NEXT_PUBLIC_API_URL}/scan-history`,
+{
+method:"POST",
+headers:{ "Content-Type":"application/json"},
+body:JSON.stringify({token})
+}
+)
+
+const data = await res.json()
+
+if(data.success){
+
+setHistory(data.results)
+
+}
+
+}catch(e){
+
+console.log("history error",e)
+
+}
+
+}
 
 
 
@@ -95,6 +134,8 @@ setProgress(100)
 if(data.results){
 setResults(data.results)
 }
+
+await loadHistory()
 
 }catch(e){
 
@@ -209,11 +250,15 @@ className="h-full bg-[#14E6C3] transition-all duration-500"
 
 
 
-{/* RESULTS */}
+{/* SCAN RESULTS */}
 
 {results.length>0 &&(
 
-<div className="mt-10 w-full max-w-5xl grid gap-4 pb-20">
+<div className="mt-10 w-full max-w-5xl grid gap-4">
+
+<h2 className="text-xl text-white font-semibold">
+Scan Results
+</h2>
 
 {results.map((r,i)=>{
 
@@ -223,41 +268,12 @@ return(
 
 <div
 key={i}
-className="relative group flex gap-4 bg-black/40 border border-white/10 rounded-lg p-4 backdrop-blur-xl transition hover:border-[#14E6C3] hover:shadow-[0_0_30px_rgba(20,230,195,0.25)] overflow-hidden"
+className="flex gap-4 bg-black/40 border border-white/10 rounded-lg p-4 backdrop-blur-xl"
 >
 
-{r.cover &&(
+<div className="flex flex-col flex-1">
 
-<img
-src={r.cover}
-className="absolute inset-0 w-full h-full object-cover opacity-10 blur-3xl"
-/>
-
-)}
-
-<div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 z-10">
-
-{r.cover ? (
-
-<img
-src={r.cover}
-className="w-full h-full object-cover"
-/>
-
-):( 
-
-<div className="w-full h-full bg-black flex items-center justify-center text-white/40 text-xs">
-No Cover
-</div>
-
-)}
-
-</div>
-
-
-<div className="flex flex-col flex-1 z-10">
-
-<h2 className="text-lg text-white font-semibold leading-tight">
+<h2 className="text-lg text-white font-semibold">
 {r.song}
 </h2>
 
@@ -265,62 +281,82 @@ No Cover
 {r.artist}
 </p>
 
-<div className="mt-2">
-
-<div className="flex justify-between text-xs text-white/50 mb-1">
-
-<span>Match confidence</span>
-<span>{confidence}%</span>
-
-</div>
-
-<div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+<div className="mt-2 w-full h-1.5 bg-white/10 rounded-full">
 
 <div
 style={{width:`${confidence}%`}}
-className="h-full bg-[#14E6C3] transition-all duration-700"
+className="h-full bg-[#14E6C3]"
 ></div>
 
 </div>
 
 </div>
 
-<div className="flex flex-wrap gap-3 mt-2 text-xs text-white/50">
-
-{r.release_date &&(
-<span>
-Release: {r.release_date}
-</span>
-)}
-
-{r.isrc &&(
-<span>
-ISRC: {r.isrc}
-</span>
-)}
-
-</div>
-
-</div>
-
-
-{r.spotify_url &&(
-
-<a
-href={r.spotify_url}
-target="_blank"
-className="self-center bg-[#14E6C3] text-black px-3 py-1.5 rounded-md text-xs font-medium hover:scale-105 hover:shadow-[0_0_15px_rgba(20,230,195,0.7)] transition z-10"
->
-Open Spotify
-</a>
-
-)}
-
 </div>
 
 )
 
 })}
+
+</div>
+
+)}
+
+
+
+{/* HISTORY */}
+
+{history.length>0 &&(
+
+<div className="mt-16 w-full max-w-5xl">
+
+<h2 className="text-xl font-semibold text-white mb-4">
+Scan History
+</h2>
+
+<div className="border border-white/10 rounded-lg overflow-hidden">
+
+<div className="grid grid-cols-4 px-4 py-3 text-xs text-white/50 border-b border-white/10">
+
+<div>Track</div>
+<div>Artist</div>
+<div>Date</div>
+<div>Link</div>
+
+</div>
+
+{history.map((h,i)=>(
+
+<div
+key={i}
+className="grid grid-cols-4 px-4 py-3 text-sm border-b border-white/5"
+>
+
+<div className="truncate">
+{h.title}
+</div>
+
+<div className="truncate text-white/70">
+{h.artist}
+</div>
+
+<div className="text-white/70">
+{new Date(h.date).toLocaleDateString()}
+</div>
+
+<a
+href={h.url}
+target="_blank"
+className="text-[#14E6C3] hover:underline"
+>
+Open
+</a>
+
+</div>
+
+))}
+
+</div>
 
 </div>
 
