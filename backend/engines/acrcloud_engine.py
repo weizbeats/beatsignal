@@ -10,6 +10,7 @@ from engines.metadata_engine import search_deezer
 from engines.spotify_engine import get_track_by_isrc
 from engines.spotify_engine import search_spotify_track
 
+
 HOST = "identify-eu-west-1.acrcloud.com"
 
 ACCESS_KEY = os.getenv("ACR_KEY")
@@ -17,6 +18,7 @@ ACCESS_SECRET = os.getenv("ACR_SECRET")
 
 if not ACCESS_KEY or not ACCESS_SECRET:
     raise Exception("ACRCloud credentials not loaded from .env")
+
 
 def clean_title(title):
 
@@ -55,39 +57,39 @@ def recognize_audio(audio_file):
 
     sample_bytes = os.path.getsize(audio_file)
 
-    with open(audio_file, "rb") as f:
-
-        files = {"sample": f}
-
-        data = {
-            "access_key": ACCESS_KEY,
-            "sample_bytes": sample_bytes,
-            "timestamp": timestamp,
-            "signature": sign,
-            "data_type": data_type,
-            "signature_version": signature_version
-        }
-
-        url = f"https://{HOST}{http_uri}"
-
-        response = requests.post(url, files=files, data=data)
-
     try:
+
+        with open(audio_file, "rb") as f:
+
+            files = {"sample": f}
+
+            data = {
+                "access_key": ACCESS_KEY,
+                "sample_bytes": sample_bytes,
+                "timestamp": timestamp,
+                "signature": sign,
+                "data_type": data_type,
+                "signature_version": signature_version
+            }
+
+            url = f"https://{HOST}{http_uri}"
+
+            response = requests.post(url, files=files, data=data)
 
         result = response.json()
 
-        if result["status"]["msg"] != "Success":
+        if result.get("status", {}).get("msg") != "Success":
             return []
 
         metadata = result.get("metadata")
 
-if not metadata:
-    return []
+        if not metadata:
+            return []
 
-music_list = metadata.get("music")
+        music_list = metadata.get("music")
 
-if not music_list:
-    return []
+        if not music_list:
+            return []
 
         matches = []
 
@@ -97,6 +99,7 @@ if not music_list:
             clean = clean_title(title)
 
             artist = ""
+
             if music.get("artists"):
                 artist = music["artists"][0].get("name", "")
 
@@ -131,17 +134,6 @@ if not music_list:
                     release_date = spotify.get("release_date")
                     cover = spotify.get("cover")
 
-                else:
-
-                    spotify = search_spotify_track(clean, "")
-
-                    if spotify:
-
-                        isrc = spotify.get("isrc")
-                        spotify_url = spotify.get("spotify_url")
-                        release_date = spotify.get("release_date")
-                        cover = spotify.get("cover")
-
             if not cover:
 
                 meta = search_deezer(title, artist)
@@ -163,6 +155,6 @@ if not music_list:
 
     except Exception as e:
 
-        print("Parse error:", e)
+        print("ACRCloud error:", e)
 
         return []
