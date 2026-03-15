@@ -17,7 +17,7 @@ const [progress,setProgress] = useState(0)
 const [authChecked,setAuthChecked] = useState(false)
 const [message,setMessage] = useState("")
 
-
+const [credits,setCredits] = useState(0)
 
 /* AUTH CHECK */
 
@@ -31,9 +31,36 @@ return
 }
 
 setAuthChecked(true)
+
 loadHistory()
+loadUser()
 
 },[])
+
+
+
+/* LOAD USER INFO */
+
+async function loadUser(){
+
+const token = getToken()
+
+const res = await fetch(
+`${process.env.NEXT_PUBLIC_API_URL}/user-info`,
+{
+method:"POST",
+headers:{ "Content-Type":"application/json"},
+body:JSON.stringify({token})
+}
+)
+
+const data = await res.json()
+
+if(data.success){
+setCredits(data.credits)
+}
+
+}
 
 
 
@@ -72,7 +99,7 @@ console.log("history error",e)
 
 
 
-/* PROGRESS ANIMATION */
+/* PROGRESS */
 
 useEffect(()=>{
 
@@ -153,6 +180,7 @@ setMessage("No matches found")
 }
 
 await loadHistory()
+await loadUser()
 
 }catch(e){
 
@@ -205,7 +233,30 @@ Detect stolen beats on YouTube
 
 
 
-{/* SEARCH BAR */}
+{/* STATS BAR */}
+
+<div className="grid grid-cols-3 gap-6 w-full max-w-5xl mb-10">
+
+<div className="bg-black/40 border border-white/10 rounded-xl p-4 text-center backdrop-blur-xl">
+<p className="text-white/50 text-xs">Scans Today</p>
+<p className="text-xl font-semibold text-white">{history.length}</p>
+</div>
+
+<div className="bg-black/40 border border-white/10 rounded-xl p-4 text-center backdrop-blur-xl">
+<p className="text-white/50 text-xs">Detections</p>
+<p className="text-xl font-semibold text-white">{history.length}</p>
+</div>
+
+<div className="bg-black/40 border border-white/10 rounded-xl p-4 text-center backdrop-blur-xl">
+<p className="text-white/50 text-xs">Credits</p>
+<p className="text-xl font-semibold text-white">{credits}</p>
+</div>
+
+</div>
+
+
+
+{/* SEARCH */}
 
 <div className="w-full max-w-5xl">
 
@@ -220,17 +271,13 @@ value={url}
 onChange={(e)=>setUrl(e.target.value)}
 placeholder="Paste YouTube link"
 disabled={loading}
-className={`flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white outline-none transition
-${loading ? "opacity-50 cursor-not-allowed" : "focus:border-[#14E6C3]"}`}
+className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white outline-none focus:border-[#14E6C3]"
 />
 
 <button
 onClick={handleScan}
 disabled={loading}
-className={`ml-3 px-8 py-2.5 rounded-lg font-medium transition
-${loading
-? "bg-[#14E6C3]/60 text-black cursor-not-allowed"
-: "bg-[#14E6C3] text-black hover:scale-105 hover:shadow-[0_0_20px_rgba(20,230,195,0.7)]"}`}
+className="ml-3 px-8 py-2.5 rounded-lg font-medium bg-[#14E6C3] text-black hover:scale-105 transition"
 >
 {loading ? "Scanning..." : "Scan"}
 </button>
@@ -243,7 +290,7 @@ ${loading
 
 
 
-{/* PROGRESS BAR */}
+{/* PROGRESS */}
 
 {loading &&(
 
@@ -268,23 +315,15 @@ className="h-full bg-[#14E6C3] transition-all duration-500"
 
 
 
-{/* MESSAGE */}
-
-{message &&(
-
-<div className="mt-8 text-white/60 text-sm">
-{message}
-</div>
-
-)}
-
-
-
 {/* RESULTS */}
 
 {results.length>0 &&(
 
-<div className="mt-10 w-full max-w-5xl grid gap-4 pb-20">
+<div className="mt-12 w-full max-w-5xl grid gap-4 pb-20">
+
+<h2 className="text-white/70 text-sm uppercase tracking-wider">
+Scan Results
+</h2>
 
 {results.map((r,i)=>{
 
@@ -294,10 +333,8 @@ return(
 
 <div
 key={i}
-className="flex gap-4 bg-black/40 border border-white/10 rounded-lg p-4 backdrop-blur-xl"
+className="bg-black/40 border border-white/10 rounded-xl p-5 backdrop-blur-xl"
 >
-
-<div className="flex flex-col flex-1">
 
 <h2 className="text-lg text-white font-semibold">
 {r.song}
@@ -307,7 +344,7 @@ className="flex gap-4 bg-black/40 border border-white/10 rounded-lg p-4 backdrop
 {r.artist}
 </p>
 
-<div className="mt-2 w-full h-1.5 bg-white/10 rounded-full">
+<div className="mt-3 w-full h-2 bg-white/10 rounded-full">
 
 <div
 style={{width:`${confidence}%`}}
@@ -316,7 +353,9 @@ className="h-full bg-[#14E6C3]"
 
 </div>
 
-</div>
+<p className="text-xs text-white/40 mt-1">
+Confidence {confidence}%
+</p>
 
 </div>
 
