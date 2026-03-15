@@ -20,7 +20,6 @@ from database.models import Base, User, ScanResult
 
 from config.plans import PLANS
 
-# RATE LIMIT
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -31,19 +30,16 @@ app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
-
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto"
 )
-
 
 limiter = Limiter(key_func=get_remote_address)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, lambda r,e: {"error":"Too many requests"})
 app.add_middleware(SlowAPIMiddleware)
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -52,7 +48,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
@@ -117,7 +112,6 @@ def verify_token(token: str):
 # -------------------------
 
 def generate_verify_token():
-
     return secrets.token_urlsafe(32)
 
 
@@ -287,7 +281,8 @@ def login(request: Request, data: dict):
         "success": True,
         "token": token,
         "plan": user.plan,
-        "credits": user.credits
+        "credits": user.credits,
+        "admin": user.admin
     }
 
 
@@ -432,9 +427,9 @@ def user_info(data: dict):
         return {"error": "user_not_found"}
 
     return {
-    "success": True,
-    "token": token,
-    "plan": user.plan,
-    "credits": user.credits,
-    "admin": user.admin
-}
+        "success": True,
+        "token": token,
+        "plan": user.plan,
+        "credits": user.credits,
+        "admin": user.admin
+    }

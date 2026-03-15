@@ -19,29 +19,27 @@ def scan_url(url):
 
     audio_file = f"{TEMP_FOLDER}/{uid}.%(ext)s"
 
-    # 4 FRAGMENTOS DE 25 SEGUNDOS
-    segments = [0, 25, 50, 75]
+    # NUEVOS SEGMENTOS
+    segments = [0, 20, 60, 120]
 
     samples = []
 
     print("1️⃣ Downloading audio from YouTube...")
 
     ydl_opts = {
-    "format": "bestaudio/best",
-    "outtmpl": audio_file,
-    "quiet": True,
-    "noplaylist": True,
-
-    "extractor_args": {
-        "youtube": {
-            "player_client": ["android","web"]
+        "format": "bestaudio/best",
+        "outtmpl": audio_file,
+        "quiet": True,
+        "noplaylist": True,
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android","web"]
+            }
+        },
+        "http_headers": {
+            "User-Agent": "com.google.android.youtube/17.31.35 (Linux; U; Android 11)"
         }
-    },
-
-    "http_headers": {
-        "User-Agent": "com.google.android.youtube/17.31.35 (Linux; U; Android 11)"
     }
-}
 
     try:
 
@@ -99,8 +97,6 @@ def scan_url(url):
                 print("ACRCloud error:", e)
 
         print("✅ Recognition finished")
-
-        # REMOVE DUPLICATES
 
         unique_matches = []
         seen = set()
