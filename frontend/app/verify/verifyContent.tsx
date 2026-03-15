@@ -31,19 +31,42 @@ const res = await fetch(
 
 const data = await res.json()
 
-if(data.success){
+if(!data.success){
 
-setStatus("Account verified! Redirecting to login...")
+setStatus("Verification failed")
+return
 
-setTimeout(()=>{
+}
 
-router.push("/login")
+/* LOGIN AUTOMATICO */
 
-},2000)
+setStatus("Account verified. Logging in...")
+
+const loginRes = await fetch(
+`${process.env.NEXT_PUBLIC_API_URL}/login`,
+{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({
+email:data.email,
+password:data.password
+})
+}
+)
+
+const loginData = await loginRes.json()
+
+if(loginData.success){
+
+localStorage.setItem("token",loginData.token)
+localStorage.setItem("plan",loginData.plan)
+localStorage.setItem("admin",loginData.admin)
+
+router.push("/dashboard")
 
 }else{
 
-setStatus("Verification failed")
+setStatus("Login failed. Please login manually.")
 
 }
 
