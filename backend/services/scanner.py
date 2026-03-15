@@ -16,67 +16,84 @@ def scan_url(url):
 
     uid = str(uuid.uuid4())
 
-    audio_file = f"{TEMP_FOLDER}/{uid}.%(ext)s"
+    audio_file = f"{TEMP_FOLDER}/{uid}.mp3"
 
     segments = [0, 20, 60, 120]
 
     samples = []
 
-    print("1️⃣ Downloading audio from YouTube...")
+    print("1️⃣ Getting YouTube stream URL...")
 
-    clients = [
-        ["ios"],
-        ["tv"],
-        ["web"]
-    ]
+    stream_url = None
 
-    downloaded_file = None
+    ydl_opts = {
+        "quiet": True,
+        "format": "bestaudio",
+        "noplaylist": True
+    }
 
-    for client in clients:
+    try:
 
-        try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
 
-            print(f"Trying YouTube client: {client}")
+            info = ydl.extract_info(url, download=False)
 
-            ydl_opts = {
-                "format": "bestaudio",
-                "outtmpl": audio_file,
-                "quiet": True,
-                "noplaylist": True,
-                "extractor_args": {
-                    "youtube": {
-                        "player_client": client
-                    }
-                },
-                "http_headers": {
-                    "User-Agent": "Mozilla/5.0"
-                },
-                "postprocessor_args": [
-                    "-t", "120"
-                ]
-            }
+            formats = info.get("formats", [])
 
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            for f in formats:
 
-                info = ydl.extract_info(url, download=True)
+                if f.get("acodec") != "none":
 
-                downloaded_file = ydl.prepare_filename(info)
+                    stream_url = f.get("url")
 
-            print(f"✅ Download success using client: {client}")
+                    break
 
-            break
+    except Exception as e:
 
-        except Exception as e:
-
-            print(f"Client failed: {client} -> {str(e)}")
-
-    if not downloaded_file:
-
-        print("🚨 SCAN ERROR: Could not download audio from YouTube")
+        print("🚨 STREAM ERROR:", e)
 
         return []
 
-    print("2️⃣ Creating samples...")
+    if not stream_url:
+
+        print("🚨 SCAN ERROR: Could not obtain stream URL")
+
+        return []
+
+    print("2️⃣ Downloading first 120 seconds via ffmpeg...")
+
+    try:
+
+        subprocess.run([
+            "ffmpeg",
+            "-y",
+            "-ss",
+            "0",
+            "-i",
+            stream_url,
+            "-t",
+            "120",
+            "-vn",
+            "-acodec",
+            "mp3",
+            audio_file
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL)
+
+    except Exception as e:
+
+        print("🚨 FFMPEG ERROR:", e)
+
+        return []
+
+    if not os.path.exists(audio_file):
+
+        print("🚨 SCAN ERROR: Audio file not created")
+
+        return []
+
+    print("3️⃣ Creating samples...")
 
     for i, start in enumerate(segments):
 
@@ -88,7 +105,7 @@ def scan_url(url):
             "-ss",
             str(start),
             "-i",
-            downloaded_file,
+            audio_file,
             "-t",
             "25",
             "-acodec",
@@ -104,7 +121,7 @@ def scan_url(url):
 
             samples.append(sample_file)
 
-    print("3️⃣ Sending samples to ACRCloud...")
+    print("4️⃣ Sending samples to ACRCloud...")
 
     matches = []
 
@@ -148,13 +165,13 @@ def scan_url(url):
 
     print(f"🎵 Unique matches found: {len(matches)}")
 
-    print("4️⃣ Cleaning temp files...")
+    print("5️⃣ Cleaning temp files...")
 
     try:
 
-        if os.path.exists(downloaded_file):
+        if os.path.exists(audio_file):
 
-            os.remove(downloaded_file)
+            os.remove(audio_file)
 
         for sample in samples:
 
