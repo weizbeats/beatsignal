@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect,useState } from "react"
-import { getToken, clearSession } from "@/lib/auth"
+import TopBar from "@/components/TopBar"
+import { getToken } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 
 export default function ResultsPage(){
@@ -26,8 +27,6 @@ router.replace("/")
 return
 }
 
-try{
-
 const res = await fetch(
 `${process.env.NEXT_PUBLIC_API_URL}/scan-history`,
 {
@@ -39,23 +38,9 @@ body:JSON.stringify({token})
 
 const data = await res.json()
 
-if(data.error === "invalid_token"){
-
-clearSession()
-router.replace("/")
-return
-
-}
-
 if(data.success){
 
-setResults(data.results || [])
-
-}
-
-}catch(e){
-
-console.log("results error",e)
+setResults(data.results)
 
 }
 
@@ -74,87 +59,77 @@ return text.includes(search.toLowerCase())
 
 return(
 
-<div style={{padding:"40px"}}>
+<div className="flex flex-col flex-1">
 
-<h2 style={{marginBottom:"20px"}}>Results</h2>
+<TopBar/>
+
+<div className="w-full flex flex-col items-center px-6 pt-16">
+
+<h1 className="text-6xl font-semibold mb-10 tracking-tight bg-gradient-to-r from-white to-[#14E6C3] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(20,230,195,0.45)]">
+Results
+</h1>
+
+{/* SEARCH */}
 
 <input
 placeholder="Search by song or artist"
 value={search}
 onChange={(e)=>setSearch(e.target.value)}
-style={{
-marginBottom:"30px",
-width:"500px",
-padding:"12px",
-background:"#0b0b0b",
-border:"1px solid #222",
-color:"#fff",
-borderRadius:"6px"
-}}
+className="w-full max-w-3xl bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white mb-10"
 />
 
-<table
-style={{
-width:"100%",
-borderCollapse:"collapse"
-}}
->
+{/* RESULTS */}
 
-<thead>
-
-<tr style={{
-borderBottom:"1px solid #222",
-textAlign:"left"
-}}>
-<th>Song</th>
-<th>Artist</th>
-<th>Video</th>
-<th>Date</th>
-</tr>
-
-</thead>
-
-<tbody>
+<div className="w-full max-w-5xl grid gap-4">
 
 {filtered.map((r:any,i:number)=>{
 
 return(
 
-<tr key={i} style={{borderBottom:"1px solid #111"}}>
+<div
+key={i}
+className="bg-black/40 border border-white/10 rounded-xl p-5 backdrop-blur-xl flex justify-between items-center"
+>
 
-<td style={{padding:"14px 0"}}>
+<div>
+
+<h2 className="text-white font-semibold">
 {r.title}
-</td>
+</h2>
 
-<td>
+<p className="text-white/50 text-sm">
 {r.artist}
-</td>
+</p>
 
-<td>
+</div>
+
+<div>
 
 <a
 href={r.url}
 target="_blank"
-style={{color:"#14E6C3"}}
+className="text-[#14E6C3]"
 >
 Open Video
 </a>
 
-</td>
+</div>
 
-<td>
+<div className="text-white/40 text-sm">
+
 {new Date(r.date).toLocaleString()}
-</td>
 
-</tr>
+</div>
+
+</div>
 
 )
 
 })}
 
-</tbody>
+</div>
 
-</table>
+</div>
 
 </div>
 
