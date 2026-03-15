@@ -17,8 +17,6 @@ typeof window!=="undefined"
 ?localStorage.getItem("user")||"user"
 :"user"
 
-/* LOCAL STORAGE PLAN */
-
 const [plan,setPlan] = useState("free")
 const [admin,setAdmin] = useState(false)
 
@@ -49,7 +47,6 @@ document.addEventListener("mousedown",handleClick)
 return()=>document.removeEventListener("mousedown",handleClick)
 
 },[])
-
 
 
 /* PLAN STYLE */
@@ -109,11 +106,12 @@ return "Limited scans"
 
 }
 
-function navStyle(route:string){
+
+function navClass(route:string){
 
 return `text-sm font-medium transition ${
-pathname === route
-? "text-[#14E6C3] drop-shadow-[0_0_10px_rgba(20,230,195,0.6)]"
+pathname===route
+? "text-[#14E6C3] drop-shadow-[0_0_8px_rgba(20,230,195,0.8)]"
 : "text-white/50 hover:text-white"
 }`
 
@@ -123,20 +121,20 @@ pathname === route
 
 return(
 
-<div className="w-full flex items-start justify-between px-16 pt-4">
+<div className="w-full relative flex items-center justify-between px-16 pt-6">
 
 
 {/* LEFT PLAN */}
 
-<div className="flex flex-col items-start gap-1">
+<div className="flex flex-col gap-1">
 
 <span
-className={`text-xs font-semibold px-4 py-1 rounded-md transition duration-300 hover:scale-105 ${planStyle()}`}
+className={`text-xs font-semibold px-4 py-1 rounded-md ${planStyle()}`}
 >
 {planLabel()}
 </span>
 
-<p className="text-sm text-white/60">
+<p className="text-xs text-white/60">
 {planSubtitle()}
 </p>
 
@@ -146,18 +144,18 @@ className={`text-xs font-semibold px-4 py-1 rounded-md transition duration-300 h
 
 {/* CENTER NAVIGATION */}
 
-<div className="flex items-center gap-10 mt-1">
+<div className="absolute left-1/2 -translate-x-1/2 flex gap-10">
 
 <button
 onClick={()=>router.push("/dashboard")}
-className={navStyle("/dashboard")}
+className={navClass("/dashboard")}
 >
 Dashboard
 </button>
 
 <button
 onClick={()=>router.push("/results")}
-className={navStyle("/results")}
+className={navClass("/results")}
 >
 Results
 </button>
@@ -212,5 +210,4 @@ Logout
 </div>
 
 )
-
 }

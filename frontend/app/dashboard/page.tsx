@@ -1,14 +1,13 @@
 "use client"
 
 import { useState,useEffect } from "react"
-import { useRouter,usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import TopBar from "@/components/TopBar"
 import { getToken, clearSession } from "@/lib/auth"
 
 export default function Dashboard(){
 
 const router = useRouter()
-const pathname = usePathname()
 
 const [url,setUrl] = useState("")
 const [results,setResults] = useState<any[]>([])
@@ -255,42 +254,7 @@ return(
 
 <TopBar/>
 
-
-{/* NAVIGATION */}
-
-<div className="w-full flex justify-center mt-4">
-
-<div className="flex gap-10">
-
-<button
-onClick={()=>router.push("/dashboard")}
-className={`text-sm font-medium transition ${
-pathname === "/dashboard"
-? "text-[#14E6C3] drop-shadow-[0_0_10px_rgba(20,230,195,0.6)]"
-: "text-white/50 hover:text-white"
-}`}
->
-Dashboard
-</button>
-
-<button
-onClick={()=>router.push("/results")}
-className={`text-sm font-medium transition ${
-pathname === "/results"
-? "text-[#14E6C3] drop-shadow-[0_0_10px_rgba(20,230,195,0.6)]"
-: "text-white/50 hover:text-white"
-}`}
->
-Results
-</button>
-
-</div>
-
-</div>
-
-
-
-<div className="w-full flex flex-col items-center px-6 pt-12">
+<div className="w-full flex flex-col items-center px-6 pt-16">
 
 <h1 className="text-6xl font-semibold mb-3 tracking-tight bg-gradient-to-r from-white to-[#14E6C3] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(20,230,195,0.45)]">
 BeatSignal
