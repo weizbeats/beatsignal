@@ -2,6 +2,7 @@
 
 import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { saveToken,getToken } from "@/lib/auth"
 
 export default function Login(){
 
@@ -17,31 +18,11 @@ const [status,setStatus] = useState("")
 
 useEffect(()=>{
 
-const token =
-localStorage.getItem("token") ||
-sessionStorage.getItem("token")
-
-if(token){
-router.push("/dashboard")
+if(getToken()){
+router.replace("/dashboard")
 }
 
 },[])
-
-function validate(){
-
-if(!email.includes("@")){
-setError("Invalid email")
-return false
-}
-
-if(password.length < 6){
-setError("Password must be at least 6 characters")
-return false
-}
-
-return true
-
-}
 
 async function handleLogin(e:any){
 
@@ -51,11 +32,7 @@ if(loading) return
 
 setError("")
 setStatus("")
-
-if(!validate()) return
-
 setLoading(true)
-setStatus("Signing in...")
 
 try{
 
@@ -78,30 +55,19 @@ else if(data.error==="email_not_verified") setError("Verify your email first")
 else setError("Login failed")
 
 setLoading(false)
-setStatus("")
 return
-
 }
 
-if(remember){
-
-localStorage.setItem("token",data.token)
-
-}else{
-
-sessionStorage.setItem("token",data.token)
-
-}
+saveToken(data.token,remember)
 
 localStorage.setItem("user",email)
 
-router.push("/dashboard")
+router.replace("/dashboard")
 
 }catch{
 
 setError("Server error")
 setLoading(false)
-setStatus("")
 
 }
 
@@ -113,45 +79,18 @@ return(
 
 <form
 onSubmit={handleLogin}
-className="
-card-glow
-bg-black/40
-border border-white/10
-backdrop-blur-xl
-rounded-xl
-p-10
-flex flex-col gap-4
-w-[380px]
-"
+className="card-glow bg-black/40 border border-white/10 backdrop-blur-xl rounded-xl p-10 flex flex-col gap-4 w-[380px]"
 >
 
 <h1 className="text-2xl font-semibold text-center">
 Beat<span className="text-[#14E6C3]">Signal</span>
 </h1>
 
-<p className="text-xs text-center text-white/60 -mt-1">
-Detect stolen beats on YouTube
-</p>
-
-<p className="text-xs text-center text-[#14E6C3] mb-3">
-Login to continue
-</p>
-
 <input
 placeholder="Email"
 value={email}
 onChange={(e)=>setEmail(e.target.value)}
-disabled={loading}
-className="
-bg-black/40
-border border-white/10
-rounded-lg
-px-3 py-2
-outline-none
-text-white
-focus:border-[#14E6C3]
-transition
-"
+className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white"
 />
 
 <input
@@ -159,17 +98,7 @@ type="password"
 placeholder="Password"
 value={password}
 onChange={(e)=>setPassword(e.target.value)}
-disabled={loading}
-className="
-bg-black/40
-border border-white/10
-rounded-lg
-px-3 py-2
-outline-none
-text-white
-focus:border-[#14E6C3]
-transition
-"
+className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white"
 />
 
 <label className="flex items-center gap-2 text-sm text-white/60">
@@ -186,47 +115,15 @@ Remember me
 </label>
 
 {error && (
-
-<p className="text-red-400 text-sm text-center animate-pulse">
-{error}
-</p>
-
-)}
-
-{status && (
-
-<p className="text-[#14E6C3] text-xs text-center">
-{status}
-</p>
-
+<p className="text-red-400 text-sm text-center">{error}</p>
 )}
 
 <button
 type="submit"
-disabled={loading}
-className={`
-py-2 rounded-lg font-medium transition flex items-center justify-center gap-2
-${loading
-? "bg-gray-600 cursor-not-allowed"
-: "bg-[#14E6C3] text-black hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(20,230,195,0.6)]"
-}
-`}
+className="py-2 rounded-lg bg-[#14E6C3] text-black font-medium"
 >
-
-{loading ? (
-
-<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-
-) : "Login"}
-
+{loading ? "Loading..." : "Login"}
 </button>
-
-<p
-className="text-sm text-white/50 text-center cursor-pointer hover:text-white transition"
-onClick={()=>router.push("/register")}
->
-Don't have an account? <span className="text-[#14E6C3]">Create account</span>
-</p>
 
 </form>
 

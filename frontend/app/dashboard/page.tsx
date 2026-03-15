@@ -3,6 +3,7 @@
 import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
 import TopBar from "@/components/TopBar"
+import { getToken } from "@/lib/auth"
 
 export default function Dashboard(){
 
@@ -22,15 +23,11 @@ const [message,setMessage] = useState("")
 
 useEffect(()=>{
 
-const token =
-localStorage.getItem("token") ||
-sessionStorage.getItem("token")
+const token = getToken()
 
 if(!token){
-
-router.push("/")
+router.replace("/")
 return
-
 }
 
 setAuthChecked(true)
@@ -44,9 +41,9 @@ loadHistory()
 
 async function loadHistory(){
 
-const token =
-localStorage.getItem("token") ||
-sessionStorage.getItem("token")
+const token = getToken()
+
+if(!token) return
 
 try{
 
@@ -62,9 +59,7 @@ body:JSON.stringify({token})
 const data = await res.json()
 
 if(data.success){
-
-setHistory(data.results)
-
+setHistory(data.results || [])
 }
 
 }catch(e){
@@ -90,10 +85,8 @@ setProgress(0)
 interval=setInterval(()=>{
 
 setProgress(prev=>{
-
 if(prev>=95) return prev
 return prev+3
-
 })
 
 },350)
@@ -106,13 +99,23 @@ return ()=>clearInterval(interval)
 
 
 
+/* HANDLE SCAN */
+
 async function handleScan(){
 
 if(loading) return
 
-const token =
-localStorage.getItem("token") ||
-sessionStorage.getItem("token")
+if(!url.includes("youtube.com") && !url.includes("youtu.be")){
+setMessage("Please enter a valid YouTube URL")
+return
+}
+
+const token = getToken()
+
+if(!token){
+router.replace("/")
+return
+}
 
 setLoading(true)
 setResults([])
@@ -132,6 +135,12 @@ body:JSON.stringify({url,token})
 const data = await res.json()
 
 setProgress(100)
+
+if(data.error){
+setMessage(data.error)
+setLoading(false)
+return
+}
 
 if(data.results && data.results.length > 0){
 
@@ -157,6 +166,8 @@ setLoading(false)
 }
 
 
+
+/* PROGRESS MESSAGE */
 
 function progressMessage(){
 
@@ -210,8 +221,7 @@ onChange={(e)=>setUrl(e.target.value)}
 placeholder="Paste YouTube link"
 disabled={loading}
 className={`flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white outline-none transition
-${loading ? "opacity-50 cursor-not-allowed" : "focus:border-[#14E6C3]"}
-`}
+${loading ? "opacity-50 cursor-not-allowed" : "focus:border-[#14E6C3]"}`}
 />
 
 <button
@@ -220,8 +230,7 @@ disabled={loading}
 className={`ml-3 px-8 py-2.5 rounded-lg font-medium transition
 ${loading
 ? "bg-[#14E6C3]/60 text-black cursor-not-allowed"
-: "bg-[#14E6C3] text-black hover:scale-105 hover:shadow-[0_0_20px_rgba(20,230,195,0.7)]"}
-`}
+: "bg-[#14E6C3] text-black hover:scale-105 hover:shadow-[0_0_20px_rgba(20,230,195,0.7)]"}`}
 >
 {loading ? "Scanning..." : "Scan"}
 </button>
@@ -245,7 +254,7 @@ ${loading
 <div
 style={{width:`${progress}%`}}
 className="h-full bg-[#14E6C3] transition-all duration-500"
-></div>
+/>
 
 </div>
 
@@ -303,7 +312,7 @@ className="flex gap-4 bg-black/40 border border-white/10 rounded-lg p-4 backdrop
 <div
 style={{width:`${confidence}%`}}
 className="h-full bg-[#14E6C3]"
-></div>
+/>
 
 </div>
 
