@@ -3,7 +3,7 @@
 import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
 import TopBar from "@/components/TopBar"
-import { getToken } from "@/lib/auth"
+import { getToken, clearSession } from "@/lib/auth"
 
 export default function Dashboard(){
 
@@ -16,7 +16,6 @@ const [loading,setLoading] = useState(false)
 const [progress,setProgress] = useState(0)
 const [authChecked,setAuthChecked] = useState(false)
 const [message,setMessage] = useState("")
-
 const [credits,setCredits] = useState(0)
 
 /* AUTH CHECK */
@@ -44,6 +43,9 @@ loadUser()
 async function loadUser(){
 
 const token = getToken()
+if(!token) return
+
+try{
 
 const res = await fetch(
 `${process.env.NEXT_PUBLIC_API_URL}/user-info`,
@@ -56,8 +58,17 @@ body:JSON.stringify({token})
 
 const data = await res.json()
 
+if(data.error === "invalid_token"){
+handleInvalidSession()
+return
+}
+
 if(data.success){
 setCredits(data.credits)
+}
+
+}catch(e){
+console.log("user error",e)
 }
 
 }
@@ -69,7 +80,6 @@ setCredits(data.credits)
 async function loadHistory(){
 
 const token = getToken()
-
 if(!token) return
 
 try{
@@ -85,6 +95,11 @@ body:JSON.stringify({token})
 
 const data = await res.json()
 
+if(data.error === "invalid_token"){
+handleInvalidSession()
+return
+}
+
 if(data.success){
 setHistory(data.results || [])
 }
@@ -94,6 +109,17 @@ setHistory(data.results || [])
 console.log("history error",e)
 
 }
+
+}
+
+
+
+/* SESSION HANDLER */
+
+function handleInvalidSession(){
+
+clearSession()
+router.replace("/")
 
 }
 
@@ -140,7 +166,7 @@ return
 const token = getToken()
 
 if(!token){
-router.replace("/")
+handleInvalidSession()
 return
 }
 
@@ -164,6 +190,12 @@ const data = await res.json()
 setProgress(100)
 
 if(data.error){
+
+if(data.error === "invalid_token"){
+handleInvalidSession()
+return
+}
+
 setMessage(data.error)
 setLoading(false)
 return

@@ -2,6 +2,7 @@
 
 import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { saveToken,getToken } from "@/lib/auth"
 
 export default function Login(){
 
@@ -17,15 +18,15 @@ const [status,setStatus] = useState("")
 
 useEffect(()=>{
 
-const token =
-localStorage.getItem("token") ||
-sessionStorage.getItem("token")
+const token = getToken()
 
 if(token){
 router.push("/dashboard")
 }
 
 },[])
+
+
 
 function validate(){
 
@@ -42,6 +43,8 @@ return false
 return true
 
 }
+
+
 
 async function handleLogin(e:any){
 
@@ -83,17 +86,11 @@ return
 
 }
 
-if(remember){
-localStorage.setItem("token",data.token)
-}else{
-sessionStorage.setItem("token",data.token)
-}
+saveToken(data.token, remember)
 
 localStorage.setItem("user",email)
-
-/* NUEVO */
-localStorage.setItem("plan", data.plan)
-localStorage.setItem("admin", data.admin)
+localStorage.setItem("plan",data.plan)
+localStorage.setItem("admin",String(data.admin))
 
 router.push("/dashboard")
 
@@ -106,6 +103,8 @@ setStatus("")
 }
 
 }
+
+
 
 return(
 
