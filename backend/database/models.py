@@ -24,7 +24,31 @@ class User(Base):
 
 
 # -----------------------------------------
-# SCAN RESULTS TABLE
+# TRACKS (CATALOG)
+# -----------------------------------------
+
+class Track(Base):
+
+    __tablename__ = "tracks"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_email = Column(String, index=True)
+
+    title = Column(String)
+    artist = Column(String)
+
+    youtube_url = Column(String)
+
+    last_scan = Column(DateTime, default=datetime.utcnow)
+
+    autopilot = Column(Boolean, default=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# -----------------------------------------
+# SCAN RESULTS
 # -----------------------------------------
 
 class ScanResult(Base):

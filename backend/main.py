@@ -17,7 +17,7 @@ from jose import jwt
 from passlib.context import CryptContext
 
 from database.db import SessionLocal, engine
-from database.models import Base, User, ScanResult
+from database.models import Base, User, ScanResult, Track
 
 from config.plans import PLANS
 
@@ -27,28 +27,16 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 
-# -------------------------
-# ENSURE FFMPEG
-# -------------------------
-
 def ensure_ffmpeg():
 
     if shutil.which("ffmpeg"):
-        print("FFMPEG already installed")
         return
-
-    print("Installing FFMPEG...")
 
     subprocess.run(["apt-get","update"])
     subprocess.run(["apt-get","install","-y","ffmpeg"])
 
 
 ensure_ffmpeg()
-
-
-# -------------------------
-# APP
-# -------------------------
 
 app = FastAPI()
 
@@ -77,10 +65,6 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 
-# -------------------------
-# TOKEN
-# -------------------------
-
 def create_token(email: str):
 
     payload = {
@@ -99,10 +83,6 @@ def verify_token(token: str):
     except:
         return None
 
-
-# -------------------------
-# EXTRACT VIDEO ID
-# -------------------------
 
 def extract_video_id(url):
 
@@ -125,11 +105,6 @@ def extract_video_id(url):
     return None
 
 
-# -------------------------
-# REGISTER
-# -------------------------
-
-@limiter.limit("5/minute")
 @app.post("/register")
 def register(request: Request, data: dict):
 
@@ -158,10 +133,6 @@ def register(request: Request, data: dict):
     return {"success":True}
 
 
-# -------------------------
-# LOGIN
-# -------------------------
-
 @app.post("/login")
 def login(data: dict):
 
@@ -173,11 +144,9 @@ def login(data: dict):
     user = db.query(User).filter(User.email == email).first()
 
     if not user:
-
         return {"success":False,"error":"user_not_found"}
 
     if not pwd_context.verify(password,user.password):
-
         return {"success":False,"error":"wrong_password"}
 
     token = create_token(email)
@@ -188,10 +157,6 @@ def login(data: dict):
         "credits":user.credits
     }
 
-
-# -------------------------
-# SCAN
-# -------------------------
 
 @app.post("/scan")
 def scan(data: dict):
@@ -208,17 +173,27 @@ def scan(data: dict):
 
     db = SessionLocal()
 
-    user = db.query(User).filter(User.email == email).first()
-
-    if not user:
-        return {"error":"user_not_found"}
-
     video_id = extract_video_id(url)
 
     if not video_id:
         return {"error":"invalid_youtube_url"}
 
-    print("Starting scan for:", url)
+    existing_track = db.query(Track).filter(
+        Track.user_email == email,
+        Track.youtube_url == url
+    ).first()
+
+    if not existing_track:
+
+        track = Track(
+            user_email=email,
+            title="Unknown",
+            artist="Unknown",
+            youtube_url=url
+        )
+
+        db.add(track)
+        db.commit()
 
     results = scan_url(url)
 
@@ -226,63 +201,36 @@ def scan(data: dict):
 
         return {
             "success":False,
-            "error":"no_matches",
-            "message":"No matches found"
+            "error":"no_matches"
         }
-
-    new_results = []
 
     for r in results:
 
-        try:
+        entry = ScanResult(
 
-            song = r.get("song") or "Unknown"
-            artist = r.get("artist") or "Unknown"
+            user_email=email,
+            youtube_video_id=video_id,
 
-            score = r.get("score") or 0
-            release_date = r.get("release_date")
-            isrc = r.get("isrc")
-            cover = r.get("cover")
+            title=r.get("song"),
+            channel=r.get("artist"),
 
-            entry = ScanResult(
+            youtube_url=url,
 
-                user_email=email,
-                youtube_video_id=video_id,
+            release_date=r.get("release_date"),
+            score=r.get("score"),
+            isrc=r.get("isrc"),
+            cover=r.get("cover")
+        )
 
-                title=song,
-                channel=artist,
-
-                youtube_url=url,
-
-                release_date=release_date,
-                score=score,
-                isrc=isrc,
-                cover=cover
-            )
-
-            db.add(entry)
-
-            new_results.append({
-                "song":song,
-                "artist":artist,
-                "score":score
-            })
-
-        except Exception as e:
-
-            print("DB insert error:", e)
+        db.add(entry)
 
     db.commit()
 
     return {
         "success":True,
-        "results":new_results
+        "results":results
     }
 
-
-# -------------------------
-# HISTORY
-# -------------------------
 
 @app.post("/scan-history")
 def history(data: dict):
@@ -322,9 +270,42 @@ def history(data: dict):
     }
 
 
-# -------------------------
-# USER INFO
-# -------------------------
+@app.post("/catalog")
+def catalog(data: dict):
+
+    token = data.get("token")
+
+    payload = verify_token(token)
+
+    if not payload:
+        return {"error":"invalid_token"}
+
+    email = payload["email"]
+
+    db = SessionLocal()
+
+    rows = db.query(Track)\
+        .filter(Track.user_email == email)\
+        .order_by(Track.created_at.desc())\
+        .all()
+
+    out = []
+
+    for r in rows:
+
+        out.append({
+            "title": r.title,
+            "artist": r.artist,
+            "url": r.youtube_url,
+            "last_scan": r.last_scan,
+            "autopilot": r.autopilot
+        })
+
+    return {
+        "success":True,
+        "tracks":out
+    }
+
 
 @app.post("/user-info")
 def user_info(data: dict):
@@ -341,9 +322,6 @@ def user_info(data: dict):
     db = SessionLocal()
 
     user = db.query(User).filter(User.email == email).first()
-
-    if not user:
-        return {"error":"user_not_found"}
 
     return {
         "success":True,
