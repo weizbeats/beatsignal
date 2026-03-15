@@ -27,7 +27,7 @@ def scan_url(url):
     print("1️⃣ Downloading audio from YouTube...")
 
     ydl_opts = {
-        "format": "bestaudio/best",
+        "format": "bestaudio",
         "outtmpl": audio_file,
         "quiet": True,
         "noplaylist": True,
