@@ -26,7 +26,7 @@ async function verify(){
 try{
 
 const res = await fetch(
-`${process.env.NEXT_PUBLIC_API_URL}/verify-email?token=${token}`
+`${process.env.NEXT_PUBLIC_API_URL}/verify?token=${token}`
 )
 
 const data = await res.json()
@@ -37,7 +37,7 @@ setStatus("Account verified! Redirecting to login...")
 
 setTimeout(()=>{
 
-router.push("/")
+router.push("/login")
 
 },2000)
 
