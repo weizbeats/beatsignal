@@ -218,6 +218,27 @@ def scan(data: dict):
     if not video_id:
         return {"error":"invalid_youtube_url"}
 
+    # ----------------------------------
+    # CHECK IF VIDEO ALREADY SCANNED
+    # ----------------------------------
+
+    existing_scan = db.query(ScanResult).filter(
+        ScanResult.user_email == email,
+        ScanResult.youtube_video_id == video_id
+    ).first()
+
+    if existing_scan:
+
+        return {
+            "success":False,
+            "error":"already_scanned",
+            "message":"You already scanned this video"
+        }
+
+    # ----------------------------------
+    # RUN SCANNER
+    # ----------------------------------
+
     results = scan_url(url)
 
     new_results = []
@@ -228,16 +249,6 @@ def scan(data: dict):
 
             song = r.get("song")
             artist = r.get("artist")
-
-            exists = db.query(ScanResult).filter(
-                ScanResult.user_email == email,
-                ScanResult.youtube_video_id == video_id,
-                ScanResult.title == song,
-                ScanResult.channel == artist
-            ).first()
-
-            if exists:
-                continue
 
             entry = ScanResult(
                 user_email=email,
@@ -299,4 +310,35 @@ def history(data: dict):
     return {
         "success":True,
         "results":out
+    }
+
+
+# -------------------------
+# USER INFO
+# -------------------------
+
+@app.post("/user-info")
+def user_info(data: dict):
+
+    token = data.get("token")
+
+    payload = verify_token(token)
+
+    if not payload:
+        return {"error":"invalid_token"}
+
+    email = payload["email"]
+
+    db = SessionLocal()
+
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        return {"error":"user_not_found"}
+
+    return {
+        "success":True,
+        "credits":user.credits,
+        "plan":user.plan,
+        "admin":user.admin
     }
