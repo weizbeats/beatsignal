@@ -16,46 +16,115 @@ typeof window!=="undefined"
 ?localStorage.getItem("user")||"user"
 :"user"
 
-function logout(){
+const plan =
+typeof window!=="undefined"
+?localStorage.getItem("plan")||"free"
+:"free"
 
+const admin =
+typeof window!=="undefined"
+?localStorage.getItem("admin")==="true"
+:false
+
+function logout(){
 clearSession()
 router.replace("/")
-
 }
 
 useEffect(()=>{
 
 function handleClick(e:any){
-
 if(ref.current && !ref.current.contains(e.target)){
 setOpen(false)
 }
-
 }
 
 document.addEventListener("mousedown",handleClick)
-
 return()=>document.removeEventListener("mousedown",handleClick)
 
 },[])
+
+
+
+/* PLAN STYLE */
+
+function planStyle(){
+
+if(admin){
+return "bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-[0_0_12px_rgba(255,200,0,0.6)]"
+}
+
+switch(plan){
+
+case "starter":
+return "bg-blue-500/90 text-white shadow-[0_0_12px_rgba(80,140,255,0.5)]"
+
+case "studio":
+return "bg-purple-500/90 text-white shadow-[0_0_12px_rgba(180,80,255,0.5)]"
+
+case "pro":
+return "bg-[#14E6C3] text-black shadow-[0_0_14px_rgba(20,230,195,0.6)]"
+
+default:
+return "bg-gray-500/80 text-white"
+
+}
+
+}
+
+function planLabel(){
+
+if(admin) return "ADMIN"
+
+switch(plan){
+
+case "starter":
+return "STARTER"
+
+case "studio":
+return "STUDIO"
+
+case "pro":
+return "PRO"
+
+default:
+return "FREE"
+
+}
+
+}
+
+function planSubtitle(){
+
+if(admin) return "Unlimited scans"
+if(plan==="pro") return "Unlimited scans"
+
+return "Limited scans"
+
+}
+
+
 
 return(
 
 <div className="w-full relative flex items-start justify-end px-16 pt-4">
 
-{/* CENTER PLAN BADGE */}
+{/* CENTER BADGE */}
 
 <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
 
-<span className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs font-semibold px-3 py-1 rounded-md shadow-lg">
-ADMIN
+<span
+className={`text-xs font-semibold px-4 py-1 rounded-md transition duration-300 hover:scale-105 ${planStyle()}`}
+>
+{planLabel()}
 </span>
 
 <p className="text-sm text-white/60">
-Unlimited scans
+{planSubtitle()}
 </p>
 
 </div>
+
 
 
 {/* USER MENU */}

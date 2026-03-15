@@ -223,3 +223,9 @@ Don't have an account? <span className="text-[#14E6C3]">Create account</span>
 )
 
 }
+/* NUEVO */
+
+localStorage.setItem("plan", data.plan)
+localStorage.setItem("admin", data.admin)
+
+router.push("/dashboard")
