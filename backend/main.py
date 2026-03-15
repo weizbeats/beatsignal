@@ -7,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import secrets
 import requests
+import shutil
+import subprocess
 
 from datetime import datetime, timedelta
 
@@ -25,6 +27,37 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
+
+# -------------------------
+# ENSURE FFMPEG
+# -------------------------
+
+def ensure_ffmpeg():
+
+    if shutil.which("ffmpeg"):
+        print("FFMPEG already installed")
+        return
+
+    print("FFMPEG not found. Installing...")
+
+    try:
+
+        subprocess.run(["apt-get", "update"], check=True)
+        subprocess.run(["apt-get", "install", "-y", "ffmpeg"], check=True)
+
+        print("FFMPEG installed successfully")
+
+    except Exception as e:
+
+        print("FFMPEG installation failed:", e)
+
+
+ensure_ffmpeg()
+
+
+# -------------------------
+# APP
+# -------------------------
 
 app = FastAPI()
 
