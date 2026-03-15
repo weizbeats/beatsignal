@@ -46,6 +46,26 @@ setResults(data.results)
 
 }
 
+/* EXTRAER VIDEO ID PARA THUMBNAIL */
+
+function getVideoId(url:string){
+
+try{
+
+const u = new URL(url)
+
+if(u.hostname.includes("youtu.be")){
+return u.pathname.slice(1)
+}
+
+return u.searchParams.get("v")
+
+}catch{
+return null
+}
+
+}
+
 const filtered = results.filter((r:any)=>{
 
 const text = (
@@ -69,8 +89,6 @@ return(
 Results
 </h1>
 
-
-
 {/* SEARCH */}
 
 <input
@@ -80,48 +98,69 @@ onChange={(e)=>setSearch(e.target.value)}
 className="w-full max-w-3xl bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white mb-10"
 />
 
-
-
 {/* RESULTS */}
 
-<div className="w-full max-w-5xl grid gap-4">
+<div className="w-full max-w-6xl grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+{filtered.length === 0 && (
+
+<div className="text-white/40 col-span-full text-center py-20">
+No detections yet
+</div>
+
+)}
 
 {filtered.map((r:any,i:number)=>{
+
+const videoId = getVideoId(r.url)
 
 return(
 
 <div
 key={i}
-className="bg-black/40 border border-white/10 rounded-xl p-5 backdrop-blur-xl flex justify-between items-center"
+className="bg-black/40 border border-white/10 rounded-xl overflow-hidden backdrop-blur-xl hover:border-[#14E6C3]/40 transition"
 >
+
+{/* THUMBNAIL */}
+
+{videoId && (
+
+<img
+src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+className="w-full"
+/>
+
+)}
+
+<div className="p-5 flex flex-col gap-3">
 
 <div>
 
-<h2 className="text-white font-semibold">
-{r.title}
+<h2 className="text-white font-semibold leading-tight">
+{r.title || "Unknown title"}
 </h2>
 
 <p className="text-white/50 text-sm">
-{r.artist}
+{r.artist || "Unknown artist"}
 </p>
 
 </div>
 
-<div>
+<div className="flex justify-between items-center">
 
 <a
 href={r.url}
 target="_blank"
-className="text-[#14E6C3]"
+className="text-[#14E6C3] text-sm hover:underline"
 >
 Open Video
 </a>
 
+<div className="text-white/40 text-xs">
+{new Date(r.date).toLocaleString()}
 </div>
 
-<div className="text-white/40 text-sm">
-
-{new Date(r.date).toLocaleString()}
+</div>
 
 </div>
 
