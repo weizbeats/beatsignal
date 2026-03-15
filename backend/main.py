@@ -259,7 +259,16 @@ def verify_email(token: str):
 
     db.commit()
 
-    return {"success": True}
+    # 🔥 GENERATE LOGIN TOKEN AUTOMATICALLY
+    jwt_token = create_token(user.email)
+
+    return {
+        "success": True,
+        "token": jwt_token,
+        "plan": user.plan,
+        "credits": user.credits,
+        "admin": user.admin
+    }
 
 
 # -------------------------
