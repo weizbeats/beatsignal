@@ -115,7 +115,6 @@ def verify_token(token: str):
 # -------------------------
 
 def generate_verify_token():
-
     return secrets.token_urlsafe(32)
 
 
@@ -146,7 +145,6 @@ def send_verification_email(email, token):
         )
 
     except Exception as e:
-
         print("Email send error:", e)
 
 
@@ -212,8 +210,11 @@ def register(request: Request, data: dict):
 # VERIFY EMAIL
 # -------------------------
 
-@app.get("/verify-email")
+@app.get("/verify")
 def verify_email(token: str):
+
+    if not token:
+        return {"success": False}
 
     db = SessionLocal()
 
