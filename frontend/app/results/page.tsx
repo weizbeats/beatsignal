@@ -1,169 +1,163 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect,useState } from "react"
+import { getToken, clearSession } from "@/lib/auth"
+import { useRouter } from "next/navigation"
 
 export default function ResultsPage(){
 
-  const [results,setResults] = useState<any[]>([])
-  const [search,setSearch] = useState("")
+const router = useRouter()
 
-  useEffect(()=>{
+const [results,setResults] = useState<any[]>([])
+const [search,setSearch] = useState("")
 
-    const stored = localStorage.getItem("scanResults")
+useEffect(()=>{
 
-    if(stored){
+loadResults()
 
-      try{
-        const parsed = JSON.parse(stored)
+},[])
 
-        if(Array.isArray(parsed)){
-          setResults(parsed)
-        }
+async function loadResults(){
 
-      }catch(e){
-        console.log("Error parsing results")
-      }
+const token = getToken()
 
-    }
+if(!token){
+router.replace("/")
+return
+}
 
-  },[])
+try{
 
-  const filtered = results.filter((r:any)=>{
+const res = await fetch(
+`${process.env.NEXT_PUBLIC_API_URL}/scan-history`,
+{
+method:"POST",
+headers:{ "Content-Type":"application/json"},
+body:JSON.stringify({token})
+}
+)
 
-    const text = (
-      (r.song || "") +
-      (r.artist || "") +
-      (r.isrc || "")
-    ).toLowerCase()
+const data = await res.json()
 
-    return text.includes(search.toLowerCase())
+if(data.error === "invalid_token"){
 
-  })
+clearSession()
+router.replace("/")
+return
 
-  return(
+}
 
-    <div style={{padding:"40px"}}>
+if(data.success){
 
-      <h2 style={{marginBottom:"20px"}}>Results</h2>
+setResults(data.results || [])
 
-      {/* SEARCH BAR */}
+}
 
-      <input
-        placeholder="Search by song, artist or ISRC"
-        value={search}
-        onChange={(e)=>setSearch(e.target.value)}
-        style={{
-          marginBottom:"30px",
-          width:"500px",
-          padding:"12px",
-          background:"#0b0b0b",
-          border:"1px solid #222",
-          color:"#fff",
-          borderRadius:"6px"
-        }}
-      />
+}catch(e){
 
-      <table
-        style={{
-          width:"100%",
-          borderCollapse:"collapse"
-        }}
-      >
+console.log("results error",e)
 
-        <thead>
+}
 
-          <tr style={{
-            borderBottom:"1px solid #222",
-            textAlign:"left"
-          }}>
-            <th>Song</th>
-            <th>ISRC</th>
-            <th>Release Date</th>
-            <th>Score</th>
-            <th>Spotify</th>
-          </tr>
+}
 
-        </thead>
+const filtered = results.filter((r:any)=>{
 
-        <tbody>
+const text = (
+(r.title || "") +
+(r.artist || "")
+).toLowerCase()
 
-          {filtered.map((r:any,i:number)=>{
+return text.includes(search.toLowerCase())
 
-            return(
+})
 
-              <tr key={i} style={{borderBottom:"1px solid #111"}}>
+return(
 
-                <td style={{
-                  display:"flex",
-                  alignItems:"center",
-                  gap:"12px",
-                  padding:"14px 0"
-                }}>
+<div style={{padding:"40px"}}>
 
-                  {r.cover && (
+<h2 style={{marginBottom:"20px"}}>Results</h2>
 
-                    <img
-                      src={r.cover}
-                      style={{
-                        width:"42px",
-                        height:"42px",
-                        borderRadius:"6px"
-                      }}
-                    />
+<input
+placeholder="Search by song or artist"
+value={search}
+onChange={(e)=>setSearch(e.target.value)}
+style={{
+marginBottom:"30px",
+width:"500px",
+padding:"12px",
+background:"#0b0b0b",
+border:"1px solid #222",
+color:"#fff",
+borderRadius:"6px"
+}}
+/>
 
-                  )}
+<table
+style={{
+width:"100%",
+borderCollapse:"collapse"
+}}
+>
 
-                  <div>
+<thead>
 
-                    <div style={{fontWeight:600}}>
-                      {r.song}
-                    </div>
+<tr style={{
+borderBottom:"1px solid #222",
+textAlign:"left"
+}}>
+<th>Song</th>
+<th>Artist</th>
+<th>Video</th>
+<th>Date</th>
+</tr>
 
-                    <div style={{
-                      fontSize:"13px",
-                      opacity:0.6
-                    }}>
-                      {r.artist}
-                    </div>
+</thead>
 
-                  </div>
+<tbody>
 
-                </td>
+{filtered.map((r:any,i:number)=>{
 
-                <td>{r.isrc || "-"}</td>
+return(
 
-                <td>{r.release_date || "-"}</td>
+<tr key={i} style={{borderBottom:"1px solid #111"}}>
 
-                <td>{r.score}</td>
+<td style={{padding:"14px 0"}}>
+{r.title}
+</td>
 
-                <td>
+<td>
+{r.artist}
+</td>
 
-                  {r.spotify_url ? (
+<td>
 
-                    <a
-                      href={r.spotify_url}
-                      target="_blank"
-                      style={{color:"#1DB954"}}
-                    >
-                      Open
-                    </a>
+<a
+href={r.url}
+target="_blank"
+style={{color:"#14E6C3"}}
+>
+Open Video
+</a>
 
-                  ) : "-"}
+</td>
 
-                </td>
+<td>
+{new Date(r.date).toLocaleString()}
+</td>
 
-              </tr>
+</tr>
 
-            )
+)
 
-          })}
+})}
 
-        </tbody>
+</tbody>
 
-      </table>
+</table>
 
-    </div>
+</div>
 
-  )
+)
 
 }
