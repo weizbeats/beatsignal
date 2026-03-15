@@ -205,85 +205,58 @@ def scan(data: dict):
 
     db = SessionLocal()
 
-    user = db.query(User).filter(User.email == email).first()
-
-    if not user:
-        return {"error":"user_not_found"}
-
     video_id = extract_video_id(url)
 
     if not video_id:
         return {"error":"invalid_youtube_url"}
 
-    existing_scan = db.query(ScanResult).filter(
-        ScanResult.user_email == email,
-        ScanResult.youtube_video_id == video_id
-    ).first()
-
-    if existing_scan:
-
-        return {
-            "success":False,
-            "error":"already_scanned",
-            "message":"You already scanned this video"
-        }
-
     results = scan_url(url)
 
     if not results:
-
         return {
             "success":False,
-            "error":"no_matches",
-            "message":"No beats detected"
+            "error":"no_matches"
         }
 
-    new_results = []
+    saved = []
 
     for r in results:
 
-        try:
+        song = r.get("song")
+        artist = r.get("artist")
 
-            song = r.get("song")
-            artist = r.get("artist")
+        score = r.get("score")
+        release_date = r.get("release_date")
+        isrc = r.get("isrc")
+        cover = r.get("cover")
 
-            score = r.get("score")
-            release_date = r.get("release_date")
-            isrc = r.get("isrc")
-            cover = r.get("cover")
+        entry = ScanResult(
 
-            exists = db.query(ScanResult).filter(
-                ScanResult.youtube_video_id == video_id,
-                ScanResult.title == song
-            ).first()
+            user_email=email,
 
-            if exists:
-                continue
+            youtube_video_id=video_id,
 
-            entry = ScanResult(
-                user_email=email,
-                youtube_video_id=video_id,
-                title=song,
-                channel=artist,
-                youtube_url=url,
-                release_date=release_date,
-                score=score,
-                isrc=isrc,
-                cover=cover
-            )
+            title=song,
+            channel=artist,
 
-            db.add(entry)
+            youtube_url=url,
 
-            new_results.append(r)
+            release_date=release_date,
+            score=score,
+            isrc=isrc,
+            cover=cover
 
-        except:
-            continue
+        )
+
+        db.add(entry)
+
+        saved.append(r)
 
     db.commit()
 
     return {
         "success":True,
-        "results":new_results
+        "results":saved
     }
 
 
