@@ -156,6 +156,13 @@ className="flex items-center gap-2 bg-black/40 border border-white/10 px-4 py-1.
 <div className="absolute right-0 mt-2 w-44 bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg">
 
 <button
+onClick={()=>router.push("/dashboard/results")}
+className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/5"
+>
+Results
+</button>
+
+<button
 onClick={logout}
 className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-white/5"
 >
