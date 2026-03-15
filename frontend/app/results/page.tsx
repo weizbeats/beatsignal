@@ -69,6 +69,8 @@ return(
 Results
 </h1>
 
+
+
 {/* SEARCH */}
 
 <input
@@ -77,6 +79,8 @@ value={search}
 onChange={(e)=>setSearch(e.target.value)}
 className="w-full max-w-3xl bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white mb-10"
 />
+
+
 
 {/* RESULTS */}
 
