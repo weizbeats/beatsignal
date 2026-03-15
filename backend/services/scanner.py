@@ -34,11 +34,11 @@ def scan_url(url):
         "cookiefile": COOKIES_FILE,
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "web"]
+                "player_client": ["web"]
             }
         },
         "http_headers": {
-            "User-Agent": "com.google.android.youtube/17.31.35 (Linux; U; Android 11)"
+            "User-Agent": "Mozilla/5.0"
         }
     }
 
