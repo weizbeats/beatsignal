@@ -99,6 +99,16 @@ className="w-full max-w-3xl bg-black/40 border border-white/10 rounded-lg px-4 p
 
 <tbody>
 
+{filtered.length === 0 && (
+
+<tr>
+<td colSpan={6} className="text-center py-16 text-white/40">
+No detections yet
+</td>
+</tr>
+
+)}
+
 {filtered.map((r:any,i:number)=>{
 
 return(
@@ -133,9 +143,13 @@ className="w-12 h-12 rounded"
 {r.release_date || "-"}
 </td>
 
-<td className="text-[#14E6C3] text-sm">
+<td>
+
+<span className="bg-[#14E6C3]/10 text-[#14E6C3] px-2 py-1 rounded text-xs">
 
 {r.score ? `${r.score}%` : "-"}
+
+</span>
 
 </td>
 

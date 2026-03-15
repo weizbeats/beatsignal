@@ -34,10 +34,7 @@ from slowapi.middleware import SlowAPIMiddleware
 def ensure_ffmpeg():
 
     if shutil.which("ffmpeg"):
-        print("FFMPEG already installed")
         return
-
-    print("Installing FFMPEG...")
 
     subprocess.run(["apt-get","update"])
     subprocess.run(["apt-get","install","-y","ffmpeg"])
@@ -218,10 +215,6 @@ def scan(data: dict):
     if not video_id:
         return {"error":"invalid_youtube_url"}
 
-    # ----------------------------------
-    # CHECK IF VIDEO ALREADY SCANNED
-    # ----------------------------------
-
     existing_scan = db.query(ScanResult).filter(
         ScanResult.user_email == email,
         ScanResult.youtube_video_id == video_id
@@ -235,11 +228,15 @@ def scan(data: dict):
             "message":"You already scanned this video"
         }
 
-    # ----------------------------------
-    # RUN SCANNER
-    # ----------------------------------
-
     results = scan_url(url)
+
+    if not results:
+
+        return {
+            "success":False,
+            "error":"no_matches",
+            "message":"No beats detected"
+        }
 
     new_results = []
 
@@ -254,6 +251,14 @@ def scan(data: dict):
             release_date = r.get("release_date")
             isrc = r.get("isrc")
             cover = r.get("cover")
+
+            exists = db.query(ScanResult).filter(
+                ScanResult.youtube_video_id == video_id,
+                ScanResult.title == song
+            ).first()
+
+            if exists:
+                continue
 
             entry = ScanResult(
                 user_email=email,
