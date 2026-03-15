@@ -46,26 +46,6 @@ setResults(data.results)
 
 }
 
-/* EXTRAER VIDEO ID PARA THUMBNAIL */
-
-function getVideoId(url:string){
-
-try{
-
-const u = new URL(url)
-
-if(u.hostname.includes("youtu.be")){
-return u.pathname.slice(1)
-}
-
-return u.searchParams.get("v")
-
-}catch{
-return null
-}
-
-}
-
 const filtered = results.filter((r:any)=>{
 
 const text = (
@@ -85,11 +65,10 @@ return(
 
 <div className="w-full flex flex-col items-center px-6 pt-16">
 
-<h1 className="text-6xl font-semibold mb-10 tracking-tight bg-gradient-to-r from-white to-[#14E6C3] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(20,230,195,0.45)]">
+<h1 className="text-5xl font-semibold mb-10 tracking-tight bg-gradient-to-r from-white to-[#14E6C3] bg-clip-text text-transparent">
 Results
 </h1>
 
-{/* SEARCH */}
 
 <input
 placeholder="Search by song or artist"
@@ -98,77 +77,91 @@ onChange={(e)=>setSearch(e.target.value)}
 className="w-full max-w-3xl bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white mb-10"
 />
 
-{/* RESULTS */}
 
-<div className="w-full max-w-6xl grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div className="w-full max-w-6xl">
 
-{filtered.length === 0 && (
+<table className="w-full text-left">
 
-<div className="text-white/40 col-span-full text-center py-20">
-No detections yet
-</div>
+<thead className="border-b border-white/10 text-white/60 text-sm">
 
-)}
+<tr>
+
+<th className="py-3">Cover</th>
+<th>Song</th>
+<th>Artist</th>
+<th>Release</th>
+<th>Match</th>
+<th>Usage</th>
+
+</tr>
+
+</thead>
+
+<tbody>
 
 {filtered.map((r:any,i:number)=>{
 
-const videoId = getVideoId(r.url)
-
 return(
 
-<div
+<tr
 key={i}
-className="bg-black/40 border border-white/10 rounded-xl overflow-hidden backdrop-blur-xl hover:border-[#14E6C3]/40 transition"
+className="border-b border-white/5 hover:bg-white/5 transition"
 >
 
-{/* THUMBNAIL */}
+<td className="py-4">
 
-{videoId && (
+{r.cover &&(
 
 <img
-src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
-className="w-full"
+src={r.cover}
+className="w-12 h-12 rounded"
 />
 
 )}
 
-<div className="p-5 flex flex-col gap-3">
+</td>
 
-<div>
+<td className="font-medium text-white">
+{r.title || "Unknown"}
+</td>
 
-<h2 className="text-white font-semibold leading-tight">
-{r.title || "Unknown title"}
-</h2>
+<td className="text-white/60">
+{r.artist || "-"}
+</td>
 
-<p className="text-white/50 text-sm">
-{r.artist || "Unknown artist"}
-</p>
+<td className="text-white/50 text-sm">
+{r.release_date || "-"}
+</td>
 
-</div>
+<td className="text-[#14E6C3] text-sm">
 
-<div className="flex justify-between items-center">
+{r.score ? `${r.score}%` : "-"}
+
+</td>
+
+<td>
 
 <a
 href={r.url}
 target="_blank"
 className="text-[#14E6C3] text-sm hover:underline"
 >
-Open Video
+
+View usage
+
 </a>
 
-<div className="text-white/40 text-xs">
-{new Date(r.date).toLocaleString()}
-</div>
+</td>
 
-</div>
-
-</div>
-
-</div>
+</tr>
 
 )
 
 })}
+
+</tbody>
+
+</table>
 
 </div>
 

@@ -40,6 +40,11 @@ class ScanResult(Base):
     title = Column(String)
     channel = Column(String)
 
+    release_date = Column(String, nullable=True)
+    score = Column(Integer, nullable=True)
+    isrc = Column(String, nullable=True)
+    cover = Column(String, nullable=True)
+
     views = Column(Integer, default=0)
 
     youtube_url = Column(String)
@@ -48,7 +53,6 @@ class ScanResult(Base):
 
     status = Column(String, default="detected")
 
-    # evita duplicados SOLO por usuario
     __table_args__ = (
         UniqueConstraint("user_email", "youtube_video_id"),
     )

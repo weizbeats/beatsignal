@@ -250,12 +250,21 @@ def scan(data: dict):
             song = r.get("song")
             artist = r.get("artist")
 
+            score = r.get("score")
+            release_date = r.get("release_date")
+            isrc = r.get("isrc")
+            cover = r.get("cover")
+
             entry = ScanResult(
                 user_email=email,
                 youtube_video_id=video_id,
                 title=song,
                 channel=artist,
-                youtube_url=url
+                youtube_url=url,
+                release_date=release_date,
+                score=score,
+                isrc=isrc,
+                cover=cover
             )
 
             db.add(entry)
@@ -301,10 +310,12 @@ def history(data: dict):
     for r in rows:
 
         out.append({
-            "title":r.title,
-            "artist":r.channel,
-            "url":r.youtube_url,
-            "date":r.detected_at
+            "title": r.title,
+            "artist": r.channel,
+            "url": r.youtube_url,
+            "release_date": r.release_date,
+            "score": r.score,
+            "cover": r.cover
         })
 
     return {
