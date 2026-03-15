@@ -19,7 +19,7 @@ def scan_url(url):
 
     audio_file = f"{TEMP_FOLDER}/{uid}.%(ext)s"
 
-    # NUEVOS SEGMENTOS
+    # SEGMENTOS
     segments = [0, 20, 60, 120]
 
     samples = []
@@ -31,9 +31,10 @@ def scan_url(url):
         "outtmpl": audio_file,
         "quiet": True,
         "noplaylist": True,
+        "cookiefile": COOKIES_FILE,
         "extractor_args": {
             "youtube": {
-                "player_client": ["android","web"]
+                "player_client": ["android", "web"]
             }
         },
         "http_headers": {
@@ -42,6 +43,9 @@ def scan_url(url):
     }
 
     try:
+
+        if not os.path.exists(COOKIES_FILE):
+            print("⚠ cookies.txt not found, attempting download without cookies")
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
 
