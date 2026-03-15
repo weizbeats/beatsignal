@@ -1,12 +1,13 @@
 "use client"
 
 import { useState,useRef,useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter,usePathname } from "next/navigation"
 import { clearSession } from "@/lib/auth"
 
 export default function TopBar(){
 
 const router = useRouter()
+const pathname = usePathname()
 
 const [open,setOpen]=useState(false)
 const ref=useRef<any>(null)
@@ -16,7 +17,7 @@ typeof window!=="undefined"
 ?localStorage.getItem("user")||"user"
 :"user"
 
-/* FIX LOCALSTORAGE */
+/* LOCAL STORAGE PLAN */
 
 const [plan,setPlan] = useState("free")
 const [admin,setAdmin] = useState(false)
@@ -108,15 +109,26 @@ return "Limited scans"
 
 }
 
+function navStyle(route:string){
+
+return `text-sm font-medium transition ${
+pathname === route
+? "text-[#14E6C3] drop-shadow-[0_0_10px_rgba(20,230,195,0.6)]"
+: "text-white/50 hover:text-white"
+}`
+
+}
+
 
 
 return(
 
-<div className="w-full relative flex items-start justify-end px-16 pt-4">
+<div className="w-full flex items-start justify-between px-16 pt-4">
 
-{/* CENTER BADGE */}
 
-<div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+{/* LEFT PLAN */}
+
+<div className="flex flex-col items-start gap-1">
 
 <span
 className={`text-xs font-semibold px-4 py-1 rounded-md transition duration-300 hover:scale-105 ${planStyle()}`}
@@ -127,6 +139,28 @@ className={`text-xs font-semibold px-4 py-1 rounded-md transition duration-300 h
 <p className="text-sm text-white/60">
 {planSubtitle()}
 </p>
+
+</div>
+
+
+
+{/* CENTER NAVIGATION */}
+
+<div className="flex items-center gap-10 mt-1">
+
+<button
+onClick={()=>router.push("/dashboard")}
+className={navStyle("/dashboard")}
+>
+Dashboard
+</button>
+
+<button
+onClick={()=>router.push("/results")}
+className={navStyle("/results")}
+>
+Results
+</button>
 
 </div>
 
@@ -156,7 +190,7 @@ className="flex items-center gap-2 bg-black/40 border border-white/10 px-4 py-1.
 <div className="absolute right-0 mt-2 w-44 bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg">
 
 <button
-onClick={()=>router.push("/dashboard/results")}
+onClick={()=>router.push("/results")}
 className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/5"
 >
 Results
