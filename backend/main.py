@@ -432,9 +432,9 @@ def user_info(data: dict):
         return {"error": "user_not_found"}
 
     return {
-        "success": True,
-        "email": user.email,
-        "plan": user.plan,
-        "credits": user.credits,
-        "admin": user.admin
-    }
+    "success": True,
+    "token": token,
+    "plan": user.plan,
+    "credits": user.credits,
+    "admin": user.admin
+}
