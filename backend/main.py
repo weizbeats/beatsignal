@@ -34,7 +34,10 @@ from slowapi.middleware import SlowAPIMiddleware
 def ensure_ffmpeg():
 
     if shutil.which("ffmpeg"):
+        print("FFMPEG already installed")
         return
+
+    print("Installing FFMPEG...")
 
     subprocess.run(["apt-get","update"])
     subprocess.run(["apt-get","install","-y","ffmpeg"])
@@ -205,58 +208,75 @@ def scan(data: dict):
 
     db = SessionLocal()
 
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        return {"error":"user_not_found"}
+
     video_id = extract_video_id(url)
 
     if not video_id:
         return {"error":"invalid_youtube_url"}
 
+    print("Starting scan for:", url)
+
     results = scan_url(url)
 
     if not results:
+
         return {
             "success":False,
-            "error":"no_matches"
+            "error":"no_matches",
+            "message":"No matches found"
         }
 
-    saved = []
+    new_results = []
 
     for r in results:
 
-        song = r.get("song")
-        artist = r.get("artist")
+        try:
 
-        score = r.get("score")
-        release_date = r.get("release_date")
-        isrc = r.get("isrc")
-        cover = r.get("cover")
+            song = r.get("song") or "Unknown"
+            artist = r.get("artist") or "Unknown"
 
-        entry = ScanResult(
+            score = r.get("score") or 0
+            release_date = r.get("release_date")
+            isrc = r.get("isrc")
+            cover = r.get("cover")
 
-            user_email=email,
+            entry = ScanResult(
 
-            youtube_video_id=video_id,
+                user_email=email,
+                youtube_video_id=video_id,
 
-            title=song,
-            channel=artist,
+                title=song,
+                channel=artist,
 
-            youtube_url=url,
+                youtube_url=url,
 
-            release_date=release_date,
-            score=score,
-            isrc=isrc,
-            cover=cover
+                release_date=release_date,
+                score=score,
+                isrc=isrc,
+                cover=cover
+            )
 
-        )
+            db.add(entry)
 
-        db.add(entry)
+            new_results.append({
+                "song":song,
+                "artist":artist,
+                "score":score
+            })
 
-        saved.append(r)
+        except Exception as e:
+
+            print("DB insert error:", e)
 
     db.commit()
 
     return {
         "success":True,
-        "results":saved
+        "results":new_results
     }
 
 
