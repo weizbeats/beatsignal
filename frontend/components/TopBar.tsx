@@ -16,15 +16,20 @@ typeof window!=="undefined"
 ?localStorage.getItem("user")||"user"
 :"user"
 
-const plan =
-typeof window!=="undefined"
-?localStorage.getItem("plan")||"free"
-:"free"
+/* FIX LOCALSTORAGE */
 
-const admin =
-typeof window!=="undefined"
-?localStorage.getItem("admin")==="true"
-:false
+const [plan,setPlan] = useState("free")
+const [admin,setAdmin] = useState(false)
+
+useEffect(()=>{
+
+const p = localStorage.getItem("plan")
+const a = localStorage.getItem("admin")
+
+if(p) setPlan(p)
+if(a==="true") setAdmin(true)
+
+},[])
 
 function logout(){
 clearSession()
