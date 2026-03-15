@@ -406,3 +406,35 @@ def scan_history(data: dict):
         "success": True,
         "results": output
     }
+
+
+# -------------------------
+# USER INFO
+# -------------------------
+
+@app.post("/user-info")
+def user_info(data: dict):
+
+    token = data.get("token")
+
+    payload = verify_token(token)
+
+    if not payload:
+        return {"error": "invalid_token"}
+
+    email = payload["email"]
+
+    db = SessionLocal()
+
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        return {"error": "user_not_found"}
+
+    return {
+        "success": True,
+        "email": user.email,
+        "plan": user.plan,
+        "credits": user.credits,
+        "admin": user.admin
+    }

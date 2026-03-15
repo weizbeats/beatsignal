@@ -16,29 +16,12 @@ typeof window!=="undefined"
 ?localStorage.getItem("user")||"user"
 :"user"
 
-
-/* ROLE DETECTION */
-
-let role="free"
-
-if(user==="weizbeat@gmail.com"){
-role="admin"
-}
-
-
-
-/* LOGOUT */
-
 function logout(){
 
 clearSession()
-
 router.replace("/")
 
 }
-
-
-/* CLICK OUTSIDE */
 
 useEffect(()=>{
 
@@ -56,68 +39,32 @@ return()=>document.removeEventListener("mousedown",handleClick)
 
 },[])
 
-
-
 return(
 
-<div className="w-full flex justify-between items-start px-16 pt-4 relative">
+<div className="w-full relative flex items-start justify-end px-16 pt-4">
 
-
-{/* ROLE BADGE CENTER */}
+{/* CENTER PLAN BADGE */}
 
 <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
 
-{role==="admin" &&(
-
-<div className="
-px-4 py-1
-text-xs font-semibold
-rounded-full
-bg-yellow-400/10
-text-yellow-400
-border border-yellow-400/30
-tracking-wider
-transition-all duration-300
-hover:scale-110
-hover:-translate-y-0.5
-hover:shadow-[0_0_20px_rgba(255,215,0,0.7)]
-cursor-default
-">
-
+<span className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs font-semibold px-3 py-1 rounded-md shadow-lg">
 ADMIN
+</span>
 
-</div>
-
-)}
-
-{role==="admin" &&(
-
-<p className="text-xs text-yellow-300/70">
+<p className="text-sm text-white/60">
 Unlimited scans
 </p>
 
-)}
-
 </div>
 
 
+{/* USER MENU */}
 
-{/* RIGHT USER MENU */}
-
-<div ref={ref} className="relative ml-auto">
+<div ref={ref} className="relative">
 
 <button
 onClick={()=>setOpen(!open)}
-className="
-flex items-center gap-2
-bg-black/40
-border border-white/10
-px-4 py-1.5
-rounded-md
-text-sm
-transition
-hover:border-[#14E6C3]
-"
+className="flex items-center gap-2 bg-black/40 border border-white/10 px-4 py-1.5 rounded-md text-sm hover:border-[#14E6C3] transition"
 >
 
 <span className="text-gray-200">
@@ -130,27 +77,13 @@ hover:border-[#14E6C3]
 
 </button>
 
-
 {open &&(
 
-<div className="
-absolute right-0 mt-2 w-44
-bg-black/40
-backdrop-blur-xl
-border border-white/10
-rounded-lg
-overflow-hidden
-">
+<div className="absolute right-0 mt-2 w-44 bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg">
 
 <button
 onClick={logout}
-className="
-w-full text-left
-px-4 py-2
-text-sm
-text-red-400
-hover:bg-red-500/10
-"
+className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-white/5"
 >
 Logout
 </button>
