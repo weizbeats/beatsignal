@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, UniqueConstraint
 from .db import Base
 from datetime import datetime
 
@@ -35,7 +35,7 @@ class ScanResult(Base):
 
     user_email = Column(String, index=True)
 
-    youtube_video_id = Column(String, unique=True, index=True)
+    youtube_video_id = Column(String, index=True)
 
     title = Column(String)
     channel = Column(String)
@@ -47,3 +47,8 @@ class ScanResult(Base):
     detected_at = Column(DateTime, default=datetime.utcnow)
 
     status = Column(String, default="detected")
+
+    # evita duplicados SOLO por usuario
+    __table_args__ = (
+        UniqueConstraint("user_email", "youtube_video_id"),
+    )

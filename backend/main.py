@@ -5,12 +5,11 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 import os
-import secrets
-import requests
 import shutil
 import subprocess
 
 from datetime import datetime, timedelta
+from urllib.parse import urlparse, parse_qs
 
 from services.scanner import scan_url
 
@@ -38,18 +37,10 @@ def ensure_ffmpeg():
         print("FFMPEG already installed")
         return
 
-    print("FFMPEG not found. Installing...")
+    print("Installing FFMPEG...")
 
-    try:
-
-        subprocess.run(["apt-get", "update"], check=True)
-        subprocess.run(["apt-get", "install", "-y", "ffmpeg"], check=True)
-
-        print("FFMPEG installed successfully")
-
-    except Exception as e:
-
-        print("FFMPEG installation failed:", e)
+    subprocess.run(["apt-get","update"])
+    subprocess.run(["apt-get","install","-y","ffmpeg"])
 
 
 ensure_ffmpeg()
@@ -85,33 +76,6 @@ app.add_middleware(
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
-FRONTEND_URL = os.getenv("FRONTEND_URL")
-
-
-# -------------------------
-# CLEAN OLD USERS
-# -------------------------
-
-def delete_unverified_users():
-
-    db = SessionLocal()
-
-    limit_time = datetime.utcnow() - timedelta(hours=24)
-
-    users = db.query(User).filter(
-        User.verified == False
-    ).all()
-
-    for u in users:
-
-        if u.verify_token and u.created_at < limit_time:
-            db.delete(u)
-
-    db.commit()
-
-
-delete_unverified_users()
-
 
 # -------------------------
 # TOKEN
@@ -129,14 +93,36 @@ def create_token(email: str):
 
 def verify_token(token: str):
 
-    if not token:
-        return None
-
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except:
         return None
+
+
+# -------------------------
+# EXTRACT VIDEO ID
+# -------------------------
+
+def extract_video_id(url):
+
+    try:
+
+        parsed = urlparse(url)
+
+        if "youtube.com" in parsed.netloc:
+
+            query = parse_qs(parsed.query)
+            return query.get("v",[None])[0]
+
+        if "youtu.be" in parsed.netloc:
+
+            return parsed.path.strip("/")
+
+    except:
+        pass
+
+    return None
 
 
 # -------------------------
@@ -150,73 +136,37 @@ def register(request: Request, data: dict):
     email = data.get("email")
     password = data.get("password")
 
-    if not email or not password:
-
-        return {
-            "success": False,
-            "error": "missing_fields"
-        }
-
-    email = email.lower().strip()
-    password = password.strip()[:72]
-
     db = SessionLocal()
 
-    existing_user = db.query(User).filter(User.email == email).first()
+    if db.query(User).filter(User.email == email).first():
 
-    if existing_user:
+        return {"success":False,"error":"email_exists"}
 
-        return {
-            "success": False,
-            "error": "email_exists"
-        }
+    hashed = pwd_context.hash(password)
 
-    hashed_password = pwd_context.hash(password)
-
-    plan = "free"
-    credits = PLANS[plan]["credits"]
-
-    # 🔓 TEMPORARY: NO EMAIL VERIFICATION
-    new_user = User(
+    user = User(
         email=email,
-        password=hashed_password,
-        plan=plan,
-        credits=credits,
-        admin=email == "weizbeat@gmail.com",
-        verified=True,
-        verify_token=None,
-        created_at=datetime.utcnow()
+        password=hashed,
+        plan="free",
+        credits=PLANS["free"]["credits"],
+        verified=True
     )
 
-    db.add(new_user)
+    db.add(user)
     db.commit()
 
-    return {
-        "success": True,
-        "message": "Account created"
-    }
+    return {"success":True}
 
 
 # -------------------------
 # LOGIN
 # -------------------------
 
-@limiter.limit("10/minute")
 @app.post("/login")
-def login(request: Request, data: dict):
+def login(data: dict):
 
     email = data.get("email")
     password = data.get("password")
-
-    if not email or not password:
-
-        return {
-            "success": False,
-            "error": "missing_fields"
-        }
-
-    email = email.lower().strip()
-    password = password.strip()[:72]
 
     db = SessionLocal()
 
@@ -224,26 +174,18 @@ def login(request: Request, data: dict):
 
     if not user:
 
-        return {
-            "success": False,
-            "error": "user_not_found"
-        }
+        return {"success":False,"error":"user_not_found"}
 
-    if not pwd_context.verify(password, user.password):
+    if not pwd_context.verify(password,user.password):
 
-        return {
-            "success": False,
-            "error": "wrong_password"
-        }
+        return {"success":False,"error":"wrong_password"}
 
     token = create_token(email)
 
     return {
-        "success": True,
-        "token": token,
-        "plan": user.plan,
-        "credits": user.credits,
-        "admin": user.admin
+        "success":True,
+        "token":token,
+        "credits":user.credits
     }
 
 
@@ -260,7 +202,7 @@ def scan(data: dict):
     payload = verify_token(token)
 
     if not payload:
-        return {"error": "invalid_token"}
+        return {"error":"invalid_token"}
 
     email = payload["email"]
 
@@ -269,16 +211,12 @@ def scan(data: dict):
     user = db.query(User).filter(User.email == email).first()
 
     if not user:
-        return {"error": "user_not_found"}
+        return {"error":"user_not_found"}
 
-    if not user.admin:
+    video_id = extract_video_id(url)
 
-        if user.credits == 0:
-            return {"error": "no_credits"}
-
-        if user.credits > 0:
-            user.credits -= 1
-            db.commit()
+    if not video_id:
+        return {"error":"invalid_youtube_url"}
 
     results = scan_url(url)
 
@@ -293,6 +231,7 @@ def scan(data: dict):
 
             exists = db.query(ScanResult).filter(
                 ScanResult.user_email == email,
+                ScanResult.youtube_video_id == video_id,
                 ScanResult.title == song,
                 ScanResult.channel == artist
             ).first()
@@ -300,15 +239,15 @@ def scan(data: dict):
             if exists:
                 continue
 
-            new_entry = ScanResult(
+            entry = ScanResult(
                 user_email=email,
-                youtube_video_id=f"{song}-{artist}",
+                youtube_video_id=video_id,
                 title=song,
                 channel=artist,
                 youtube_url=url
             )
 
-            db.add(new_entry)
+            db.add(entry)
 
             new_results.append(r)
 
@@ -318,79 +257,46 @@ def scan(data: dict):
     db.commit()
 
     return {
-        "success": True,
-        "results": new_results
+        "success":True,
+        "results":new_results
     }
 
 
 # -------------------------
-# SCAN HISTORY
+# HISTORY
 # -------------------------
 
 @app.post("/scan-history")
-def scan_history(data: dict):
+def history(data: dict):
 
     token = data.get("token")
 
     payload = verify_token(token)
 
     if not payload:
-        return {"error": "invalid_token"}
+        return {"error":"invalid_token"}
 
     email = payload["email"]
 
     db = SessionLocal()
 
-    results = db.query(ScanResult)\
+    rows = db.query(ScanResult)\
         .filter(ScanResult.user_email == email)\
         .order_by(ScanResult.detected_at.desc())\
         .all()
 
-    output = []
+    out = []
 
-    for r in results:
+    for r in rows:
 
-        output.append({
-            "title": r.title,
-            "artist": r.channel,
-            "url": r.youtube_url,
-            "views": r.views,
-            "date": r.detected_at
+        out.append({
+            "title":r.title,
+            "artist":r.channel,
+            "url":r.youtube_url,
+            "date":r.detected_at
         })
 
     return {
-        "success": True,
-        "results": output
-    }
-
-
-# -------------------------
-# USER INFO
-# -------------------------
-
-@app.post("/user-info")
-def user_info(data: dict):
-
-    token = data.get("token")
-
-    payload = verify_token(token)
-
-    if not payload:
-        return {"error": "invalid_token"}
-
-    email = payload["email"]
-
-    db = SessionLocal()
-
-    user = db.query(User).filter(User.email == email).first()
-
-    if not user:
-        return {"error": "user_not_found"}
-
-    return {
-        "success": True,
-        "token": token,
-        "plan": user.plan,
-        "credits": user.credits,
-        "admin": user.admin
+        "success":True,
+        "results":out
     }
