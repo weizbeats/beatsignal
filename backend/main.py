@@ -18,6 +18,8 @@ from passlib.context import CryptContext
 from database.db import SessionLocal, engine
 from database.models import Base, User, ScanResult
 
+from config.plans import PLANS
+
 # RATE LIMIT
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -115,6 +117,7 @@ def verify_token(token: str):
 # -------------------------
 
 def generate_verify_token():
+
     return secrets.token_urlsafe(32)
 
 
@@ -145,6 +148,7 @@ def send_verification_email(email, token):
         )
 
     except Exception as e:
+
         print("Email send error:", e)
 
 
@@ -182,13 +186,16 @@ def register(request: Request, data: dict):
 
     hashed_password = pwd_context.hash(password)
 
+    plan = "free"
+    credits = PLANS[plan]["credits"]
+
     verify_token = generate_verify_token()
 
     new_user = User(
         email=email,
         password=hashed_password,
-        plan="trial",
-        credits=5,
+        plan=plan,
+        credits=credits,
         admin=email == "weizbeat@gmail.com",
         verified=False,
         verify_token=verify_token,
@@ -210,11 +217,8 @@ def register(request: Request, data: dict):
 # VERIFY EMAIL
 # -------------------------
 
-@app.get("/verify")
+@app.get("/verify-email")
 def verify_email(token: str):
-
-    if not token:
-        return {"success": False}
 
     db = SessionLocal()
 
@@ -311,13 +315,14 @@ def scan(data: dict):
     if not user:
         return {"error": "user_not_found"}
 
-    if not user.admin and user.plan != "unlimited":
+    if not user.admin:
 
-        if user.credits <= 0:
+        if user.credits == 0:
             return {"error": "no_credits"}
 
-        user.credits -= 1
-        db.commit()
+        if user.credits > 0:
+            user.credits -= 1
+            db.commit()
 
     results = scan_url(url)
 
