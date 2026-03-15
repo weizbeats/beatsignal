@@ -86,7 +86,6 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 FRONTEND_URL = os.getenv("FRONTEND_URL")
-RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 
 
 # -------------------------
@@ -141,45 +140,6 @@ def verify_token(token: str):
 
 
 # -------------------------
-# EMAIL
-# -------------------------
-
-def generate_verify_token():
-    return secrets.token_urlsafe(32)
-
-
-def send_verification_email(email, token):
-
-    link = f"{FRONTEND_URL}/verify?token={token}"
-
-    data = {
-        "from": "BeatSignal <onboarding@resend.dev>",
-        "to": [email],
-        "subject": "Verify your BeatSignal account",
-        "html": f"""
-        <h2>Verify your BeatSignal account</h2>
-        <p>Click the link below to activate your account:</p>
-        <a href="{link}">{link}</a>
-        """
-    }
-
-    try:
-
-        requests.post(
-            "https://api.resend.com/emails",
-            headers={
-                "Authorization": f"Bearer {RESEND_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json=data
-        )
-
-    except Exception as e:
-
-        print("Email send error:", e)
-
-
-# -------------------------
 # REGISTER
 # -------------------------
 
@@ -216,58 +176,24 @@ def register(request: Request, data: dict):
     plan = "free"
     credits = PLANS[plan]["credits"]
 
-    verify_token = generate_verify_token()
-
+    # 🔓 TEMPORARY: NO EMAIL VERIFICATION
     new_user = User(
         email=email,
         password=hashed_password,
         plan=plan,
         credits=credits,
         admin=email == "weizbeat@gmail.com",
-        verified=False,
-        verify_token=verify_token,
+        verified=True,
+        verify_token=None,
         created_at=datetime.utcnow()
     )
 
     db.add(new_user)
     db.commit()
 
-    send_verification_email(email, verify_token)
-
     return {
         "success": True,
-        "message": "Verification email sent"
-    }
-
-
-# -------------------------
-# VERIFY EMAIL
-# -------------------------
-
-@app.get("/verify-email")
-def verify_email(token: str):
-
-    db = SessionLocal()
-
-    user = db.query(User).filter(User.verify_token == token).first()
-
-    if not user:
-        return {"success": False}
-
-    user.verified = True
-    user.verify_token = None
-
-    db.commit()
-
-    # 🔥 GENERATE LOGIN TOKEN AUTOMATICALLY
-    jwt_token = create_token(user.email)
-
-    return {
-        "success": True,
-        "token": jwt_token,
-        "plan": user.plan,
-        "credits": user.credits,
-        "admin": user.admin
+        "message": "Account created"
     }
 
 
@@ -301,13 +227,6 @@ def login(request: Request, data: dict):
         return {
             "success": False,
             "error": "user_not_found"
-        }
-
-    if not user.verified:
-
-        return {
-            "success": False,
-            "error": "email_not_verified"
         }
 
     if not pwd_context.verify(password, user.password):
